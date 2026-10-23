@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=My OS Settings
+Comment=Change the My OS appearance and widgets
+Exec=myos-settings
+Terminal=false
+Categories=Settings;

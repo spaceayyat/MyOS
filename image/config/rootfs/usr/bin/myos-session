@@ -1,0 +1,19 @@
+#!/bin/sh
+# Start the My OS session: the labwc compositor, which then autostarts
+# myos-shell (see /etc/xdg/labwc/autostart).
+# Output goes to ~/.local/state/myos/session.log to help debug boot problems.
+
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=MyOS
+
+# Fallback if PAM/logind did not create a runtime directory (labwc needs one).
+if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+    XDG_RUNTIME_DIR="/tmp/myos-runtime-$(id -u)"
+    mkdir -p "$XDG_RUNTIME_DIR" && chmod 0700 "$XDG_RUNTIME_DIR"
+    export XDG_RUNTIME_DIR
+fi
+
+log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/myos"
+mkdir -p "$log_dir"
+
+exec labwc >"$log_dir/session.log" 2>&1

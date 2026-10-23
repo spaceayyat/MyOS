@@ -1,0 +1,26 @@
+# My OS base image - Phase 0
+#
+# Status: this is a MINIMAL derived container image. It is NOT a bootable
+# operating system yet. Turning it into a bootable disk image and booting that
+# image in a VM has not been verified (see docs/roadmap.md).
+#
+# The base is pinned explicitly. scripts/build-image.sh passes a digest-pinned
+# reference (BASE_IMAGE) when image/base-image.env exists; the default below is
+# the verified Fedora 44 tag so a plain `podman build` also works.
+
+ARG BASE_IMAGE=quay.io/fedora/fedora-bootc:44
+FROM ${BASE_IMAGE}
+
+# Standard OCI metadata. Values are descriptive only; no secrets belong here.
+LABEL org.opencontainers.image.title="My OS" \
+      org.opencontainers.image.description="Fedora-based bootc image (Phase 0 foundation, not yet bootable-verified)" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="My OS contributors"
+
+# Phase 0 intentionally installs no packages and ships no desktop.
+# Configuration drop-ins will live in image/config/ and be copied in later:
+#   COPY config/ /
+
+# Validate that the image follows bootc conventions. The build fails on
+# violations, which is what we want in CI.
+RUN bootc container lint

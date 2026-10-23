@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  My OS Phase 1 live ISO, described for KIWI (the tool Fedora itself uses to
+  build its live images).
+
+  STATUS: written from the KIWI and Fedora documentation but NEVER EXECUTED by
+  the author. The first real build may need small fixes (package names, KIWI
+  attribute names). See docs/development.md, "If the ISO build fails".
+
+  Security notes:
+    * No passwords: both accounts are locked ("*"). The live user logs in
+      through the getty autologin drop-in, which does not need a password.
+    * Repositories are fetched over HTTPS and RPM packages are signature
+      checked with the Fedora key from the distribution-gpg-keys package.
+-->
+<image schemaversion="8.4" name="MyOS-Live">
+  <description type="system">
+    <author>My OS contributors</author>
+    <contact>noreply@example.invalid</contact>
+    <specification>My OS Phase 1 live image: labwc + the My OS Qt 6 desktop</specification>
+  </description>
+
+  <preferences>
+    <version>0.1.0</version>
+    <packagemanager>dnf5</packagemanager>
+    <locale>en_US</locale>
+    <keytable>us</keytable>
+    <timezone>UTC</timezone>
+    <rpm-excludedocs>true</rpm-excludedocs>
+    <type image="iso"
+          flags="dmsquash"
+          firmware="uefi"
+          volid="MYOS_LIVE"
+          application_id="MyOS-Live"
+          publisher="My OS contributors"
+          kernelcmdline="rd.live.image selinux=0 quiet"/>
+  </preferences>
+
+  <users>
+    <user name="root" password="*" pwdformat="encrypted" home="/root"/>
+    <user name="liveuser" password="*" pwdformat="encrypted"
+          home="/home/liveuser" groups="liveuser,video,audio"/>
+  </users>
+
+  <repository type="rpm-md" alias="fedora"
+              repository_gpgcheck="false" package_gpgcheck="true">
+    <source path="https://dl.fedoraproject.org/pub/fedora/linux/releases/44/Everything/x86_64/os/">
+      <signing key="file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-44-primary"/>
+    </source>
+  </repository>
+  <repository type="rpm-md" alias="fedora-updates"
+              repository_gpgcheck="false" package_gpgcheck="true">
+    <source path="https://dl.fedoraproject.org/pub/fedora/linux/updates/44/Everything/x86_64/">
+      <signing key="file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-44-primary"/>
+    </source>
+  </repository>
+
+  <packages type="bootstrap">
+    <package name="filesystem"/>
+    <package name="glibc-langpack-en"/>
+    <package name="fedora-release-common"/>
+    <package name="fedora-release-identity-basic"/>
+  </packages>
+
+  <packages type="image">
+    <!-- Boot and live-media support -->
+    <package name="systemd"/>
+    <package name="systemd-udev"/>
+    <package name="dbus-broker"/>
+    <package name="kernel"/>
+    <package name="kernel-modules"/>
+    <package name="kernel-modules-extra"/>
+    <package name="dracut"/>
+    <package name="dracut-live"/>
+    <package name="dracut-config-generic"/>
+    <package name="grub2-efi-x64"/>
+    <package name="grub2-efi-x64-cdboot"/>
+    <package name="grub2-tools"/>
+    <package name="shim-x64"/>
+
+    <!-- Minimal userland -->
+    <package name="bash"/>
+    <package name="coreutils"/>
+    <package name="util-linux"/>
+    <package name="shadow-utils"/>
+    <package name="passwd"/>
+    <!-- Login/session plumbing: PAM profile + pam_systemd give the live user a
+         logind seat and XDG_RUNTIME_DIR, which the compositor needs. -->
+    <package name="pam"/>
+    <package name="authselect"/>
+    <package name="systemd-pam"/>
+
+    <!-- Graphics and input: existing compositor, no custom one -->
+    <package name="labwc"/>
+    <package name="mesa-dri-drivers"/>
+    <package name="mesa-libEGL"/>
+    <package name="xkeyboard-config"/>
+
+    <!-- Qt 6 runtime for the My OS desktop -->
+    <package name="qt6-qtbase"/>
+    <package name="qt6-qtbase-gui"/>
+    <package name="qt6-qtdeclarative"/>
+    <package name="qt6-qtwayland"/>
+    <package name="layer-shell-qt"/>
+
+    <!-- Terminal and fonts -->
+    <package name="foot"/>
+    <package name="foot-terminfo"/>
+    <package name="dejavu-sans-fonts"/>
+    <package name="dejavu-sans-mono-fonts"/>
+  </packages>
+</image>
