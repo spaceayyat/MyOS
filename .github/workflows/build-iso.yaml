@@ -1,0 +1,31 @@
+
+name: Build MyOS ISO
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Get source code
+        uses: actions/checkout@v4
+
+      - name: Install KIWI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y kiwi
+
+      - name: Build ISO
+        run: |
+          sudo kiwi-ng --profile=Live \
+            system build \
+            --description image/kiwi \
+            --target-dir build
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: MyOS-ISO
+          path: build/*.iso
+          if-no-files-found: error
