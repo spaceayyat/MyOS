@@ -32,6 +32,7 @@ After=multi-user.target
 [Service]
 Type=simple
 ImportCredential=myos.check
+ImportCredential=myos.disk
 ExecStart=/bin/bash %d/myos.check
 """
 DROPIN = "[Unit]\nWants=myos-boot-test.service\n"

@@ -50,7 +50,20 @@ EOF
 # liveinst also switches SELinux to permissive while installing. This affects
 # the throwaway live session only; the installed system is checked afterwards.
 setenforce 0
-timeout 1500 anaconda --cmdline --kickstart=/run/myos-test.ks </dev/null >/tmp/anaconda.out 2>&1
+# Without --liveinst (which would ignore the kickstart) Anaconda reboots when it
+# exits, even after a failure, and this report would be lost. Hide only the
+# power commands from it; the script powers the machine off itself.
+mkdir -p /run/myos-bin
+cat > /run/myos-bin/systemctl <<'WRAPPER'
+#!/bin/bash
+for arg in "$@"; do
+  case "${arg}" in reboot|poweroff|halt|kexec) exit 0 ;; esac
+done
+exec /usr/bin/systemctl "$@"
+WRAPPER
+chmod 755 /run/myos-bin/systemctl
+chcon -t bin_t /run/myos-bin/systemctl
+PATH="/run/myos-bin:${PATH}" timeout 1500 anaconda --cmdline --kickstart=/run/myos-test.ks </dev/null >/tmp/anaconda.out 2>&1
 status=$?
 setenforce 1
 echo "MYOS-FACT anaconda-exit ${status}"
