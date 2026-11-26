@@ -1,6 +1,9 @@
 #!/bin/bash
 # Runs INSIDE the booted live system, injected by tests/vm/boot_test.py through
 # a systemd credential. Writes results to the serial port.
+#
+# Single-quoted strings given to eval or bash -c are expanded later, on purpose.
+# shellcheck disable=SC2016
 exec >/dev/ttyS0 2>&1
 set -u
 
@@ -80,8 +83,6 @@ check cups-socket active cups.socket
 check cups-scheduler bash -c 'lpstat -r | grep -x "scheduler is running"'
 
 # Security
-# Single quotes are intentional: the inner bash expands this.
-# shellcheck disable=SC2016
 check selinux-enforcing bash -c '[[ $(getenforce) == Enforcing ]] && getenforce'
 check firewalld active firewalld.service
 
