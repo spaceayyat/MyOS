@@ -44,9 +44,32 @@ fi
 
 iso="$(find "${target}" -maxdepth 1 -name '*.iso' -print -quit)"
 [[ -n "${iso}" ]] || die "KIWI finished but no .iso was found in ${target}"
-mv -- "${iso}" "${output}/"
-iso="${output}/$(basename "${iso}")"
-find "${target}" -maxdepth 1 -name '*.packages' -exec cp -- {} "${output}/" \;
-( cd "${output}" && sha256sum -- *.iso *.packages > SHA256SUMS )
+# Name the image after its version; anything but a matching v* tag is a
+# development build and says which commit it came from.
+version="$(sed -n 's|.*<version>\(.*\)</version>.*|\1|p' "${description}/config.xml")"
+commit="${MYOS_COMMIT:-$(git -C "${MYOS_ROOT}" rev-parse HEAD 2>/dev/null || echo unknown)}"
+if [[ "${MYOS_REF:-}" == "refs/tags/v${version}" ]]; then
+  name="MyOS-${version}-x86_64"
+else
+  name="MyOS-${version}-dev.${commit:0:7}-x86_64"
+fi
+rm -f -- "${output}"/*.iso "${output}"/*.packages
+mv -- "${iso}" "${output}/${name}.iso"
+iso="${output}/${name}.iso"
+packages="$(find "${target}" -maxdepth 1 -name '*.packages' -print -quit)"
+[[ -n "${packages}" ]] || die "KIWI wrote no package list"
+cp -- "${packages}" "${output}/${name}.packages"
+cat > "${output}/BUILD-INFO.txt" <<EOF
+name:     ${name}.iso
+version:  ${version}
+commit:   ${commit}
+ref:      ${MYOS_REF:-local}
+built:    $(date -u +%Y-%m-%dT%H:%M:%SZ)
+base:     Fedora $(rpm -E %fedora)
+kiwi:     $(kiwi-ng --version 2>&1 | tail -n1)
+packages: $(wc -l < "${output}/${name}.packages")
+EOF
+( cd "${output}" && sha256sum -- "${name}.iso" "${name}.packages" BUILD-INFO.txt > SHA256SUMS )
 info "ISO ready: ${iso}"
+cat "${output}/BUILD-INFO.txt"
 cat "${output}/SHA256SUMS"

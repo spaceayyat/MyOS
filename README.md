@@ -5,8 +5,8 @@ GitHub Actions. This is an early preview. Test it in a virtual machine.
 
 ## Build
 
-On GitHub: open **Actions**, run **Build MyOS ISO** (it also runs on pull
-requests and pushes to `main`), then download the `MyOS-ISO` artifact.
+On GitHub: open **Actions**, run **Build MyOS ISO** (it also runs on every
+push), then download the `MyOS-ISO` artifact.
 
 Locally, with Docker or root Podman:
 

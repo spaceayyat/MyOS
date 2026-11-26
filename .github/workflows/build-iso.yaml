@@ -2,9 +2,8 @@ name: Build MyOS ISO
 
 on:
   workflow_dispatch:
-  pull_request:
   push:
-    branches: [main]
+    branches: ["**"]
     tags: ["v*"]
 
 permissions:
@@ -50,7 +49,7 @@ jobs:
             /opt/hostedtoolcache/CodeQL
           df -h /
       - name: Build desktop and ISO in Fedora 44
-        run: sudo scripts/build-in-container.sh
+        run: sudo MYOS_REF="${GITHUB_REF}" scripts/build-in-container.sh
       - name: Show checksums
         run: |
           cd output/iso
@@ -111,8 +110,9 @@ jobs:
             vm-out/serial.log
           if-no-files-found: ignore
 
+  # Marked as a pre-release until installation is tested automatically.
   release:
-    name: Publish release
+    name: Publish pre-release
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [build, boot]
     runs-on: ubuntu-24.04
@@ -149,5 +149,5 @@ jobs:
               rm "$f"
             fi
           done
-          gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+          gh release create "${GITHUB_REF_NAME}" --prerelease --repo "${GITHUB_REPOSITORY}" \
             --title "MyOS ${GITHUB_REF_NAME}" --notes-file ../CHANGELOG.md ./*

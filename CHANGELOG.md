@@ -8,6 +8,10 @@
 - SELinux enforcing, firewalld, security-only automatic updates.
 - CI: shellcheck, unit tests, KIWI and package validation, ISO build,
   QEMU boot tests (BIOS, UEFI, UEFI Secure Boot).
+- Fixed: the live system left root without a password.
+- Fixed: the boot test misread results; it now judges them strictly.
+- ISOs are named by version (development builds include the commit) and ship
+  with `BUILD-INFO.txt`.
 
 ## 0.1.0
 
