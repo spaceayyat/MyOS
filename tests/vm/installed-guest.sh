@@ -63,7 +63,7 @@ check network online
 if [[ "${edition}" == gnome ]]; then
   check applications bash -c 'command -v helium nautilus ptyxis gnome-software gnome-tweaks'
 else
-  check applications bash -c 'command -v firefox dolphin konsole plasma-discover'
+  check applications bash -c 'command -v helium firefox dolphin konsole plasma-discover'
 fi
 check snapper-config wait_for 180 test -f /etc/snapper/configs/root
 check snapper-recovery bash -c 'set -e
@@ -72,9 +72,7 @@ check snapper-recovery bash -c 'set -e
   echo changed > $f
   snapper -c root undochange $n..0 $f
   grep -x original $f'
-update_packages=(curl ca-certificates)
-if [[ "${edition}" == gnome ]]; then update_packages+=(helium-bin); fi
-check system-update timeout 900 dnf -y upgrade --refresh "${update_packages[@]}"
+check system-update timeout 900 dnf -y upgrade --refresh curl ca-certificates helium-bin
 
 # Real login: the host types the password into the login screen.
 sleep 20

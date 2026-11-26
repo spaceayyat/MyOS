@@ -19,11 +19,10 @@ COMMON = frozenset({
     "cups-socket", "cups-scheduler", "selinux-enforcing", "firewalld",
     "root-no-usable-password", "root-su-refused", "ssh-server-off",
     "no-auto-update-on-live", "applications", "default-theme",
-    "myos-binaries", "installer",
+    "myos-binaries", "installer", "helium-runs", "default-browser",
 })
 EDITIONS = {
-    "gnome": COMMON | {"helium-runs", "default-browser", "no-firefox",
-                       "customization-tools"},
+    "gnome": COMMON | {"no-firefox", "customization-tools"},
     "plasma": COMMON,
 }
 

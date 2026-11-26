@@ -117,15 +117,18 @@ have_commands() {
 }
 setting() { as_live dbus-run-session gsettings get "$1" "$2"; }
 
+# Browser: Helium is the default in both editions and must actually start.
+if [[ "${edition}" == gnome ]]; then desktop_name=GNOME; else desktop_name=KDE; fi
+check default-browser eval '[[ $(as_live env XDG_CURRENT_DESKTOP=${desktop_name} xdg-mime query default x-scheme-handler/https) == helium.desktop ]] && echo helium.desktop'
+check helium-runs eval 'as_live timeout 90 helium --headless --disable-gpu --dump-dom https://fedoraproject.org/static/hotspot.txt | grep -m1 OK'
+
 if [[ "${edition}" == gnome ]]; then
   check applications have_commands nautilus ptyxis gnome-text-editor gnome-software gnome-control-center gnome-system-monitor loupe papers
   check customization-tools have_commands gnome-tweaks gnome-extensions-app
   check default-theme eval '[[ $(setting org.gnome.desktop.interface color-scheme) == *prefer-dark* && $(setting org.gnome.desktop.background picture-uri-dark) == */MyOS/* ]] && echo "MyOS dark"'
-  check default-browser eval '[[ $(as_live env XDG_CURRENT_DESKTOP=GNOME xdg-mime query default x-scheme-handler/https) == helium.desktop ]] && echo helium.desktop'
-  check helium-runs eval 'as_live timeout 90 helium --headless --disable-gpu --dump-dom https://fedoraproject.org/static/hotspot.txt | grep -m1 OK'
   check no-firefox eval '! rpm -q firefox'
 else
-  check applications have_commands dolphin konsole kate plasma-discover systemsettings okular gwenview firefox
+  check applications have_commands dolphin konsole kate plasma-discover systemsettings okular gwenview helium firefox
   check default-theme eval '[[ $(as_live kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage) == org.myos.dark.desktop ]] && echo org.myos.dark.desktop'
 fi
 

@@ -6,7 +6,7 @@ Actions. This is an early preview. Test it in a virtual machine.
 | Edition | Desktop | Browser |
 | --- | --- | --- |
 | GNOME (main) | GNOME | Helium (beta, from the `imput/helium` COPR) |
-| Plasma | KDE Plasma | Firefox |
+| Plasma | KDE Plasma | Helium (default) and Firefox |
 
 ## Build
 

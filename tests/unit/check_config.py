@@ -47,14 +47,16 @@ def main(root: pathlib.Path) -> int:
         for name, count in collections.Counter(listed).items():
             if count > 1:
                 problems.append(f"{edition}: package listed {count} times: {name}")
+        if "helium-bin" not in listed:
+            problems.append(f"{edition}: helium-bin is missing")
         if edition == "GNOME" and "firefox" in listed:
             problems.append("GNOME edition must ship Helium, not Firefox")
 
     # The Helium key shipped to users must be the one the build trusts.
-    key = "image/config/rootfs-gnome/etc/pki/rpm-gpg/RPM-GPG-KEY-imput-helium"
+    key = "image/config/rootfs/etc/pki/rpm-gpg/RPM-GPG-KEY-imput-helium"
     if not (root / key).is_file():
         problems.append(f"missing {key}")
-    if "gpgcheck=1" not in (root / "image/config/rootfs-gnome/etc/yum.repos.d/"
+    if "gpgcheck=1" not in (root / "image/config/rootfs/etc/yum.repos.d/"
                             "imput-helium.repo").read_text().splitlines():
         problems.append("installed Helium repository must keep gpgcheck=1")
 

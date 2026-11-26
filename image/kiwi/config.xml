@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   MyOS live ISO: Fedora 44, built with KIWI. Two editions (profiles):
-    GNOME   the main edition, with Helium Browser
-    Plasma  the KDE Plasma edition
+    GNOME   the main edition; Helium is its only browser
+    Plasma  the KDE Plasma edition; Helium by default, plus Firefox
 
   Build it with scripts/build-iso.sh inside Fedora 44 (CI does this in a
   container). Ubuntu's KIWI package is too old to read this file.
@@ -67,10 +67,10 @@
   <!-- Helium Browser: the project's own COPR repository (third party). The
        key is kept in this repository; scripts/build-iso.sh fills in @ROOT@.
        Fingerprint 07BC FCA3 0AC7 E51B CFED FFF7 4A31 86EA 4791 2C39 -->
-  <repository type="rpm-md" alias="helium" profiles="GNOME"
+  <repository type="rpm-md" alias="helium"
               repository_gpgcheck="false" package_gpgcheck="true">
     <source path="https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-44-x86_64/">
-      <signing key="file://@ROOT@/image/config/rootfs-gnome/etc/pki/rpm-gpg/RPM-GPG-KEY-imput-helium"/>
+      <signing key="file://@ROOT@/image/config/rootfs/etc/pki/rpm-gpg/RPM-GPG-KEY-imput-helium"/>
     </source>
   </repository>
 
@@ -190,6 +190,9 @@
     <package name="xdg-user-dirs"/>
     <package name="flatpak"/>
 
+    <!-- Default browser (third-party repository, see above) -->
+    <package name="helium-bin"/>
+
     <!-- Live session and installer -->
     <package name="livesys-scripts"/>
     <package name="anaconda-live"/>
@@ -228,7 +231,6 @@
     <package name="gnome-bluetooth"/>
     <package name="xdg-desktop-portal-gnome"/>
     <package name="adwaita-icon-theme"/>
-    <package name="helium-bin"/>
   </packages>
 
   <packages type="image" profiles="Plasma">

@@ -3,7 +3,8 @@
 ## 0.3.0 (unreleased)
 
 - New main edition: GNOME with Helium Browser (no Firefox). KDE Plasma remains
-  as a second edition.
+  as a second edition, now with Helium as its default browser (Firefox
+  stays installed).
 - CI builds and boot-tests both editions.
 
 - KDE Plasma is the default desktop; the myos-shell session is optional.
