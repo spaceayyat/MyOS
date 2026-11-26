@@ -14,7 +14,7 @@ recorded manual check shows it.
 1. Test the graphical installer, then real hardware.
 2. Branding: boot splash, GRUB theme, login screen, welcome app, and a review of
    Fedora's trademark guidelines.
-3. A MyOS customization app.
+3. A VYLO customization app.
 4. Snapshot recovery from the boot menu.
 5. A bootc image as an additional output.
 

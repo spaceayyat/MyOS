@@ -8,11 +8,11 @@ test -f /.profile && . /.profile
 
 set -euxo pipefail
 
-# The optional MyOS session must be executable.
-chmod 0755 /usr/bin/myos-shell /usr/bin/myos-settings /usr/bin/myos-session \
-    /usr/libexec/myos/snapper-setup /usr/libexec/myos/lock-root
+# The optional VYLO session must be executable.
+chmod 0755 /usr/bin/vylo-shell /usr/bin/vylo-settings /usr/bin/vylo-session \
+    /usr/libexec/vylo/snapper-setup /usr/libexec/vylo/lock-root
 
-echo "myos" > /etc/hostname
+echo "vylo" > /etc/hostname
 
 # Keep SELinux enforcing. Fail the build if the policy says anything else.
 grep -qx 'SELINUX=enforcing' /etc/selinux/config
@@ -40,4 +40,4 @@ systemctl enable \
     livesys.service \
     livesys-late.service \
     dnf5-automatic.timer \
-    myos-snapper-setup.service
+    vylo-snapper-setup.service

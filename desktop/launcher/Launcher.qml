@@ -8,7 +8,7 @@ import QtQuick.Window
 Window {
     id: win
     objectName: "launcher"
-    title: "My OS Launcher"
+    title: "VYLO OS Launcher"
     width: 392
     height: 720
     color: "transparent"
@@ -107,7 +107,7 @@ Window {
                         }
                         MouseArea {
                             id: navMouse; anchors.fill: parent; hoverEnabled: true
-                            onClicked: { if (index === 3) win.run("myos-settings"); else win.view = index }
+                            onClicked: { if (index === 3) win.run("vylo-settings"); else win.view = index }
                         }
                     }
                 }
@@ -203,7 +203,7 @@ Window {
                     color: setMouse.containsMouse ? th.hover : "transparent"
                     border.width: 1; border.color: th.border
                     Text { anchors.centerIn: parent; text: "Settings"; color: th.text; font.pixelSize: 13 }
-                    MouseArea { id: setMouse; anchors.fill: parent; hoverEnabled: true; onClicked: win.run("myos-settings") }
+                    MouseArea { id: setMouse; anchors.fill: parent; hoverEnabled: true; onClicked: win.run("vylo-settings") }
                 }
                 Rectangle {
                     width: 120; height: 36; radius: 10

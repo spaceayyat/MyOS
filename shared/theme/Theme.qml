@@ -1,6 +1,6 @@
 import QtQuick
 
-// The single source of truth for My OS colours, shapes and wallpapers.
+// The single source of truth for VYLO OS colours, shapes and wallpapers.
 // Instantiate once per window and pass it to components:
 //     Theme { id: th; dark: Sys.theme === "dark"; accentName: Sys.prefs.accent }
 QtObject {

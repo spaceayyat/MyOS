@@ -5,7 +5,7 @@ import QtQuick.Window
 Window {
     id: win
     objectName: "wallpaper"
-    title: "My OS Wallpaper"
+    title: "VYLO OS Wallpaper"
     width: 1280
     height: 720
     visible: false

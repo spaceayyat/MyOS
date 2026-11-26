@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Static cross-reference check for the My OS QML (no Qt needed).
+"""Static cross-reference check for the VYLO OS QML (no Qt needed).
 
 Verifies that names used in QML exist where they are defined:
   Sys.<x>   -> Q_PROPERTY / Q_INVOKABLE in shared/system-api/systemapi.h

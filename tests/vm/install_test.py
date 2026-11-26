@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install MyOS from the ISO into a virtual disk, then boot and test it.
+"""Install VYLO from the ISO into a virtual disk, then boot and test it.
 
 Stage 1: boot the ISO (UEFI) and run install-guest.sh, which installs onto a
 blank disk. Stage 2: boot that disk alone, run installed-guest.sh, type the
@@ -45,25 +45,25 @@ def run_stage(command, out: pathlib.Path, luks: bool, timeout: int) -> str:
             log = serial.read_text(errors="replace")
             complete = log.count("\n")
             for line in log.splitlines()[seen:complete]:
-                if "MYOS-" not in line:
+                if "VYLO-" not in line:
                     if line.startswith("["):
                         print(line, flush=True)
                     continue
                 print(f"[{int(time.time() - start):4d}s] {line.strip()}", flush=True)
-                record = line[line.find("MYOS-"):].strip()
-                if record.startswith(("MYOS-BEGIN", "MYOS-REBOOTED")):
+                record = line[line.find("VYLO-"):].strip()
+                if record.startswith(("VYLO-BEGIN", "VYLO-REBOOTED")):
                     waiting_for_unlock = False
-                elif record == "MYOS-REQUEST login":
+                elif record == "VYLO-REQUEST login":
                     time.sleep(3)
                     boot_test.qmp(sock, "screendump", format="png",
                                   filename=str(out / "login-screen.png"))
                     type_line(sock, "")  # choose the only user
                     time.sleep(5)
                     type_line(sock, USER_PASSWORD)
-                elif record == "MYOS-SHOT":
+                elif record == "VYLO-SHOT":
                     boot_test.qmp(sock, "screendump", format="png",
                                   filename=str(out / "desktop.png"))
-                elif record == "MYOS-REBOOT" and luks:
+                elif record == "VYLO-REBOOT" and luks:
                     waiting_for_unlock = True
                     last_typed = time.time() + 15
             seen = complete
@@ -99,7 +99,7 @@ def main() -> int:
     subprocess.run(["qemu-img", "create", "-q", "-f", "qcow2", str(disk), "40G"],
                    check=True)
     drive = ["-drive", f"if=virtio,format=qcow2,file={disk}"]
-    extra = boot_test.credential("myos.disk", args.disk.encode())
+    extra = boot_test.credential("vylo.disk", args.disk.encode())
 
     problems = []
     stages = [("install", "install-guest.sh", args.iso, 2100),

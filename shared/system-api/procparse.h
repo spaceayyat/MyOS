@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 
-namespace myos {
+namespace vylo {
 
 struct CpuTimes {
     unsigned long long idle = 0;
@@ -80,4 +80,4 @@ inline double memUsedPercent(const MemInfo &m)
     return double(m.totalKb - m.availableKb) * 100.0 / double(m.totalKb);
 }
 
-} // namespace myos
+} // namespace vylo

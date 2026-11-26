@@ -1,4 +1,4 @@
-// myos-settings: a small, normal (xdg-shell) window with the theme switch.
+// vylo-settings: a small, normal (xdg-shell) window with the theme switch.
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -12,18 +12,18 @@
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
-    QGuiApplication::setApplicationName(QStringLiteral("myos-settings"));
-    QGuiApplication::setDesktopFileName(QStringLiteral("myos-settings"));
+    QGuiApplication::setApplicationName(QStringLiteral("vylo-settings"));
+    QGuiApplication::setDesktopFileName(QStringLiteral("vylo-settings"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
-    MyOS::SystemApi system;
+    VYLO::SystemApi system;
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty(QStringLiteral("Sys"), &system);
-    engine.load(QUrl(QStringLiteral("qrc:/myos/settings/main.qml")));
+    engine.load(QUrl(QStringLiteral("qrc:/vylo/settings/main.qml")));
 
     if (engine.rootObjects().isEmpty()) {
-        QTextStream(stderr) << "myos-settings: failed to load QML\n";
+        QTextStream(stderr) << "vylo-settings: failed to load QML\n";
         return 1;
     }
     return app.exec();

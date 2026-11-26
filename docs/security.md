@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Package signatures | Required for every repository during the build | `tests/unit/check_config.py` |
 | Accounts | Only a locked `root` in the image; live user created at boot on live media | `check_config.py`, boot test |
-| Root on live media | Fedora's `livesys` scripts remove the root password at boot; MyOS locks it again | boot test: shadow field, and `su` from an unprivileged user |
+| Root on live media | Fedora's `livesys` scripts remove the root password at boot; VYLO locks it again | boot test: shadow field, and `su` from an unprivileged user |
 | SELinux | Enforcing | build (`config.sh`), boot test |
 | Firewall | firewalld enabled (Fedora's default zone for the KDE edition) | boot test checks the service only |
 | Updates | Security updates applied daily, no automatic reboot, off on live media | boot test checks the live case only |

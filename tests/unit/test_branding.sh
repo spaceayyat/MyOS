@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Branding checks: the project is called "My OS" (two words) for people and
-# "myos" / "MyOS" / "MYOS_" in technical identifiers. Needs bash and grep.
+# Branding checks: the project is called "VYLO OS" (two words) for people and
+# "vylo" / "VYLO" / "VYLO_" in technical identifiers. Needs bash and grep.
 # Usage: tests/unit/test_branding.sh
 # ok() and bad() always succeed, so "test && ok || bad" is safe here.
 # shellcheck disable=SC2015
@@ -18,28 +18,28 @@ else
   ok "no old project names left"
 fi
 
-# Default display name is exactly "My OS".
-grep -q 'set(MYOS_DISPLAY_NAME "My OS"' "${root}/CMakeLists.txt" \
-  && ok "default display name is 'My OS'" || bad "default display name is not 'My OS'"
+# Default display name is exactly "VYLO OS".
+grep -q 'set(VYLO_DISPLAY_NAME "VYLO OS"' "${root}/CMakeLists.txt" \
+  && ok "default display name is 'VYLO OS'" || bad "default display name is not 'VYLO OS'"
 
 # Technical identifiers must never contain a space.
-if grep -rn 'My OS' "${root}/CMakeLists.txt" "${root}/image/config" "${root}/image/kiwi/config.sh" \
-     | grep -vE '^[^:]*:[0-9]+:\s*(#|//)|MYOS_DISPLAY_NAME' | grep -q .; then
-  bad "'My OS' (with a space) used inside a technical identifier"
+if grep -rn 'VYLO OS' "${root}/CMakeLists.txt" "${root}/image/config" "${root}/image/kiwi/config.sh" \
+     | grep -vE '^[^:]*:[0-9]+:\s*(#|//)|VYLO_DISPLAY_NAME' | grep -q .; then
+  bad "'VYLO OS' (with a space) used inside a technical identifier"
 else
   ok "no spaced name in CMake/session/config identifiers"
 fi
-grep -q '^project(MyOS ' "${root}/CMakeLists.txt" && ok "CMake project() is MyOS" || bad "CMake project() name is wrong"
+grep -q '^project(VYLO ' "${root}/CMakeLists.txt" && ok "CMake project() is VYLO" || bad "CMake project() name is wrong"
 
 # User-facing strings carry the new name.
 for f in desktop/shell/Panel.qml desktop/shell/Wallpaper.qml desktop/launcher/Launcher.qml \
-         desktop/settings/main.qml desktop/settings/myos-settings.desktop; do
-  grep -q 'My OS' "${root}/${f}" && ok "branded: ${f}" || bad "not branded: ${f}"
+         desktop/settings/main.qml desktop/settings/vylo-settings.desktop; do
+  grep -q 'VYLO OS' "${root}/${f}" && ok "branded: ${f}" || bad "not branded: ${f}"
 done
-grep -q 'title="My OS"' "${root}/image/Containerfile" 2>/dev/null \
-  || grep -q 'image.title=\\\?"My OS' "${root}/image/Containerfile" \
-  && ok "Containerfile title label is My OS" || bad "Containerfile title label"
+grep -q 'title="VYLO OS"' "${root}/image/Containerfile" 2>/dev/null \
+  || grep -q 'image.title=\\\?"VYLO OS' "${root}/image/Containerfile" \
+  && ok "Containerfile title label is VYLO OS" || bad "Containerfile title label"
 
 echo
-echo "[myos] Result: ${pass} passed, ${failed} failed"
+echo "[vylo] Result: ${pass} passed, ${failed} failed"
 (( failed == 0 ))

@@ -1,10 +1,10 @@
 {
     "KPackageStructure": "Plasma/LookAndFeel",
     "KPlugin": {
-        "Id": "org.myos.dark.desktop",
-        "Name": "MyOS Dark",
+        "Id": "org.vylo.light.desktop",
+        "Name": "VYLO Light",
         "License": "MIT",
-        "Authors": [{ "Name": "MyOS contributors" }]
+        "Authors": [{ "Name": "VYLO contributors" }]
     },
     "X-Plasma-APIVersion": "2"
 }

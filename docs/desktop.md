@@ -1,12 +1,12 @@
-# My OS desktop (Phase 1A)
+# VYLO OS desktop (Phase 1A)
 
-> **Historical note.** Written for the early bootc and MyOS Shell prototype. The
+> **Historical note.** Written for the early bootc and VYLO Shell prototype. The
 > current ISOs are built as described in the [README](../README.md).
 
 Status legend: **Implemented** = written and statically checked, **Simulated** = shows an honest placeholder, **Needs integration** = interface exists, backend does not.
 Nothing here has been compiled or run: the authoring sandbox had no Qt. Treat the first build as the real test.
 
-## Layout (all surfaces are wlr-layer-shell windows of one process, `myos-shell`)
+## Layout (all surfaces are wlr-layer-shell windows of one process, `vylo-shell`)
 
 | Surface | Layer / anchors | File |
 | --- | --- | --- |
@@ -25,13 +25,13 @@ Application windows are managed by `labwc`; nothing in QML pretends to be a wind
 | --- | --- |
 | Dark default, light theme, 5 accents, wallpaper presets, one shared `Theme.qml` | Implemented |
 | Widget visibility (clock, calendar, weather, monitor) | Implemented |
-| Preferences saved to `~/.config/myos/myos.conf`, live-synced between shell and settings | Implemented |
+| Preferences saved to `~/.config/vylo/vylo.conf`, live-synced between shell and settings | Implemented |
 | Clock/date from system time | Implemented |
 | CPU and memory from `/proc/stat`, `/proc/meminfo` (parsers unit-tested with g++) | Implemented |
 | Calendar: local week view, no events, no account | Implemented (local only) |
 | Weather | **Simulated empty state** ("Not configured"); no data is ever invented |
 | Launcher search over installed `.desktop` files; keyboard Up/Down/Enter/Esc | Implemented |
-| Pinned apps (foot, My OS Settings) resolved from installed `.desktop` files | Implemented |
+| Pinned apps (foot, VYLO OS Settings) resolved from installed `.desktop` files | Implemented |
 | Wallpapers are generated gradients defined in `Theme.qml`, not image files | Implemented (no image assets yet) |
 | Running-app indicators in the panel | **Needs integration** (window-management protocol) |
 | Drawer: workspace overview, window list, workspace switching | **Needs integration**; the drawer shows a "not connected" state. `Sys.windowManagementAvailable` is the switch |

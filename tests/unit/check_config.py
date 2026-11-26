@@ -62,7 +62,7 @@ def main(root: pathlib.Path) -> int:
 
     # Every unit enabled in config.sh that this repository ships must exist.
     script = (root / "image/kiwi/config.sh").read_text()
-    for unit in re.findall(r"\b(myos-[\w-]+\.(?:service|timer))\b", script):
+    for unit in re.findall(r"\b(vylo-[\w-]+\.(?:service|timer))\b", script):
         if not (root / "image/config/rootfs/etc/systemd/system" / unit).is_file():
             problems.append(f"config.sh enables {unit} but the repo does not ship it")
 

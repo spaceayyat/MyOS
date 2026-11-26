@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=VYLO Shell (experimental)
+Comment=labwc with the VYLO Qt desktop
+Exec=/usr/bin/vylo-session
+TryExec=/usr/bin/vylo-shell
+DesktopNames=VYLO

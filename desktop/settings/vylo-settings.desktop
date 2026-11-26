@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=VYLO OS Settings
+Comment=Change the VYLO OS appearance and widgets
+Exec=vylo-settings
+Terminal=false
+Categories=Settings;
+OnlyShowIn=VYLO;

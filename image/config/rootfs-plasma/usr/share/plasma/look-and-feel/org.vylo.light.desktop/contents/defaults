@@ -1,8 +1,8 @@
 [kdeglobals][General]
-ColorScheme=BreezeDark
+ColorScheme=BreezeLight
 
 [kdeglobals][Icons]
-Theme=breeze-dark
+Theme=breeze
 
 [kdeglobals][KDE]
 widgetStyle=Breeze
@@ -11,4 +11,4 @@ widgetStyle=Breeze
 name=default
 
 [Wallpaper]
-Image=MyOS
+Image=VYLO

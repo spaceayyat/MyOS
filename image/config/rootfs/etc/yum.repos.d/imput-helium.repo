@@ -1,5 +1,5 @@
 # Helium Browser, from the project's own COPR repository (third party).
-# Packages are checked against the key shipped with MyOS.
+# Packages are checked against the key shipped with VYLO.
 [imput-helium]
 name=Helium Browser (imput/helium COPR)
 baseurl=https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-$releasever-$basearch/

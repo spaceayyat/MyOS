@@ -1,7 +1,7 @@
-# MyOS defaults for GNOME. Users can change all of these.
+# VYLO defaults for GNOME. Users can change all of these.
 [org.gnome.desktop.background]
-picture-uri='file:///usr/share/wallpapers/MyOS/contents/images/3840x2160.svg'
-picture-uri-dark='file:///usr/share/wallpapers/MyOS/contents/images_dark/3840x2160.svg'
+picture-uri='file:///usr/share/wallpapers/VYLO/contents/images/3840x2160.svg'
+picture-uri-dark='file:///usr/share/wallpapers/VYLO/contents/images_dark/3840x2160.svg'
 
 [org.gnome.desktop.interface]
 color-scheme='prefer-dark'

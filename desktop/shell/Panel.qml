@@ -7,7 +7,7 @@ import QtQuick.Window
 Window {
     id: win
     objectName: "panel"
-    title: "My OS Panel"
+    title: "VYLO OS Panel"
     width: 1280
     height: 44
     visible: false

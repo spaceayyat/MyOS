@@ -7,7 +7,7 @@
 exec >/dev/ttyS0 2>&1
 set -u
 
-result() { echo "MYOS-CHECK $1 $2 ${3:-}"; }
+result() { echo "VYLO-CHECK $1 $2 ${3:-}"; }
 check() {
   local name="$1"; shift
   local out
@@ -27,13 +27,13 @@ as_live() {
   runuser -u liveuser -- env XDG_RUNTIME_DIR="/run/user/$(id -u liveuser)" "$@"
 }
 
-echo "MYOS-BEGIN $(. /etc/os-release; echo "${PRETTY_NAME}") kernel $(uname -r)"
+echo "VYLO-BEGIN $(. /etc/os-release; echo "${PRETTY_NAME}") kernel $(uname -r)"
 
 if [[ -d /sys/firmware/efi ]]; then
-  echo "MYOS-FACT firmware uefi"
-  echo "MYOS-FACT secureboot $(mokutil --sb-state 2>&1 | head -1)"
+  echo "VYLO-FACT firmware uefi"
+  echo "VYLO-FACT secureboot $(mokutil --sb-state 2>&1 | head -1)"
 else
-  echo "MYOS-FACT firmware bios"
+  echo "VYLO-FACT firmware bios"
 fi
 
 if command -v gnome-shell >/dev/null; then
@@ -41,7 +41,7 @@ if command -v gnome-shell >/dev/null; then
 else
   edition=plasma compositor=kwin_wayland shell=plasmashell dm=plasmalogin.service
 fi
-echo "MYOS-FACT edition ${edition}"
+echo "VYLO-FACT edition ${edition}"
 
 wayland_session() {
   local id
@@ -96,19 +96,19 @@ root_state() {
     *) echo "password-set" ;;
   esac
 }
-echo "MYOS-FACT root-password $(root_state)"
-echo "MYOS-FACT root-passwd-status $(passwd -S root 2>&1)"
-echo "MYOS-FACT root-before-lock $(journalctl -b -u livesys.service -o cat 2>/dev/null | grep -m1 'root password before')"
-echo "MYOS-FACT livesys-passwd-lines $(grep -h 'passwd' /usr/libexec/livesys/livesys-main 2>&1 | tr '\n' ';')"
-echo "MYOS-FACT liveuser-groups $(id -nG liveuser 2>&1)"
+echo "VYLO-FACT root-password $(root_state)"
+echo "VYLO-FACT root-passwd-status $(passwd -S root 2>&1)"
+echo "VYLO-FACT root-before-lock $(journalctl -b -u livesys.service -o cat 2>/dev/null | grep -m1 'root password before')"
+echo "VYLO-FACT livesys-passwd-lines $(grep -h 'passwd' /usr/libexec/livesys/livesys-main 2>&1 | tr '\n' ';')"
+echo "VYLO-FACT liveuser-groups $(id -nG liveuser 2>&1)"
 check root-no-usable-password bash -c "[[ \$(getent shadow root | cut -d: -f2) == [!*]* ]] && echo locked"
 # An unprivileged account must not become root by pressing Enter.
 check root-su-refused bash -c '! echo | timeout 30 runuser -u nobody -- su root -c true'
 check ssh-server-off bash -c '! systemctl is-active --quiet sshd.service sshd.socket'
 check no-auto-update-on-live bash -c '! systemctl is-active --quiet dnf5-automatic.timer'
 
-# MyOS extras
-check myos-binaries bash -c 'test -x /usr/bin/myos-shell && test -x /usr/bin/myos-settings && ! ldd /usr/bin/myos-shell /usr/bin/myos-settings | grep "not found"'
+# VYLO extras
+check vylo-binaries bash -c 'test -x /usr/bin/vylo-shell && test -x /usr/bin/vylo-settings && ! ldd /usr/bin/vylo-shell /usr/bin/vylo-settings | grep "not found"'
 check installer bash -c 'command -v liveinst'
 
 have_commands() {
@@ -126,20 +126,20 @@ check helium-runs eval 'as_live timeout 90 helium --headless --disable-gpu --dum
 if [[ "${edition}" == gnome ]]; then
   check applications have_commands nautilus ptyxis gnome-text-editor gnome-software gnome-control-center gnome-system-monitor loupe papers
   check customization-tools have_commands gnome-tweaks gnome-extensions-app
-  check default-theme eval '[[ $(setting org.gnome.desktop.interface color-scheme) == *prefer-dark* && $(setting org.gnome.desktop.background picture-uri-dark) == */MyOS/* ]] && echo "MyOS dark"'
+  check default-theme eval '[[ $(setting org.gnome.desktop.interface color-scheme) == *prefer-dark* && $(setting org.gnome.desktop.background picture-uri-dark) == */VYLO/* ]] && echo "VYLO dark"'
   check no-firefox eval '! rpm -q firefox'
 else
   check applications have_commands dolphin konsole kate plasma-discover systemsettings okular gwenview helium firefox
-  check default-theme eval '[[ $(as_live kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage) == org.myos.dark.desktop ]] && echo org.myos.dark.desktop'
+  check default-theme eval '[[ $(as_live kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage) == org.vylo.dark.desktop ]] && echo org.vylo.dark.desktop'
 fi
 
-echo "MYOS-FACT default-sink $(as_live wpctl inspect @DEFAULT_AUDIO_SINK@ 2>&1 | grep -m1 node.description)"
-echo "MYOS-FACT avc-denials $(journalctl -b --no-pager -q _AUDIT_TYPE_NAME=AVC 2>/dev/null | grep -c 'denied')"
-journalctl -b --no-pager -q 2>/dev/null | grep 'avc:  *denied' | head -20 | sed 's/^/MYOS-AVC /'
-echo "MYOS-FACT failed-units $(systemctl --failed --plain --no-legend | awk '{print $1}' | tr '\n' ' ')"
+echo "VYLO-FACT default-sink $(as_live wpctl inspect @DEFAULT_AUDIO_SINK@ 2>&1 | grep -m1 node.description)"
+echo "VYLO-FACT avc-denials $(journalctl -b --no-pager -q _AUDIT_TYPE_NAME=AVC 2>/dev/null | grep -c 'denied')"
+journalctl -b --no-pager -q 2>/dev/null | grep 'avc:  *denied' | head -20 | sed 's/^/VYLO-AVC /'
+echo "VYLO-FACT failed-units $(systemctl --failed --plain --no-legend | awk '{print $1}' | tr '\n' ' ')"
 
 sleep 30          # let the desktop finish drawing
-echo "MYOS-SHOT"
+echo "VYLO-SHOT"
 sleep 15
-echo "MYOS-DONE"
+echo "VYLO-DONE"
 systemctl poweroff

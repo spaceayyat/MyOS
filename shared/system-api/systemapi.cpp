@@ -1,5 +1,5 @@
 #include "systemapi.h"
-#include "myos_config.h"
+#include "vylo_config.h"
 
 #include <QDir>
 #include <QFile>
@@ -13,7 +13,7 @@
 #include <QTextStream>
 #include <algorithm>
 
-namespace MyOS {
+namespace VYLO {
 
 namespace {
 const QString kLight = QStringLiteral("light");
@@ -49,7 +49,7 @@ SystemApi::SystemApi(QObject *parent)
 
 QString SystemApi::osName() const
 {
-    return QStringLiteral(MYOS_DISPLAY_NAME);
+    return QStringLiteral(VYLO_DISPLAY_NAME);
 }
 
 QString SystemApi::theme() const
@@ -193,7 +193,7 @@ bool SystemApi::parseDesktopFile(const QString &path, QString *name, QString *ex
         || parsedExec.isEmpty())
         return false;
     // The desktop must not list itself.
-    if (parsedExec.startsWith(QLatin1String("myos-shell")))
+    if (parsedExec.startsWith(QLatin1String("vylo-shell")))
         return false;
 
     *name = parsedName;
@@ -222,7 +222,7 @@ QString SystemApi::findTerminal()
 QString SystemApi::configFilePath()
 {
     return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)
-           + QStringLiteral("/myos/myos.conf");
+           + QStringLiteral("/vylo/vylo.conf");
 }
 
 QString SystemApi::readThemeFromDisk()
@@ -344,19 +344,19 @@ std::string slurp(const char *path)
 
 void SystemApi::updateStats()
 {
-    myos::CpuTimes cpu;
-    myos::MemInfo mem;
-    const bool cpuOk = myos::parseCpuTimes(slurp("/proc/stat"), &cpu);
-    const bool memOk = myos::parseMemInfo(slurp("/proc/meminfo"), &mem);
+    vylo::CpuTimes cpu;
+    vylo::MemInfo mem;
+    const bool cpuOk = vylo::parseCpuTimes(slurp("/proc/stat"), &cpu);
+    const bool memOk = vylo::parseMemInfo(slurp("/proc/meminfo"), &mem);
     m_statsOk = cpuOk && memOk;
     if (cpuOk) {
         if (m_havePrevCpu)
-            m_cpu = myos::cpuPercent(m_prevCpu, cpu);
+            m_cpu = vylo::cpuPercent(m_prevCpu, cpu);
         m_prevCpu = cpu;
         m_havePrevCpu = true;
     }
     if (memOk) {
-        m_memPct = myos::memUsedPercent(mem);
+        m_memPct = vylo::memUsedPercent(mem);
         m_memTotalGb = double(mem.totalKb) / 1048576.0;
         m_memUsedGb = double(mem.totalKb - mem.availableKb) / 1048576.0;
     }
@@ -367,7 +367,7 @@ void SystemApi::resolvePinned()
 {
     // Pinned apps are matched against installed .desktop metadata; anything
     // not installed is simply not shown.
-    static const QStringList wanted = {QStringLiteral("foot"), QStringLiteral("myos-settings")};
+    static const QStringList wanted = {QStringLiteral("foot"), QStringLiteral("vylo-settings")};
     QVariantList pinned;
     for (const QString &program : wanted) {
         for (const QVariant &v : std::as_const(m_applications)) {
@@ -382,4 +382,4 @@ void SystemApi::resolvePinned()
     m_pinned = pinned;
 }
 
-} // namespace MyOS
+} // namespace VYLO

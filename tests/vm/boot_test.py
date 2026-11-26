@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Boot the MyOS ISO in QEMU and run tests/vm/guest-check.sh inside it.
+"""Boot the VYLO ISO in QEMU and run tests/vm/guest-check.sh inside it.
 
 The ISO boots through real firmware and its own boot loader. The test script is
 handed to systemd as an SMBIOS credential (systemd.extra-unit), so the image
@@ -27,15 +27,15 @@ import results  # noqa: E402
 HERE = pathlib.Path(__file__).resolve().parent
 OVMF = pathlib.Path("/usr/share/OVMF")
 UNIT = """[Unit]
-Description=MyOS boot smoke test
+Description=VYLO boot smoke test
 After=multi-user.target
 [Service]
 Type=simple
-ImportCredential=myos.check
-ImportCredential=myos.disk
-ExecStart=/bin/bash %d/myos.check
+ImportCredential=vylo.check
+ImportCredential=vylo.disk
+ExecStart=/bin/bash %d/vylo.check
 """
-DROPIN = "[Unit]\nWants=myos-boot-test.service\n"
+DROPIN = "[Unit]\nWants=vylo-boot-test.service\n"
 
 
 def credential(name: str, content: bytes) -> list:
@@ -98,9 +98,9 @@ def qemu_command(mode: str, out: pathlib.Path, script: pathlib.Path,
         if secure:
             command += ["-global", "driver=cfi.pflash01,property=secure,value=on"]
 
-    command += credential("systemd.extra-unit.myos-boot-test.service", UNIT.encode())
+    command += credential("systemd.extra-unit.vylo-boot-test.service", UNIT.encode())
     command += credential("systemd.unit-dropin.multi-user.target", DROPIN.encode())
-    command += credential("myos.check", script.read_bytes())
+    command += credential("vylo.check", script.read_bytes())
     return command
 
 
@@ -131,14 +131,14 @@ def main() -> int:
             # The last line may still be incomplete unless it is a newline.
             complete = serial.read_text(errors="replace").count("\n")
             for line in lines[seen:complete]:
-                if "MYOS-" in line:
+                if "VYLO-" in line:
                     print(f"[{int(time.time() - start):4d}s] {line.strip()}", flush=True)
             seen = complete
-            if not shot and any(l.strip() == "MYOS-SHOT" for l in lines):
+            if not shot and any(l.strip() == "VYLO-SHOT" for l in lines):
                 qmp(str(out / "qmp.sock"), "screendump",
                     filename=str(out / "desktop.png"), format="png")
                 shot = True
-            if any(l.strip() == "MYOS-DONE" for l in lines):
+            if any(l.strip() == "VYLO-DONE" for l in lines):
                 done = True
                 break
             if process.poll() is not None:

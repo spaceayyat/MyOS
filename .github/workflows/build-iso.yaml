@@ -1,4 +1,4 @@
-name: Build MyOS ISO
+name: Build VYLO ISO
 
 on:
   workflow_dispatch:
@@ -50,7 +50,7 @@ jobs:
           df -h /
       - name: Build desktop and ISO in Fedora 44
         run: |
-          sudo MYOS_REF="${GITHUB_REF}" MYOS_EDITION="${{ matrix.edition }}" \
+          sudo VYLO_REF="${GITHUB_REF}" VYLO_EDITION="${{ matrix.edition }}" \
             scripts/build-in-container.sh
       - name: Show checksums
         run: |
@@ -59,7 +59,7 @@ jobs:
           sha256sum -c SHA256SUMS
       - uses: actions/upload-artifact@v7
         with:
-          name: MyOS-ISO-${{ matrix.edition }}
+          name: VYLO-ISO-${{ matrix.edition }}
           path: output/iso/
           if-no-files-found: error
           compression-level: 0
@@ -97,7 +97,7 @@ jobs:
           ls -l /dev/kvm
       - uses: actions/download-artifact@v8
         with:
-          name: MyOS-ISO-${{ matrix.edition }}
+          name: VYLO-ISO-${{ matrix.edition }}
           path: iso
       - name: Verify checksum
         run: cd iso && sha256sum -c SHA256SUMS
@@ -140,7 +140,7 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - uses: actions/download-artifact@v8
         with:
-          name: MyOS-ISO-${{ matrix.edition }}
+          name: VYLO-ISO-${{ matrix.edition }}
           path: iso
       - name: Verify checksum
         run: cd iso && sha256sum -c SHA256SUMS
@@ -177,11 +177,11 @@ jobs:
           [[ "${GITHUB_REF_NAME}" == "v${version}" || "${GITHUB_REF_NAME}" == "v${version}-"* ]]
       - uses: actions/download-artifact@v8
         with:
-          name: MyOS-ISO-gnome
+          name: VYLO-ISO-gnome
           path: iso-gnome
       - uses: actions/download-artifact@v8
         with:
-          name: MyOS-ISO-plasma
+          name: VYLO-ISO-plasma
           path: iso-plasma
       - name: Verify and collect both editions
         run: |
@@ -213,7 +213,7 @@ jobs:
           done
           # The release may already exist if the tag was made by publishing a
           # release on the GitHub website; then only add the files to it.
-          title="MyOS ${GITHUB_REF_NAME#v}"
+          title="VYLO ${GITHUB_REF_NAME#v}"
           if gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
             gh release edit "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
               --prerelease --title "${title}" --notes-file ../docs/release-notes.md

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  MyOS live ISO: Fedora 44, built with KIWI. Two editions (profiles):
+  VYLO live ISO: Fedora 44, built with KIWI. Two editions (profiles):
     GNOME   the main edition; Helium is its only browser
     Plasma  the KDE Plasma edition; Helium by default, plus Firefox
 
@@ -15,11 +15,11 @@
     * Every RPM is signature checked against the Fedora 44 key.
     * SELinux is enforcing.
 -->
-<image schemaversion="8.4" name="MyOS-Live">
+<image schemaversion="8.4" name="VYLO-Live">
   <description type="system">
-    <author>MyOS contributors</author>
+    <author>VYLO contributors</author>
     <contact>noreply@example.invalid</contact>
-    <specification>MyOS: Fedora-based workstation (live and installable)</specification>
+    <specification>VYLO: Fedora-based workstation (live and installable)</specification>
   </description>
 
   <profiles>
@@ -28,7 +28,7 @@
   </profiles>
 
   <preferences>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
     <packagemanager>dnf5</packagemanager>
     <locale>en_US</locale>
     <keytable>us</keytable>
@@ -39,9 +39,9 @@
     <type image="iso"
           flags="dmsquash"
           firmware="uefi"
-          volid="MYOS_LIVE"
-          application_id="MyOS-Live"
-          publisher="MyOS contributors"
+          volid="VYLO_LIVE"
+          application_id="VYLO-Live"
+          publisher="VYLO contributors"
           kernelcmdline="rd.live.image quiet rhgb">
       <bootloader name="grub2" timeout="5"/>
     </type>
@@ -202,7 +202,7 @@
          disks; without them every installation fails -->
     <package name="anaconda-install-env-deps"/>
 
-    <!-- Optional MyOS session (myos-shell on labwc); never the default -->
+    <!-- Optional VYLO session (vylo-shell on labwc); never the default -->
     <package name="labwc"/>
     <package name="foot"/>
     <package name="qt6-qtbase"/>

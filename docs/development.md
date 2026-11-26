@@ -1,6 +1,6 @@
 # Development guide (Windows 11 + WSL2)
 
-> **Historical note.** Written for the early bootc and MyOS Shell prototype. The
+> **Historical note.** Written for the early bootc and VYLO Shell prototype. The
 > current ISOs are built as described in the [README](../README.md).
 
 Everything below runs inside **Ubuntu on WSL2** unless marked "PowerShell". Commands marked *(unverified)* were not executed in the Phase 0 sandbox, which was not WSL2 and had no Podman or access to quay.io.
@@ -39,8 +39,8 @@ Work inside the Linux filesystem (for example `~/src`), not under `/mnt/c`, for 
 
 ```bash
 mkdir -p ~/src && cd ~/src
-# clone or copy the myos folder here, then:
-cd myos
+# clone or copy the vylo folder here, then:
+cd vylo
 scripts/check-env.sh
 tests/unit/test_repo_layout.sh
 ```
@@ -59,10 +59,10 @@ Commit `image/base-image.env` after reviewing it. Builds then use the digest aut
 ```bash
 scripts/build-image.sh
 scripts/smoke-test.sh --no-build
-podman run --rm localhost/myos:dev cat /etc/os-release
+podman run --rm localhost/vylo:dev cat /etc/os-release
 ```
 
-The smoke test checks the image exists, carries the My OS label, contains `bootc`, is Fedora, passes `bootc container lint`, and has a kernel. It does **not** boot anything.
+The smoke test checks the image exists, carries the VYLO OS label, contains `bootc`, is Fedora, passes `bootc container lint`, and has a kernel. It does **not** boot anything.
 
 ## 6. (Phase 0 note) disk image and VM boot
 
@@ -86,7 +86,7 @@ Commands marked *(unverified)* have never been run by the author.
 
 ```bash
 scripts/build-desktop.sh
-ls build/stage/usr/bin          # expect myos-shell and myos-settings
+ls build/stage/usr/bin          # expect vylo-shell and vylo-settings
 ```
 
 This compiles inside `quay.io/fedora/fedora:44`, so it needs access to quay.io and Fedora mirrors.
@@ -118,8 +118,8 @@ This creates a new VM only; it does not touch your disks or Windows. In PowerShe
 
 ```powershell
 $vbm = "C:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
-$vm  = "MyOS-Test"
-$iso = "C:\Users\<you>\Downloads\MyOS-Live.x86_64-0.1.0.iso"
+$vm  = "VYLO-Test"
+$iso = "C:\Users\<you>\Downloads\VYLO-Live.x86_64-0.1.0.iso"
 & $vbm createvm --name $vm --ostype Fedora_64 --register
 & $vbm modifyvm $vm --memory 3072 --cpus 2 --firmware efi --graphicscontroller vmsvga --vram 128 --boot1 dvd --nic1 nat
 & $vbm storagectl $vm --name SATA --add sata
@@ -134,8 +134,8 @@ To delete the test VM later (your decision): `& $vbm unregistervm $vm --delete`.
 ## If the desktop does not appear
 
 1. Press Ctrl+Alt+F2 (in VirtualBox: Right Ctrl + F2): a shell logged in as `liveuser`.
-2. Read the log: `cat ~/.local/state/myos/session.log`.
-3. Also check `journalctl -b` for errors from `myos-shell`.
+2. Read the log: `cat ~/.local/state/vylo/session.log`.
+3. Also check `journalctl -b` for errors from `vylo-shell`.
 4. Most likely causes: `layer-shell-qt` API or QML mistakes (the code was never compiled by the author), no EFI in the VM, or graphics issues; use VirtualBox graphics controller VMSVGA with 128 MB.
 
 ## If the ISO build fails

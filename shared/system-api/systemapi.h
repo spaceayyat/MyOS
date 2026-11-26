@@ -9,7 +9,7 @@
 #include <QStringList>
 #include <QVariantList>
 
-namespace MyOS {
+namespace VYLO {
 
 // Small, typed bridge between the QML desktop and the system.
 //
@@ -98,10 +98,10 @@ private:
     QVariantMap m_prefs;
     QVariantList m_pinned;
     QTimer m_statsTimer;
-    myos::CpuTimes m_prevCpu;
+    vylo::CpuTimes m_prevCpu;
     bool m_havePrevCpu = false;
     bool m_statsOk = false;
     double m_cpu = 0, m_memPct = 0, m_memUsedGb = 0, m_memTotalGb = 0;
 };
 
-} // namespace MyOS
+} // namespace VYLO

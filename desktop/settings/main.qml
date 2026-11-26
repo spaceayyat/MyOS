@@ -2,11 +2,11 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// My OS Settings: appearance and widgets. Every change is saved immediately and
+// VYLO OS Settings: appearance and widgets. Every change is saved immediately and
 // the running desktop updates live (the shell watches the same config file).
 ApplicationWindow {
     id: win
-    title: "My OS Settings"
+    title: "VYLO OS Settings"
     width: 640
     height: 640
     minimumWidth: 420

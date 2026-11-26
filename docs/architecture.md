@@ -1,6 +1,6 @@
 # Architecture
 
-> **Historical note.** Written for the early bootc and MyOS Shell prototype. The
+> **Historical note.** Written for the early bootc and VYLO Shell prototype. The
 > current ISOs are built as described in the [README](../README.md).
 
 Status legend: **[Implemented]** exists in the repository now. **[Planned]** is a design intention only.
@@ -15,7 +15,7 @@ Status legend: **[Implemented]** exists in the repository now. **[Planned]** is 
 
 1. **[Implemented]** A minimal derived image: labels plus `bootc container lint`. No extra packages.
 2. **[Planned]** Configuration drop-ins in `image/config/` copied into the image (systemd units, defaults, branding).
-3. **[Planned]** My OS RPMs (built under `packaging/`) installed into the image from a repository we control.
+3. **[Planned]** VYLO OS RPMs (built under `packaging/`) installed into the image from a repository we control.
 4. **[Planned]** Disk-image creation (qcow2/raw/ISO) from the container, then VM boot tests in `tests/vm/`. The tooling for this is in transition upstream (see roadmap risks).
 
 ## 3. Desktop (all **[Planned]**)
@@ -46,12 +46,12 @@ The desktop talks to the system through standard interfaces rather than reimplem
 
 ## Phase 1 architecture (code written, not yet built or booted)
 
-**Session:** getty autologin (live user) on tty1 -> `/etc/profile.d/myos-session.sh` -> `myos-session` -> `labwc` -> `/etc/xdg/labwc/autostart` -> `myos-shell`. No display manager, which keeps the package set small and the start-up path easy to read.
+**Session:** getty autologin (live user) on tty1 -> `/etc/profile.d/vylo-session.sh` -> `vylo-session` -> `labwc` -> `/etc/xdg/labwc/autostart` -> `vylo-shell`. No display manager, which keeps the package set small and the start-up path easy to read.
 
 **Desktop processes**
-- `myos-shell` (layer-shell): wallpaper (background layer), panel (top layer, reserves 44 px at the bottom), menu/launcher (top layer, anchored above the panel).
-- `myos-settings` (normal window): the theme switch. It is a separate process because layer-shell mode applies to every window of a process.
-- Both use `shared/system-api` (theme persistence in `~/.config/myos/myos.conf`, live sync via a directory watcher, application list from `.desktop` files, terminal detection, program launching without a shell) and `shared/theme/Theme.qml`.
+- `vylo-shell` (layer-shell): wallpaper (background layer), panel (top layer, reserves 44 px at the bottom), menu/launcher (top layer, anchored above the panel).
+- `vylo-settings` (normal window): the theme switch. It is a separate process because layer-shell mode applies to every window of a process.
+- Both use `shared/system-api` (theme persistence in `~/.config/vylo/vylo.conf`, live sync via a directory watcher, application list from `.desktop` files, terminal detection, program launching without a shell) and `shared/theme/Theme.qml`.
 
 ## Why a KIWI live ISO for the first milestone
 

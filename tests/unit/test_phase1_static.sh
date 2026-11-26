@@ -20,11 +20,11 @@ for f in CMakeLists.txt \
          desktop/widgets/{ClockWidget,CalendarWidget,WeatherWidget,MonitorWidget}.qml shared/ui/Card.qml \
          shared/system-api/procparse.h tests/unit/{check_qml_refs.py,test_procparse.sh} \
          desktop/launcher/Launcher.qml \
-         desktop/settings/{CMakeLists.txt,main.cpp,main.qml,myos-settings.desktop} \
+         desktop/settings/{CMakeLists.txt,main.cpp,main.qml,vylo-settings.desktop} \
          image/kiwi/{config.xml,config.sh} \
-         image/config/rootfs/usr/share/myos/labwc/{environment,autostart} \
-         image/config/rootfs/usr/share/wayland-sessions/myos.desktop \
-         image/config/rootfs/usr/bin/myos-session \
+         image/config/rootfs/usr/share/vylo/labwc/{environment,autostart} \
+         image/config/rootfs/usr/share/wayland-sessions/vylo.desktop \
+         image/config/rootfs/usr/bin/vylo-session \
          image/config/rootfs-{gnome,plasma}/etc/sysconfig/livesys \
          tests/{lint.sh,validate-image.sh,check_packages.py,vm/boot_test.py,vm/guest-check.sh} \
          scripts/build-desktop.sh scripts/build-iso.sh; do
@@ -33,8 +33,8 @@ done
 
 # --- syntax ---------------------------------------------------------------
 for s in "${root}"/scripts/*.sh "${root}"/tests/*.sh "${root}"/tests/vm/*.sh \
-         "${root}"/image/kiwi/config.sh "${root}"/image/config/rootfs/usr/bin/myos-session \
-         "${root}"/image/config/rootfs/usr/libexec/myos/{snapper-setup,lock-root}; do
+         "${root}"/image/kiwi/config.sh "${root}"/image/config/rootfs/usr/bin/vylo-session \
+         "${root}"/image/config/rootfs/usr/libexec/vylo/{snapper-setup,lock-root}; do
   bash -n "${s}" 2>/dev/null && ok "shell syntax ok: ${s#"${root}"/}" || bad "shell syntax error: ${s#"${root}"/}"
 done
 
@@ -83,11 +83,11 @@ check "image defines no user except a locked root (config validation)" \
 ! grep -Eq '<source path="http://' "${root}/image/kiwi/config.xml" && ok "repositories use https" || bad "a repository uses plain http"
 grep -q 'package_gpgcheck="true"' "${root}/image/kiwi/config.xml" && ok "package signatures are checked" || bad "package signature checking is not enabled"
 ! grep -Eqi 'curl[^|]*\|[[:space:]]*(ba)?sh|chpasswd|NOPASSWD' \
-    "${root}/image/kiwi/config.sh" "${root}"/scripts/*.sh "${root}"/image/config/rootfs/usr/bin/myos-session \
+    "${root}/image/kiwi/config.sh" "${root}"/scripts/*.sh "${root}"/image/config/rootfs/usr/bin/vylo-session \
   && ok "no curl|sh, chpasswd or NOPASSWD in scripts" || bad "found curl|sh, chpasswd or NOPASSWD"
 ! grep -Eq 'system\(|popen\(|"/bin/sh"|"sh", *"-c"|sh -c' "${root}/shared/system-api/systemapi.cpp" \
   && ok "system API never runs shell command strings" || bad "system API runs a shell"
 
 echo
-echo "[myos] Result: ${pass} passed, ${failed} failed"
+echo "[vylo] Result: ${pass} passed, ${failed} failed"
 (( failed == 0 ))

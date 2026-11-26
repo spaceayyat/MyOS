@@ -11,7 +11,7 @@ import QtQuick.Window
 Window {
     id: win
     objectName: "drawer"
-    title: "My OS Workspaces"
+    title: "VYLO OS Workspaces"
     width: 372
     height: 720
     color: "transparent"
@@ -93,7 +93,7 @@ Window {
                         onClicked: {
                             if (modelData.action === "launcher") Shell.launcherOpen = true
                             else if (modelData.action === "terminal") { if (Sys.terminalAvailable) { Sys.openTerminal(); Shell.closeAll() } }
-                            else win.run("myos-settings")
+                            else win.run("vylo-settings")
                         }
                     }
                 }

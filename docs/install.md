@@ -1,6 +1,6 @@
 # Install guide
 
-> **Preview.** Automated tests install MyOS in a virtual machine using a
+> **Preview.** Automated tests install VYLO in a virtual machine using a
 > text-mode script. **The graphical installer screens have not been tested.**
 > Try it in a virtual machine first, with an empty virtual disk.
 
@@ -12,22 +12,22 @@ including `SHA256SUMS`. The Plasma ISO is split into parts; join them first.
 Linux:
 
 ```bash
-cat MyOS-*-plasma-x86_64.iso.part* > MyOS-0.3.0-preview.1-plasma-x86_64.iso
+cat VYLO-*-plasma-x86_64.iso.part* > VYLO-0.3.0-preview.1-plasma-x86_64.iso
 sha256sum -c SHA256SUMS --ignore-missing
 ```
 
 Windows (Command Prompt, in the download folder):
 
 ```bat
-copy /b MyOS-0.3.0-preview.1-plasma-x86_64.iso.part00+MyOS-0.3.0-preview.1-plasma-x86_64.iso.part01 MyOS-0.3.0-preview.1-plasma-x86_64.iso
-certutil -hashfile MyOS-0.3.0-preview.1-plasma-x86_64.iso SHA256
+copy /b VYLO-0.3.0-preview.1-plasma-x86_64.iso.part00+VYLO-0.3.0-preview.1-plasma-x86_64.iso.part01 VYLO-0.3.0-preview.1-plasma-x86_64.iso
+certutil -hashfile VYLO-0.3.0-preview.1-plasma-x86_64.iso SHA256
 ```
 
 Compare the printed value with the matching line in `SHA256SUMS`. To verify who
 built an ISO:
 
 ```bash
-gh attestation verify MyOS-0.3.0-preview.1-x86_64.iso --repo spaceayyat/MyOS
+gh attestation verify VYLO-0.3.0-preview.1-x86_64.iso --repo spaceayyat/MyOS
 ```
 
 ## Try it in a VM

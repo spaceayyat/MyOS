@@ -1,4 +1,4 @@
-// myos-shell: wallpaper, top widgets, bottom panel, left launcher, right drawer.
+// vylo-shell: wallpaper, top widgets, bottom panel, left launcher, right drawer.
 //
 // Six QML windows are loaded and then turned into wlr-layer-shell surfaces
 // (via layer-shell-qt) so the compositor (labwc) keeps ordinary application
@@ -50,28 +50,28 @@ int main(int argc, char *argv[])
     LayerShellQt::Shell::useLayerShell();
 
     QGuiApplication app(argc, argv);
-    QGuiApplication::setApplicationName(QStringLiteral("myos-shell"));
-    QGuiApplication::setDesktopFileName(QStringLiteral("myos-shell"));
+    QGuiApplication::setApplicationName(QStringLiteral("vylo-shell"));
+    QGuiApplication::setDesktopFileName(QStringLiteral("vylo-shell"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
-    MyOS::SystemApi system;
+    VYLO::SystemApi system;
     ShellState state;
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty(QStringLiteral("Sys"), &system);
     engine.rootContext()->setContextProperty(QStringLiteral("Shell"), &state);
 
-    const QStringList files = {QStringLiteral("qrc:/myos/shell/Wallpaper.qml"),
-                               QStringLiteral("qrc:/myos/shell/Widgets.qml"),
-                               QStringLiteral("qrc:/myos/shell/Panel.qml"),
-                               QStringLiteral("qrc:/myos/shell/EdgeHandle.qml"),
-                               QStringLiteral("qrc:/myos/shell/Drawer.qml"),
-                               QStringLiteral("qrc:/myos/shell/Launcher.qml")};
+    const QStringList files = {QStringLiteral("qrc:/vylo/shell/Wallpaper.qml"),
+                               QStringLiteral("qrc:/vylo/shell/Widgets.qml"),
+                               QStringLiteral("qrc:/vylo/shell/Panel.qml"),
+                               QStringLiteral("qrc:/vylo/shell/EdgeHandle.qml"),
+                               QStringLiteral("qrc:/vylo/shell/Drawer.qml"),
+                               QStringLiteral("qrc:/vylo/shell/Launcher.qml")};
     for (const QString &file : files)
         engine.load(QUrl(file));
 
     if (engine.rootObjects().size() != files.size()) {
-        QTextStream(stderr) << "myos-shell: failed to load all QML files\n";
+        QTextStream(stderr) << "vylo-shell: failed to load all QML files\n";
         return 1;
     }
 
@@ -94,29 +94,29 @@ int main(int argc, char *argv[])
         // themselves from QML when their state changes.
         if (name == QLatin1String("wallpaper")) {
             configureLayer(window, LayerWindow::LayerBackground, all, -1,
-                           QStringLiteral("myos-wallpaper"), KI::KeyboardInteractivityNone);
+                           QStringLiteral("vylo-wallpaper"), KI::KeyboardInteractivityNone);
             window->show();
         } else if (name == QLatin1String("widgets")) {
             // Bottom layer: application windows cover the widgets.
             configureLayer(window, LayerWindow::LayerBottom, top, 0,
-                           QStringLiteral("myos-widgets"), KI::KeyboardInteractivityNone);
+                           QStringLiteral("vylo-widgets"), KI::KeyboardInteractivityNone);
             window->show();
         } else if (name == QLatin1String("panel")) {
             window->setHeight(kPanelHeight);
             configureLayer(window, LayerWindow::LayerTop, bottom, kPanelHeight,
-                           QStringLiteral("myos-panel"), KI::KeyboardInteractivityNone);
+                           QStringLiteral("vylo-panel"), KI::KeyboardInteractivityNone);
             window->show();
         } else if (name == QLatin1String("edge")) {
             configureLayer(window, LayerWindow::LayerTop, right, 0,
-                           QStringLiteral("myos-edge"), KI::KeyboardInteractivityNone);
+                           QStringLiteral("vylo-edge"), KI::KeyboardInteractivityNone);
             window->show();
         } else if (name == QLatin1String("launcher")) {
             // Exclusive keyboard focus while open so search and arrow keys work.
             configureLayer(window, LayerWindow::LayerTop, left, 0,
-                           QStringLiteral("myos-launcher"), KI::KeyboardInteractivityExclusive);
+                           QStringLiteral("vylo-launcher"), KI::KeyboardInteractivityExclusive);
         } else if (name == QLatin1String("drawer")) {
             configureLayer(window, LayerWindow::LayerTop, right, 0,
-                           QStringLiteral("myos-drawer"), KI::KeyboardInteractivityOnDemand);
+                           QStringLiteral("vylo-drawer"), KI::KeyboardInteractivityOnDemand);
         }
     }
 

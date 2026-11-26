@@ -7,7 +7,7 @@ import QtQuick.Window
 Window {
     id: win
     objectName: "widgets"
-    title: "My OS Widgets"
+    title: "VYLO OS Widgets"
     width: 1280
     height: 178
     visible: false

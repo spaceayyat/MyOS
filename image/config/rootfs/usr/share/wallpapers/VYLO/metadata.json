@@ -1,0 +1,8 @@
+{
+    "KPlugin": {
+        "Id": "VYLO",
+        "Name": "VYLO",
+        "License": "MIT",
+        "Authors": [{ "Name": "VYLO contributors" }]
+    }
+}

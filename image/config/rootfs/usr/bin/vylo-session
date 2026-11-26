@@ -1,0 +1,11 @@
+#!/bin/sh
+# Optional VYLO session: the labwc compositor with vylo-shell. Selected on the
+# login screen; KDE Plasma stays the default. The labwc configuration lives in
+# /usr/share/vylo so it does not affect any other labwc setup.
+export XDG_SESSION_TYPE=wayland
+export XDG_CURRENT_DESKTOP=VYLO
+
+log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/vylo"
+mkdir -p "$log_dir"
+
+exec labwc -C /usr/share/vylo/labwc >"$log_dir/session.log" 2>&1

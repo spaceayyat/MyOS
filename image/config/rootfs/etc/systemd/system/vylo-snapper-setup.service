@@ -6,7 +6,7 @@ After=local-fs.target dbus.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/libexec/myos/snapper-setup
+ExecStart=/usr/libexec/vylo/snapper-setup
 
 [Install]
 WantedBy=multi-user.target

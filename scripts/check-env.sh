@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Read-only environment check for My OS development. Changes nothing.
+# Read-only environment check for VYLO OS development. Changes nothing.
 # Usage: scripts/check-env.sh
 set -uo pipefail
 # shellcheck source=scripts/lib.sh

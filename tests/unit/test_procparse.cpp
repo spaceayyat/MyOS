@@ -6,7 +6,7 @@ static int failed = 0;
 static bool near(double a, double b) { return std::fabs(a - b) < 0.01; }
 int main()
 {
-    using namespace myos;
+    using namespace vylo;
     CpuTimes a, b;
     CHECK(parseCpuTimes("cpu0 1 1 1 1\ncpu  100 0 50 800 50 0 0 0 0 0\n", &a));
     CHECK(a.total == 1000 && a.idle == 850);
@@ -20,6 +20,6 @@ int main()
     CHECK(near(memUsedPercent(m), 75.0));
     MemInfo n; CHECK(!parseMemInfo("MemTotal: 5 kB\n", &n));
     CHECK(!parseMemInfo("", &n));
-    std::printf("\n[myos] procparse: %s\n", failed ? "FAILED" : "all passed");
+    std::printf("\n[vylo] procparse: %s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }

@@ -48,5 +48,5 @@ else
 fi
 
 echo
-echo "[myos] Result: ${pass} passed, ${failed} failed"
+echo "[vylo] Result: ${pass} passed, ${failed} failed"
 (( failed == 0 ))

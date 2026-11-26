@@ -24,14 +24,14 @@ ref="${IMAGE_NAME}:${IMAGE_TAG}"
 
 if [[ "${1:-}" != "--no-build" ]]; then
   info "Step 1/2: build"
-  "${MYOS_ROOT}/scripts/build-image.sh" || die "Build failed; smoke test cannot continue."
+  "${VYLO_ROOT}/scripts/build-image.sh" || die "Build failed; smoke test cannot continue."
 else
   info "Step 1/2: build skipped (--no-build)"
 fi
 
 info "Step 2/2: inspect ${ref}"
 check "image exists locally"                podman image exists "${ref}"
-check "image has My OS title label"        bash -c "podman image inspect '${ref}' --format '{{index .Config.Labels \"org.opencontainers.image.title\"}}' | grep -qxF 'My OS'"
+check "image has VYLO OS title label"        bash -c "podman image inspect '${ref}' --format '{{index .Config.Labels \"org.opencontainers.image.title\"}}' | grep -qxF 'VYLO OS'"
 check "bootc binary runs in the image"      podman run --rm --network=none "${ref}" bootc --version
 check "base OS is Fedora"                   bash -c "podman run --rm --network=none '${ref}' cat /etc/os-release | grep -qx 'ID=fedora'"
 check "bootc container lint passes"         podman run --rm --network=none "${ref}" bootc container lint
