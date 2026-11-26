@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=MyOS Shell (experimental)
+Comment=labwc with the MyOS Qt desktop
+Exec=/usr/bin/myos-session
+TryExec=/usr/bin/myos-shell
+DesktopNames=MyOS

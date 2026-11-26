@@ -1,19 +1,11 @@
 #!/bin/sh
-# Start the My OS session: the labwc compositor, which then autostarts
-# myos-shell (see /etc/xdg/labwc/autostart).
-# Output goes to ~/.local/state/myos/session.log to help debug boot problems.
-
+# Optional MyOS session: the labwc compositor with myos-shell. Selected on the
+# login screen; KDE Plasma stays the default. The labwc configuration lives in
+# /usr/share/myos so it does not affect any other labwc setup.
 export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP=MyOS
-
-# Fallback if PAM/logind did not create a runtime directory (labwc needs one).
-if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
-    XDG_RUNTIME_DIR="/tmp/myos-runtime-$(id -u)"
-    mkdir -p "$XDG_RUNTIME_DIR" && chmod 0700 "$XDG_RUNTIME_DIR"
-    export XDG_RUNTIME_DIR
-fi
 
 log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/myos"
 mkdir -p "$log_dir"
 
-exec labwc >"$log_dir/session.log" 2>&1
+exec labwc -C /usr/share/myos/labwc >"$log_dir/session.log" 2>&1

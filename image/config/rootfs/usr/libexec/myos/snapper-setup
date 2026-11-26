@@ -1,0 +1,14 @@
+#!/bin/bash
+# Set up snapper for / on installed systems. Does nothing unless / is btrfs.
+# "Boot an old snapshot from the GRUB menu" is NOT provided; see
+# docs/troubleshooting.md for manual recovery.
+set -euo pipefail
+
+fstype="$(findmnt -n -o FSTYPE /)"
+if [[ "${fstype}" != btrfs ]]; then
+    echo "root filesystem is ${fstype}, not btrfs; nothing to do"
+    exit 0
+fi
+snapper -c root create-config /
+systemctl enable --now snapper-timeline.timer snapper-cleanup.timer
+snapper -c root create --description "first boot"

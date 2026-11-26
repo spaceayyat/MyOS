@@ -1,0 +1,12 @@
+[Unit]
+Description=Create the snapper configuration for the root filesystem (first boot)
+ConditionKernelCommandLine=!rd.live.image
+ConditionPathExists=!/etc/snapper/configs/root
+After=local-fs.target dbus.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/myos/snapper-setup
+
+[Install]
+WantedBy=multi-user.target
