@@ -60,33 +60,37 @@ def qmp(path: str, command: str, **arguments) -> None:
                     break
 
 
-def qemu_command(args, out: pathlib.Path) -> list:
+def qemu_command(mode: str, out: pathlib.Path, script: pathlib.Path,
+                 iso: str = None, reboot: bool = False) -> list:
     command = [
         "qemu-system-x86_64", "-m", "6144", "-smp", str(min(4, os.cpu_count() or 2)),
         "-display", "none", "-vga", "none", "-device", "virtio-vga",
-        "-cdrom", args.iso, "-boot", "d",
         "-netdev", "user,id=n0", "-device", "virtio-net-pci,netdev=n0",
         "-audiodev", "none,id=a0", "-device", "intel-hda",
         "-device", "hda-duplex,audiodev=a0",
         "-device", "virtio-rng-pci",
         "-serial", f"file:{out / 'serial.log'}",
         "-qmp", f"unix:{out / 'qmp.sock'},server=on,wait=off",
-        "-no-reboot",
     ]
+    if iso:
+        command += ["-cdrom", iso, "-boot", "d"]
+    if not reboot:
+        command += ["-no-reboot"]
     if os.access("/dev/kvm", os.R_OK | os.W_OK):
         command += ["-enable-kvm", "-cpu", "host"]
     else:
         print("WARNING: no usable /dev/kvm; emulation will be very slow")
         command += ["-cpu", "max"]
 
-    if args.mode == "bios":
+    if mode == "bios":
         command += ["-machine", "q35"]
     else:
-        secure = args.mode == "secureboot"
+        secure = mode == "secureboot"
         code = OVMF / ("OVMF_CODE_4M.secboot.fd" if secure else "OVMF_CODE_4M.fd")
         template = OVMF / ("OVMF_VARS_4M.ms.fd" if secure else "OVMF_VARS_4M.fd")
         variables = out / "vars.fd"
-        shutil.copy(template, variables)
+        if not variables.exists():
+            shutil.copy(template, variables)
         command += ["-machine", "q35,smm=on" if secure else "q35",
                     "-drive", f"if=pflash,format=raw,readonly=on,file={code}",
                     "-drive", f"if=pflash,format=raw,file={variables}"]
@@ -95,7 +99,7 @@ def qemu_command(args, out: pathlib.Path) -> list:
 
     command += credential("systemd.extra-unit.myos-boot-test.service", UNIT.encode())
     command += credential("systemd.unit-dropin.multi-user.target", DROPIN.encode())
-    command += credential("myos.check", (HERE / "guest-check.sh").read_bytes())
+    command += credential("myos.check", script.read_bytes())
     return command
 
 
@@ -113,7 +117,8 @@ def main() -> int:
     serial = out / "serial.log"
     serial.write_text("")
 
-    command = qemu_command(args, out)
+    (out / "vars.fd").unlink(missing_ok=True)
+    command = qemu_command(args.mode, out, HERE / "guest-check.sh", iso=args.iso)
     print(" ".join(c if len(c) < 200 else c[:80] + "..." for c in command), flush=True)
     process = subprocess.Popen(command)
     start = time.time()

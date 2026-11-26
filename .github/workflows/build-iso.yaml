@@ -118,11 +118,52 @@ jobs:
             vm-out/serial.log
           if-no-files-found: ignore
 
-  # Marked as a pre-release until installation is tested automatically.
+  install:
+    name: Install test (${{ matrix.edition }}, ${{ matrix.disk }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        edition: [gnome, plasma]
+        disk: [plain, luks]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QEMU and enable KVM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 qemu-utils ovmf
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: actions/download-artifact@v4
+        with:
+          name: MyOS-ISO-${{ matrix.edition }}
+          path: iso
+      - name: Verify checksum
+        run: cd iso && sha256sum -c SHA256SUMS
+      - name: Install to a virtual disk, boot it, log in, update, reboot
+        run: |
+          python3 -I tests/vm/install_test.py --iso "$(ls iso/*.iso)" \
+            --edition "${{ matrix.edition }}" --disk "${{ matrix.disk }}" \
+            --out vm-out
+      - name: Upload screenshots and serial logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: install-${{ matrix.edition }}-${{ matrix.disk }}
+          path: |
+            vm-out/*/*.png
+            vm-out/*/serial.log
+          if-no-files-found: ignore
+
+  # Marked as a pre-release: the graphical installer is not tested.
   release:
     name: Publish pre-release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build, boot]
+    needs: [build, boot, install]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

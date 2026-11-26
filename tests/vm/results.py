@@ -27,15 +27,34 @@ EDITIONS = {
     "plasma": COMMON,
 }
 
+# Installation test (tests/vm/install_test.py).
+INSTALL = frozenset({"payload-found", "anaconda-finished", "partitions-created"})
+INSTALLED = frozenset({
+    "not-live", "no-live-user", "user-created", "root-locked",
+    "no-empty-passwords", "root-btrfs", "disk-encryption",
+    "selinux-enforcing", "firewalld", "ssh-server-off", "update-timer",
+    "display-manager", "network", "applications", "snapper-config",
+    "snapper-recovery", "system-update", "login", "reboot-selinux",
+    "reboot-display-manager", "reboot-network", "reboot-persistence",
+})
+
+
+def required(edition: str, stage: str = "live") -> frozenset:
+    return {"live": EDITIONS[edition], "install": INSTALL,
+            "installed": INSTALLED}[stage]
+
+
 FATAL = ("Kernel panic", "You are in emergency mode",
          "Entering emergency mode", "dracut-emergency")
 
 CHECK = re.compile(r"^MYOS-CHECK ([a-z0-9-]+) (PASS|FAIL)(?: (.*))?$")
 
 
-def evaluate(serial: str, mode: str, edition: str) -> list:
+def evaluate(serial: str, mode: str, edition: str,
+             stage: str = "live") -> list:
     """Return a list of problems. An empty list means the boot test passed."""
-    required = EDITIONS[edition]
+    wanted = required(edition, stage)
+    reboots = 0
     problems = []
     checks = {}
     facts = {}
@@ -66,11 +85,16 @@ def evaluate(serial: str, mode: str, edition: str) -> list:
             name, status, detail = match.groups()
             if name in checks:
                 problems.append(f"check reported twice: {name}")
-            if name not in required:
+            if name not in wanted:
                 problems.append(f"unknown check: {name}")
             checks[name] = status
             if status == "FAIL":
                 problems.append(f"check failed: {name} {detail or ''}".rstrip())
+        elif stage == "installed" and line in ("MYOS-REQUEST login",
+                                              "MYOS-REBOOT"):
+            continue
+        elif stage == "installed" and line == "MYOS-REBOOTED":
+            reboots += 1
         elif line.startswith("MYOS-FACT "):
             parts = line.split(" ", 2)
             facts[parts[1]] = parts[2] if len(parts) > 2 else ""
@@ -84,8 +108,11 @@ def evaluate(serial: str, mode: str, edition: str) -> list:
         return problems
     if not done:
         problems.append("guest did not finish: no MYOS-DONE")
-    for name in sorted(required - checks.keys()):
+    for name in sorted(wanted - checks.keys()):
         problems.append(f"check missing: {name}")
+
+    if stage == "installed" and reboots != 1:
+        problems.append(f"expected exactly one reboot, saw {reboots}")
 
     firmware = "bios" if mode == "bios" else "uefi"
     if facts.get("firmware") != firmware:

@@ -78,6 +78,26 @@ class Judge(unittest.TestCase):
                  if line.lstrip().startswith("check ")}
         self.assertEqual(names, set().union(*results.EDITIONS.values()))
 
+    def test_install_guests_report_exactly_the_required_checks(self):
+        for script, wanted in (("install-guest.sh", results.INSTALL),
+                               ("installed-guest.sh", results.INSTALLED)):
+            text = (ROOT / "tests/vm" / script).read_text()
+            names = {line.split()[1] for line in text.splitlines()
+                     if line.lstrip().startswith("check ")
+                     and not line.lstrip().startswith("check()")}
+            self.assertEqual(names, set(wanted), script)
+
+    def test_installed_stage_needs_one_reboot(self):
+        lines = ["MYOS-BEGIN x", "MYOS-FACT firmware uefi",
+                 "MYOS-FACT edition gnome"]
+        lines += [f"MYOS-CHECK {n} PASS" for n in sorted(results.INSTALLED)]
+        ok = lines + ["MYOS-REQUEST login", "MYOS-REBOOT", "MYOS-REBOOTED",
+                      "MYOS-DONE"]
+        judge = lambda l: results.evaluate("\n".join(l), "uefi", "gnome",
+                                           "installed")
+        self.assertEqual(judge(ok), [])
+        self.assertTrue(any("reboot" in p for p in judge(lines + ["MYOS-DONE"])))
+
     def test_guest_output_format_matches_parser(self):
         """Run the real shell functions and parse what they print."""
         script = (ROOT / "tests/vm/guest-check.sh").read_text()
