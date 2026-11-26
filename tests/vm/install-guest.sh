@@ -6,6 +6,9 @@
 # Anaconda directly with a liveimg payload. It exercises Anaconda's storage,
 # user, payload and boot loader steps, NOT the graphical installer screens.
 #
+# A text-mode install defaults to multi-user.target, while the graphical
+# installer picks graphical.target, so the kickstart asks for that explicitly.
+#
 # Single-quoted strings given to bash -c are expanded later, on purpose.
 # shellcheck disable=SC2016
 exec >/dev/ttyS0 2>&1
@@ -38,6 +41,7 @@ cmdline
 lang en_US.UTF-8
 keyboard us
 timezone Africa/Casablanca --utc
+xconfig --startxonboot
 network --bootproto=dhcp --activate
 rootpw --lock
 user --name=tester --groups=wheel --plaintext --password=tester0pass1

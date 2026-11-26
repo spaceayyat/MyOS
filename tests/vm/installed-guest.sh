@@ -41,6 +41,7 @@ fi
 echo "MYOS-BEGIN installed system $(. /etc/os-release; echo "${PRETTY_NAME}")"
 [[ -d /sys/firmware/efi ]] && echo "MYOS-FACT firmware uefi" || echo "MYOS-FACT firmware bios"
 echo "MYOS-FACT edition ${edition}"
+echo "MYOS-FACT default-target $(systemctl get-default)"
 
 check not-live bash -c '! grep -q rd.live.image /proc/cmdline'
 check no-live-user bash -c '! id liveuser'
