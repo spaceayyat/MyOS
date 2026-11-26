@@ -37,6 +37,8 @@ jobs:
           path: shots
           run-id: ${{ env.RUN_ID }}
           github-token: ${{ github.token }}
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
       - name: Collect and commit
         run: |
           scripts/collect-screenshots.sh shots docs/screenshots

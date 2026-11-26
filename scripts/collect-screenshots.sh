@@ -7,6 +7,7 @@ set -euo pipefail
 
 [[ $# -eq 2 ]] || { echo "usage: $0 ARTIFACT-DIR OUTPUT-DIR" >&2; exit 2; }
 in="$1" out="$2"
+command -v identify >/dev/null || { echo "ImageMagick (identify) is not installed" >&2; exit 1; }
 mkdir -p "${out}"
 
 copy() {
