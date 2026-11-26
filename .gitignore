@@ -1,0 +1,9 @@
+build/
+output/
+__pycache__/
+*.iso
+*.qcow2
+# never commit keys or local secrets
+*.key
+*.pem
+.env

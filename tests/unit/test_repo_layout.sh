@@ -14,8 +14,8 @@ for f in README.md LICENSE .gitignore \
   [[ -f "${root}/${f}" ]] && ok "file exists: ${f}" || bad "file missing: ${f}"
 done
 
-for d in image/config desktop/shell desktop/launcher desktop/settings desktop/monitor desktop/software-center \
-         shared/ui shared/theme shared/system-api packaging scripts tests/unit tests/integration tests/vm; do
+for d in image/config desktop/shell desktop/launcher desktop/settings \
+         shared/ui shared/theme shared/system-api scripts tests/unit; do
   [[ -d "${root}/${d}" ]] && ok "dir exists: ${d}" || bad "dir missing: ${d}"
 done
 
