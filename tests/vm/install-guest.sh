@@ -5,6 +5,9 @@
 # The shipped installer ("liveinst") refuses kickstart files, so this calls
 # Anaconda directly with a liveimg payload. It exercises Anaconda's storage,
 # user, payload and boot loader steps, NOT the graphical installer screens.
+#
+# Single-quoted strings given to bash -c are expanded later, on purpose.
+# shellcheck disable=SC2016
 exec >/dev/ttyS0 2>&1
 set -u
 
@@ -21,7 +24,7 @@ image=""
 for candidate in /run/initramfs/live/LiveOS/squashfs.img /run/initramfs/squashed.img; do
   [[ -f "${candidate}" ]] && { image="${candidate}"; break; }
 done
-echo "MYOS-FACT payload ${image:-not-found} $(ls /run/initramfs/live/LiveOS 2>/dev/null | tr '\n' ' ')"
+echo "MYOS-FACT payload ${image:-not-found}" /run/initramfs/live/LiveOS/*
 check payload-found test -n "${image}"
 
 encrypt=""
