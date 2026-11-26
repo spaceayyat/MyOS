@@ -1,0 +1,12 @@
+#!/bin/bash
+# Lock the root account on live media and log the state it was found in.
+set -euo pipefail
+
+field="$(getent shadow root | cut -d: -f2)"
+case "${field}" in
+    "") state="empty" ;;
+    "!"*|"*"*) state="locked" ;;
+    *) state="password-set" ;;
+esac
+echo "root password before: ${state}"
+usermod -p '!*' root

@@ -6,7 +6,7 @@ set -euxo pipefail
 
 # The optional MyOS session must be executable.
 chmod 0755 /usr/bin/myos-shell /usr/bin/myos-settings /usr/bin/myos-session \
-    /usr/libexec/myos/snapper-setup
+    /usr/libexec/myos/snapper-setup /usr/libexec/myos/lock-root
 
 echo "myos" > /etc/hostname
 

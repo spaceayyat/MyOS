@@ -34,7 +34,7 @@ done
 # --- syntax ---------------------------------------------------------------
 for s in "${root}"/scripts/*.sh "${root}"/tests/*.sh "${root}"/tests/vm/*.sh \
          "${root}"/image/kiwi/config.sh "${root}"/image/config/rootfs/usr/bin/myos-session \
-         "${root}"/image/config/rootfs/usr/libexec/myos/snapper-setup; do
+         "${root}"/image/config/rootfs/usr/libexec/myos/{snapper-setup,lock-root}; do
   bash -n "${s}" 2>/dev/null && ok "shell syntax ok: ${s#"${root}"/}" || bad "shell syntax error: ${s#"${root}"/}"
 done
 
