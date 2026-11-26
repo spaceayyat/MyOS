@@ -192,6 +192,8 @@
 
     <!-- Default browser (third-party repository, see above) -->
     <package name="helium-bin"/>
+    <!-- xdg-open and xdg-mime; GNOME does not pull them in by itself -->
+    <package name="xdg-utils"/>
 
     <!-- Live session and installer -->
     <package name="livesys-scripts"/>
