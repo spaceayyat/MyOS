@@ -211,9 +211,18 @@ jobs:
               rm "$f"
             fi
           done
-          gh release create "${GITHUB_REF_NAME}" --prerelease --verify-tag \
-            --repo "${GITHUB_REPOSITORY}" --title "MyOS ${GITHUB_REF_NAME#v}" \
-            --notes-file ../docs/release-notes.md ./*
+          # The release may already exist if the tag was made by publishing a
+          # release on the GitHub website; then only add the files to it.
+          title="MyOS ${GITHUB_REF_NAME#v}"
+          if gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            gh release edit "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+              --prerelease --title "${title}" --notes-file ../docs/release-notes.md
+            gh release upload "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --clobber ./*
+          else
+            gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+              --prerelease --verify-tag --title "${title}" \
+              --notes-file ../docs/release-notes.md ./*
+          fi
 
   # Real screenshots from the VMs that tested this tag, shown in the README.
   screenshots:
