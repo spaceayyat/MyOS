@@ -25,14 +25,16 @@ publishes no security advisories. Update it with Software or
 
 ## Limits
 
-- Root on an installed system has not been tested.
+- On installed systems the tests confirm a locked root account, no empty
+  passwords, SELinux enforcing, firewalld running and SSH off.
 - The live session logs in automatically and its user has administrator
   rights. Treat anyone with physical access to a live session as an admin.
 - Repository metadata signatures are not checked (Fedora does not sign them);
   packages are.
 - Firewall zone rules have not been reviewed for this project.
-- Automatic updates on an installed system are untested.
-- Release provenance is signed only for `v*` tags; the release job has not run.
+- On installed systems the tests confirm the update timer is active, not that
+  an automatic update was applied.
+- Release provenance is signed only for `v*` tags.
 
 ## Reporting vulnerabilities
 

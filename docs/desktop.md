@@ -1,5 +1,8 @@
 # My OS desktop (Phase 1A)
 
+> **Historical note.** Written for the early bootc and MyOS Shell prototype. The
+> current ISOs are built as described in the [README](../README.md).
+
 Status legend: **Implemented** = written and statically checked, **Simulated** = shows an honest placeholder, **Needs integration** = interface exists, backend does not.
 Nothing here has been compiled or run: the authoring sandbox had no Qt. Treat the first build as the real test.
 

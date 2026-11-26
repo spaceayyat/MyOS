@@ -16,7 +16,7 @@ boot messages. Switch to a text console with Ctrl+Alt+F3, then check:
 ```bash
 systemctl --failed
 journalctl -b -p warning
-journalctl -b -u plasmalogin -u livesys -u livesys-late
+journalctl -b -u gdm -u plasmalogin -u livesys -u livesys-late
 ```
 
 ## Recovering from a bad change (btrfs installs)

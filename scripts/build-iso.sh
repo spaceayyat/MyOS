@@ -53,12 +53,13 @@ fi
 
 iso="$(find "${target}" -maxdepth 1 -name '*.iso' -print -quit)"
 [[ -n "${iso}" ]] || die "KIWI finished but no .iso was found in ${target}"
-# Name the image after its version; anything but a matching v* tag is a
-# development build and says which commit it came from.
+# Name the image after its release tag (v<version> or v<version>-<suffix>);
+# anything else is a development build and says which commit it came from.
 version="$(sed -n 's|.*<version>\(.*\)</version>.*|\1|p' "${description}/config.xml")"
 commit="${MYOS_COMMIT:-$(git -C "${MYOS_ROOT}" rev-parse HEAD 2>/dev/null || echo unknown)}"
-if [[ "${MYOS_REF:-}" == "refs/tags/v${version}" ]]; then
-  name="MyOS-${version}${suffix}-x86_64"
+ref="${MYOS_REF:-}"
+if [[ "${ref}" == "refs/tags/v${version}" || "${ref}" == "refs/tags/v${version}-"* ]]; then
+  name="MyOS-${ref#refs/tags/v}${suffix}-x86_64"
 else
   name="MyOS-${version}-dev.${commit:0:7}${suffix}-x86_64"
 fi

@@ -171,32 +171,78 @@ jobs:
       attestations: write
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v8
-        with:
-          name: MyOS-ISO-gnome
-          path: iso
       - name: Check the tag matches the image version
         run: |
           version="$(sed -n 's|.*<version>\(.*\)</version>.*|\1|p' image/kiwi/config.xml)"
-          test "v${version}" = "${GITHUB_REF_NAME}"
+          [[ "${GITHUB_REF_NAME}" == "v${version}" || "${GITHUB_REF_NAME}" == "v${version}-"* ]]
+      - uses: actions/download-artifact@v8
+        with:
+          name: MyOS-ISO-gnome
+          path: iso-gnome
+      - uses: actions/download-artifact@v8
+        with:
+          name: MyOS-ISO-plasma
+          path: iso-plasma
+      - name: Verify and collect both editions
+        run: |
+          mkdir release
+          for edition in gnome plasma; do
+            (cd "iso-${edition}" && sha256sum -c SHA256SUMS)
+            mv "iso-${edition}"/*.iso "iso-${edition}"/*.packages release/
+            mv "iso-${edition}/BUILD-INFO.txt" "release/BUILD-INFO-${edition}.txt"
+          done
+          (cd release && sha256sum -- * > ../SHA256SUMS && mv ../SHA256SUMS .)
+          cat release/SHA256SUMS
       - name: Sign build provenance (keyless, Sigstore)
         uses: actions/attest-build-provenance@v4
         with:
           subject-path: |
-            iso/*.iso
-            iso/SHA256SUMS
+            release/*.iso
+            release/SHA256SUMS
       - name: Create the GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cd iso
-          sha256sum -c SHA256SUMS
-          # GitHub release assets are limited to 2 GiB each: split large ISOs.
+          cd release
+          # A release asset must be smaller than 2 GiB: split larger ISOs.
           for f in *.iso; do
-            if (( $(stat -c %s "$f") >= 2000000000 )); then
+            if (( $(stat -c %s "$f") >= 2147483648 )); then
               split -b 1900M -d "$f" "$f.part"
               rm "$f"
             fi
           done
-          gh release create "${GITHUB_REF_NAME}" --prerelease --repo "${GITHUB_REPOSITORY}" \
-            --title "MyOS ${GITHUB_REF_NAME}" --notes-file ../CHANGELOG.md ./*
+          gh release create "${GITHUB_REF_NAME}" --prerelease --verify-tag \
+            --repo "${GITHUB_REPOSITORY}" --title "MyOS ${GITHUB_REF_NAME#v}" \
+            --notes-file ../docs/release-notes.md ./*
+
+  # Real screenshots from the VMs that tested this tag, shown in the README.
+  screenshots:
+    name: Commit screenshots from this run
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [release]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      SCREENSHOT_BRANCH: plasma-distro
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.SCREENSHOT_BRANCH }}
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: boot-*-uefi
+          path: shots
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: install-*-plain
+          path: shots
+      - name: Collect and commit
+        run: |
+          scripts/collect-screenshots.sh shots docs/screenshots
+          git config user.name spaceayyat
+          git config user.email azsr2710@gmail.com
+          git add docs/screenshots
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Add screenshots from the ${GITHUB_REF_NAME} test run"
+          git push origin "HEAD:${SCREENSHOT_BRANCH}"

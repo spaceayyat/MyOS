@@ -1,5 +1,8 @@
 # Development guide (Windows 11 + WSL2)
 
+> **Historical note.** Written for the early bootc and MyOS Shell prototype. The
+> current ISOs are built as described in the [README](../README.md).
+
 Everything below runs inside **Ubuntu on WSL2** unless marked "PowerShell". Commands marked *(unverified)* were not executed in the Phase 0 sandbox, which was not WSL2 and had no Podman or access to quay.io.
 
 ## 1. Install WSL2 and Ubuntu (PowerShell as Administrator)

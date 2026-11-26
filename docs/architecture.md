@@ -1,5 +1,8 @@
 # Architecture
 
+> **Historical note.** Written for the early bootc and MyOS Shell prototype. The
+> current ISOs are built as described in the [README](../README.md).
+
 Status legend: **[Implemented]** exists in the repository now. **[Planned]** is a design intention only.
 
 ## 1. Base: Fedora via bootc
