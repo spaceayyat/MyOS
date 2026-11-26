@@ -59,7 +59,6 @@
 
   <packages type="bootstrap">
     <package name="filesystem"/>
-    <package name="basesystem"/>
     <package name="glibc-langpack-en"/>
     <package name="fedora-release-kde-desktop"/>
     <package name="fedora-release-identity-kde-desktop"/>
@@ -98,7 +97,6 @@
     <package name="coreutils"/>
     <package name="util-linux"/>
     <package name="shadow-utils"/>
-    <package name="passwd"/>
     <package name="pam"/>
     <package name="authselect"/>
     <package name="sudo"/>
