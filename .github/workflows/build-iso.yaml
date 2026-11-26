@@ -37,8 +37,12 @@ jobs:
             registry.fedoraproject.org/fedora:44 tests/validate-image.sh
 
   build:
-    name: Build ISO
+    name: Build ISO (${{ matrix.edition }})
     needs: [lint, validate]
+    strategy:
+      fail-fast: false
+      matrix:
+        edition: [gnome, plasma]
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     steps:
@@ -49,7 +53,9 @@ jobs:
             /opt/hostedtoolcache/CodeQL
           df -h /
       - name: Build desktop and ISO in Fedora 44
-        run: sudo MYOS_REF="${GITHUB_REF}" scripts/build-in-container.sh
+        run: |
+          sudo MYOS_REF="${GITHUB_REF}" MYOS_EDITION="${{ matrix.edition }}" \
+            scripts/build-in-container.sh
       - name: Show checksums
         run: |
           cd output/iso
@@ -57,7 +63,7 @@ jobs:
           sha256sum -c SHA256SUMS
       - uses: actions/upload-artifact@v4
         with:
-          name: MyOS-ISO
+          name: MyOS-ISO-${{ matrix.edition }}
           path: output/iso/
           if-no-files-found: error
           compression-level: 0
@@ -66,18 +72,19 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: build-logs
+          name: build-logs-${{ matrix.edition }}
           path: build/target/build/*.log
           if-no-files-found: ignore
 
   boot:
-    name: Boot test (${{ matrix.mode }})
+    name: Boot test (${{ matrix.edition }}, ${{ matrix.mode }})
     needs: build
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
+        edition: [gnome, plasma]
         mode: [bios, uefi, secureboot]
     steps:
       - uses: actions/checkout@v4
@@ -92,19 +99,20 @@ jobs:
           ls -l /dev/kvm
       - uses: actions/download-artifact@v4
         with:
-          name: MyOS-ISO
+          name: MyOS-ISO-${{ matrix.edition }}
           path: iso
       - name: Verify checksum
         run: cd iso && sha256sum -c SHA256SUMS
       - name: Boot and check
         run: |
           python3 -I tests/vm/boot_test.py --mode "${{ matrix.mode }}" \
+            --edition "${{ matrix.edition }}" \
             --iso "$(ls iso/*.iso)" --out vm-out
       - name: Upload screenshot and serial log
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: boot-${{ matrix.mode }}
+          name: boot-${{ matrix.edition }}-${{ matrix.mode }}
           path: |
             vm-out/*.png
             vm-out/serial.log
@@ -124,7 +132,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          name: MyOS-ISO
+          name: MyOS-ISO-gnome
           path: iso
       - name: Check the tag matches the image version
         run: |

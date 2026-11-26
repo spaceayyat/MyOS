@@ -12,7 +12,15 @@ import xml.etree.ElementTree as ET
 
 
 def main(config: str, build_script: str) -> int:
-    wanted = {p.get("name") for p in ET.parse(config).getroot().iter("package")}
+    image = ET.parse(config).getroot()
+    wanted = {p.get("name") for p in image.iter("package")}
+    repos = ["--repo=fedora", "--repo=updates"]
+    # Any additional repository in the description is queried too.
+    for repo in image.iter("repository"):
+        alias = repo.get("alias")
+        if not alias.startswith("fedora"):
+            url = repo.find("source").get("path")
+            repos += [f"--repofrompath={alias},{url}", f"--repo={alias}"]
     with open(build_script, encoding="utf-8") as handle:
         match = re.search(r"^build_packages=\(([^)]*)\)", handle.read(), re.M)
     if not match:
@@ -21,7 +29,7 @@ def main(config: str, build_script: str) -> int:
     wanted |= set(match.group(1).split())
 
     result = subprocess.run(
-        ["dnf", "-q", "repoquery", "--repo=fedora", "--repo=updates",
+        ["dnf", "-q", "repoquery", *repos,
          "--qf", "%{name}\n", *sorted(wanted)],
         check=True, capture_output=True, text=True)
     found = set(result.stdout.split())

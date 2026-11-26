@@ -5,7 +5,8 @@ The ISO boots through real firmware and its own boot loader. The test script is
 handed to systemd as an SMBIOS credential (systemd.extra-unit), so the image
 under test is not modified.
 
-Usage: boot_test.py --iso X.iso --mode bios|uefi|secureboot --out DIR
+Usage: boot_test.py --iso X.iso --mode bios|uefi|secureboot
+       --edition gnome|plasma --out DIR
 Needs: qemu-system-x86_64, OVMF for the UEFI modes; /dev/kvm strongly advised.
 Exit status 0 only if the guest finished and every check passed.
 """
@@ -103,6 +104,8 @@ def main() -> int:
     parser.add_argument("--iso", required=True)
     parser.add_argument("--mode", choices=["bios", "uefi", "secureboot"], required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--edition", choices=sorted(results.EDITIONS),
+                        required=True)
     parser.add_argument("--timeout", type=int, default=1500)
     args = parser.parse_args()
     out = pathlib.Path(args.out).resolve()
@@ -145,12 +148,12 @@ def main() -> int:
             process.kill()
 
     log = serial.read_text(errors="replace")
-    problems = results.evaluate(log, args.mode)
+    problems = results.evaluate(log, args.mode, args.edition)
     if process.returncode not in (0, None):
         problems.append(f"QEMU exited with status {process.returncode}")
     for problem in problems:
         print(f"PROBLEM {problem}")
-    print(f"\n{args.mode}: {results.passed_checks(log)}/{len(results.REQUIRED)} "
+    print(f"\n{args.mode}: {results.passed_checks(log)}/{len(results.EDITIONS[args.edition])} "
           f"checks passed, {len(problems)} problem(s)")
     if not done:
         print("--- last 60 serial lines ---")

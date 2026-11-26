@@ -10,49 +10,56 @@ sys.path.insert(0, str(ROOT / "tests/vm"))
 import results  # noqa: E402
 
 
-def log(mode="uefi", drop=(), extra=(), done=True, override=None):
+def log(mode="uefi", drop=(), extra=(), done=True, override=None,
+        edition="gnome"):
     override = override or {}
     lines = ["\x1b[2J firmware noise MYOS-BEGIN Fedora",
+             f"MYOS-FACT edition {edition}",
              f"MYOS-FACT firmware {'bios' if mode == 'bios' else 'uefi'}"]
     if mode == "secureboot":
         lines.append("MYOS-FACT secureboot SecureBoot enabled")
     lines += [override.get(n, f"MYOS-CHECK {n} PASS ok")
-              for n in sorted(results.REQUIRED) if n not in drop]
+              for n in sorted(results.EDITIONS[edition]) if n not in drop]
     lines += list(extra) + ["MYOS-SHOT"] + (["MYOS-DONE"] if done else [])
     return "\r\n".join(lines) + "\r\n"
 
 
 class Judge(unittest.TestCase):
     def assert_problem(self, text, serial, mode="uefi"):
-        problems = results.evaluate(serial, mode)
+        problems = results.evaluate(serial, mode, "gnome")
         self.assertTrue(any(text in p for p in problems), problems)
 
     def test_all_pass_in_every_mode(self):
-        for mode in ("bios", "uefi", "secureboot"):
-            self.assertEqual(results.evaluate(log(mode), mode), [])
-        self.assertEqual(results.passed_checks(log()), len(results.REQUIRED))
+        for edition, required in results.EDITIONS.items():
+            for mode in ("bios", "uefi", "secureboot"):
+                serial = log(mode, edition=edition)
+                self.assertEqual(results.evaluate(serial, mode, edition), [])
+                self.assertEqual(results.passed_checks(serial), len(required))
+
+    def test_wrong_edition(self):
+        self.assert_problem("expected the gnome", log(edition="plasma"))
 
     def test_failed_check(self):
         serial = log(override={"https": "MYOS-CHECK https FAIL timeout"})
         self.assert_problem("check failed: https timeout", serial)
 
     def test_missing_check(self):
-        self.assert_problem("check missing: kwin", log(drop={"kwin"}))
+        self.assert_problem("check missing: compositor", log(drop={"compositor"}))
 
     def test_old_reversed_order_is_rejected(self):
-        serial = log(override={"kwin": "MYOS-CHECK PASS kwin"})
+        serial = log(override={"compositor": "MYOS-CHECK PASS compositor"})
         self.assert_problem("malformed check line", serial)
-        self.assert_problem("check missing: kwin", serial)
+        self.assert_problem("check missing: compositor", serial)
 
     def test_unknown_status_check_and_record(self):
-        self.assert_problem("malformed", log(extra=["MYOS-CHECK kwin MAYBE"]))
+        self.assert_problem("malformed", log(extra=["MYOS-CHECK compositor MAYBE"]))
         self.assert_problem("unknown check", log(extra=["MYOS-CHECK x PASS"]))
         self.assert_problem("unexpected output", log(extra=["MYOS-WAT 1"]))
 
     def test_duplicate_cannot_hide_a_failure(self):
-        serial = log(override={"kwin": "MYOS-CHECK kwin FAIL"},
-                     extra=["MYOS-CHECK kwin PASS"])
-        self.assert_problem("check failed: kwin", serial)
+        serial = log(override={"compositor": "MYOS-CHECK compositor FAIL"},
+                     extra=["MYOS-CHECK compositor PASS"])
+        self.assert_problem("check failed: compositor", serial)
         self.assert_problem("reported twice", serial)
 
     def test_boot_failures(self):
@@ -68,8 +75,8 @@ class Judge(unittest.TestCase):
     def test_guest_script_reports_exactly_the_required_checks(self):
         script = (ROOT / "tests/vm/guest-check.sh").read_text()
         names = {line.split()[1] for line in script.splitlines()
-                 if line.startswith("check ")}
-        self.assertEqual(names, set(results.REQUIRED))
+                 if line.lstrip().startswith("check ")}
+        self.assertEqual(names, set().union(*results.EDITIONS.values()))
 
     def test_guest_output_format_matches_parser(self):
         """Run the real shell functions and parse what they print."""

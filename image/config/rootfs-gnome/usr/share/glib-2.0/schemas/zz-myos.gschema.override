@@ -1,0 +1,13 @@
+# MyOS defaults for GNOME. Users can change all of these.
+[org.gnome.desktop.background]
+picture-uri='file:///usr/share/wallpapers/MyOS/contents/images/3840x2160.svg'
+picture-uri-dark='file:///usr/share/wallpapers/MyOS/contents/images_dark/3840x2160.svg'
+
+[org.gnome.desktop.interface]
+color-scheme='prefer-dark'
+
+[org.gnome.desktop.peripherals.touchpad]
+tap-to-click=true
+
+[org.gnome.shell]
+favorite-apps=['helium.desktop', 'org.gnome.Nautilus.desktop', 'org.gnome.Ptyxis.desktop', 'org.gnome.Software.desktop', 'org.gnome.Settings.desktop', 'anaconda.desktop', 'liveinst.desktop']

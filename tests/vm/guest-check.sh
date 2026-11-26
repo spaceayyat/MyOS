@@ -33,11 +33,30 @@ else
   echo "MYOS-FACT firmware bios"
 fi
 
-# Desktop: the live user must end up in a running Plasma Wayland session.
+if command -v gnome-shell >/dev/null; then
+  edition=gnome compositor=gnome-shell shell=gnome-shell dm=gdm.service
+else
+  edition=plasma compositor=kwin_wayland shell=plasmashell dm=plasmalogin.service
+fi
+echo "MYOS-FACT edition ${edition}"
+
+wayland_session() {
+  local id
+  for id in $(loginctl list-sessions --no-legend | awk '{print $1}'); do
+    [[ "$(loginctl show-session "${id}" -p Name --value)" == liveuser ]] || continue
+    [[ "$(loginctl show-session "${id}" -p Type --value)" == wayland ]] || continue
+    echo "wayland session ${id}"
+    return 0
+  done
+  return 1
+}
+
+# Desktop: the live user must end up in a running Wayland session.
 check live-user wait_for 300 id liveuser
-check kwin wait_for 600 pgrep -u liveuser -x kwin_wayland
-check plasmashell wait_for 300 pgrep -u liveuser -x plasmashell
-check display-manager active plasmalogin.service
+check compositor wait_for 600 pgrep -u liveuser -x "${compositor}"
+check desktop-shell wait_for 300 pgrep -u liveuser -x "${shell}"
+check user-session wait_for 120 wayland_session
+check display-manager active "${dm}"
 
 # Network
 check networkmanager active NetworkManager.service
@@ -91,8 +110,25 @@ check no-auto-update-on-live bash -c '! systemctl is-active --quiet dnf5-automat
 check myos-binaries bash -c 'test -x /usr/bin/myos-shell && test -x /usr/bin/myos-settings && ! ldd /usr/bin/myos-shell /usr/bin/myos-settings | grep "not found"'
 check installer bash -c 'command -v liveinst'
 
+have_commands() {
+  local name
+  for name in "$@"; do command -v "${name}" || { echo "missing ${name}"; return 1; }; done
+}
+setting() { as_live dbus-run-session gsettings get "$1" "$2"; }
+
+if [[ "${edition}" == gnome ]]; then
+  check applications have_commands nautilus ptyxis gnome-text-editor gnome-software gnome-control-center gnome-system-monitor loupe papers
+  check customization-tools have_commands gnome-tweaks gnome-extensions-app
+  check default-theme eval '[[ $(setting org.gnome.desktop.interface color-scheme) == *prefer-dark* && $(setting org.gnome.desktop.background picture-uri-dark) == */MyOS/* ]] && echo "MyOS dark"'
+  check default-browser eval '[[ $(as_live env XDG_CURRENT_DESKTOP=GNOME xdg-mime query default x-scheme-handler/https) == helium.desktop ]] && echo helium.desktop'
+  check helium-runs eval 'as_live timeout 90 helium --headless --disable-gpu --dump-dom https://fedoraproject.org/static/hotspot.txt | grep -m1 OK'
+  check no-firefox eval '! rpm -q firefox'
+else
+  check applications have_commands dolphin konsole kate plasma-discover systemsettings okular gwenview firefox
+  check default-theme eval '[[ $(as_live kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage) == org.myos.dark.desktop ]] && echo org.myos.dark.desktop'
+fi
+
 echo "MYOS-FACT default-sink $(as_live wpctl inspect @DEFAULT_AUDIO_SINK@ 2>&1 | grep -m1 node.description)"
-echo "MYOS-FACT lookandfeel $(as_live kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage 2>&1)"
 echo "MYOS-FACT avc-denials $(journalctl -b --no-pager -q _AUDIT_TYPE_NAME=AVC 2>/dev/null | grep -c 'denied')"
 journalctl -b --no-pager -q 2>/dev/null | grep 'avc:  *denied' | head -20 | sed 's/^/MYOS-AVC /'
 echo "MYOS-FACT failed-units $(systemctl --failed --plain --no-legend | awk '{print $1}' | tr '\n' ' ')"

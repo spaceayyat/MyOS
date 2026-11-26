@@ -25,7 +25,7 @@ for f in CMakeLists.txt \
          image/config/rootfs/usr/share/myos/labwc/{environment,autostart} \
          image/config/rootfs/usr/share/wayland-sessions/myos.desktop \
          image/config/rootfs/usr/bin/myos-session \
-         image/config/rootfs/etc/sysconfig/livesys \
+         image/config/rootfs-{gnome,plasma}/etc/sysconfig/livesys \
          tests/{lint.sh,validate-image.sh,check_packages.py,vm/boot_test.py,vm/guest-check.sh} \
          scripts/build-desktop.sh scripts/build-iso.sh; do
   [[ -f "${root}/${f}" ]] && ok "file exists: ${f}" || bad "file missing: ${f}"

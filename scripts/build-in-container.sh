@@ -15,7 +15,7 @@ require_cmd "${engine}" "Install Docker or Podman."
 commit="$(git -C "${MYOS_ROOT}" rev-parse HEAD 2>/dev/null || echo unknown)"
 
 "${engine}" run --rm --privileged \
-  -e "MYOS_COMMIT=${commit}" -e "MYOS_REF=${MYOS_REF:-}" \
+  -e "MYOS_COMMIT=${commit}" -e "MYOS_REF=${MYOS_REF:-}" -e "MYOS_EDITION=${MYOS_EDITION:-gnome}" \
   -v /dev:/dev \
   -v "${MYOS_ROOT}:/work" -w /work \
   registry.fedoraproject.org/fedora:44 \

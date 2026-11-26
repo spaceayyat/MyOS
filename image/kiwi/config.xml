@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  MyOS live ISO: Fedora 44 + KDE Plasma, built with KIWI.
+  MyOS live ISO: Fedora 44, built with KIWI. Two editions (profiles):
+    GNOME   the main edition, with Helium Browser
+    Plasma  the KDE Plasma edition
 
   Build it with scripts/build-iso.sh inside Fedora 44 (CI does this in a
   container). Ubuntu's KIWI package is too old to read this file.
@@ -17,11 +19,16 @@
   <description type="system">
     <author>MyOS contributors</author>
     <contact>noreply@example.invalid</contact>
-    <specification>MyOS: Fedora-based KDE Plasma workstation (live and installable)</specification>
+    <specification>MyOS: Fedora-based workstation (live and installable)</specification>
   </description>
 
+  <profiles>
+    <profile name="GNOME" description="GNOME edition" import="true"/>
+    <profile name="Plasma" description="KDE Plasma edition"/>
+  </profiles>
+
   <preferences>
-    <version>0.2.0</version>
+    <version>0.3.0</version>
     <packagemanager>dnf5</packagemanager>
     <locale>en_US</locale>
     <keytable>us</keytable>
@@ -57,9 +64,26 @@
     </source>
   </repository>
 
+  <!-- Helium Browser: the project's own COPR repository (third party). The
+       key is kept in this repository; scripts/build-iso.sh fills in @ROOT@.
+       Fingerprint 07BC FCA3 0AC7 E51B CFED FFF7 4A31 86EA 4791 2C39 -->
+  <repository type="rpm-md" alias="helium" profiles="GNOME"
+              repository_gpgcheck="false" package_gpgcheck="true">
+    <source path="https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-44-x86_64/">
+      <signing key="file://@ROOT@/image/config/rootfs-gnome/etc/pki/rpm-gpg/RPM-GPG-KEY-imput-helium"/>
+    </source>
+  </repository>
+
   <packages type="bootstrap">
     <package name="filesystem"/>
     <package name="glibc-langpack-en"/>
+  </packages>
+  <!-- Not fedora-release-workstation: with it, anaconda-webui requires Firefox. -->
+  <packages type="bootstrap" profiles="GNOME">
+    <package name="fedora-release"/>
+    <package name="fedora-release-identity-basic"/>
+  </packages>
+  <packages type="bootstrap" profiles="Plasma">
     <package name="fedora-release-kde-desktop"/>
     <package name="fedora-release-identity-kde-desktop"/>
   </packages>
@@ -159,7 +183,55 @@
     <package name="cups"/>
     <package name="cups-filters"/>
 
-    <!-- KDE Plasma -->
+    <!-- Fonts and user directories -->
+    <package name="google-noto-sans-fonts"/>
+    <package name="google-noto-sans-mono-fonts"/>
+    <package name="google-noto-color-emoji-fonts"/>
+    <package name="xdg-user-dirs"/>
+    <package name="flatpak"/>
+
+    <!-- Live session and installer -->
+    <package name="livesys-scripts"/>
+    <package name="anaconda-live"/>
+
+    <!-- Optional MyOS session (myos-shell on labwc); never the default -->
+    <package name="labwc"/>
+    <package name="foot"/>
+    <package name="qt6-qtbase"/>
+    <package name="qt6-qtbase-gui"/>
+    <package name="qt6-qtdeclarative"/>
+    <package name="qt6-qtwayland"/>
+    <package name="layer-shell-qt"/>
+  </packages>
+
+  <packages type="image" profiles="GNOME">
+    <package name="gnome-shell"/>
+    <package name="gdm"/>
+    <package name="gnome-session-wayland-session"/>
+    <package name="mutter"/>
+    <package name="gnome-control-center"/>
+    <package name="gnome-settings-daemon"/>
+    <package name="nautilus"/>
+    <package name="ptyxis"/>
+    <package name="gnome-text-editor"/>
+    <package name="gnome-software"/>
+    <package name="gnome-tweaks"/>
+    <package name="gnome-extensions-app"/>
+    <package name="gnome-initial-setup"/>
+    <package name="gnome-tour"/>
+    <package name="loupe"/>
+    <package name="papers"/>
+    <package name="gnome-system-monitor"/>
+    <package name="gnome-disk-utility"/>
+    <package name="file-roller"/>
+    <package name="gnome-calculator"/>
+    <package name="gnome-bluetooth"/>
+    <package name="xdg-desktop-portal-gnome"/>
+    <package name="adwaita-icon-theme"/>
+    <package name="helium-bin"/>
+  </packages>
+
+  <packages type="image" profiles="Plasma">
     <package name="plasma-desktop"/>
     <package name="plasma-workspace"/>
     <package name="plasma-login-manager"/>
@@ -177,7 +249,6 @@
     <package name="plasma-systemmonitor"/>
     <package name="plasma-discover"/>
     <package name="plasma-discover-flatpak"/>
-    <package name="flatpak"/>
     <package name="plasma-welcome"/>
     <package name="plasma-breeze"/>
     <package name="kde-gtk-config"/>
@@ -185,7 +256,6 @@
     <package name="breeze-icon-theme"/>
     <package name="xdg-desktop-portal-kde"/>
     <package name="polkit-kde"/>
-    <package name="xdg-user-dirs"/>
     <package name="konsole"/>
     <package name="dolphin"/>
     <package name="kate"/>
@@ -194,21 +264,5 @@
     <package name="gwenview"/>
     <package name="okular"/>
     <package name="firefox"/>
-    <package name="google-noto-sans-fonts"/>
-    <package name="google-noto-sans-mono-fonts"/>
-    <package name="google-noto-color-emoji-fonts"/>
-
-    <!-- Live session and installer -->
-    <package name="livesys-scripts"/>
-    <package name="anaconda-live"/>
-
-    <!-- Optional MyOS session (myos-shell on labwc); plain Plasma is default -->
-    <package name="labwc"/>
-    <package name="foot"/>
-    <package name="qt6-qtbase"/>
-    <package name="qt6-qtbase-gui"/>
-    <package name="qt6-qtdeclarative"/>
-    <package name="qt6-qtwayland"/>
-    <package name="layer-shell-qt"/>
   </packages>
 </image>

@@ -1,17 +1,23 @@
 # MyOS
 
-A Fedora 44 based KDE Plasma workstation, built as a live ISO with KIWI and
-GitHub Actions. This is an early preview. Test it in a virtual machine.
+A Fedora 44 based workstation, built as a live ISO with KIWI and GitHub
+Actions. This is an early preview. Test it in a virtual machine.
+
+| Edition | Desktop | Browser |
+| --- | --- | --- |
+| GNOME (main) | GNOME | Helium (beta, from the `imput/helium` COPR) |
+| Plasma | KDE Plasma | Firefox |
 
 ## Build
 
 On GitHub: open **Actions**, run **Build MyOS ISO** (it also runs on every
-push), then download the `MyOS-ISO` artifact.
+push), then download the `MyOS-ISO-gnome` or `MyOS-ISO-plasma` artifact.
 
 Locally, with Docker or root Podman:
 
 ```bash
-sudo scripts/build-in-container.sh     # result in output/iso/
+sudo scripts/build-in-container.sh                        # GNOME, in output/iso/
+sudo MYOS_EDITION=plasma scripts/build-in-container.sh    # Plasma
 ```
 
 ## Test
@@ -22,10 +28,10 @@ for t in tests/unit/test_*.sh; do "$t"; done          # needs bash, python3, g++
 # on Fedora 44 as root:
 tests/validate-image.sh
 # needs QEMU and OVMF; modes: bios, uefi, secureboot
-python3 tests/vm/boot_test.py --iso output/iso/*.iso --mode uefi --out vm-out
+python3 tests/vm/boot_test.py --iso output/iso/*.iso --mode uefi --edition gnome --out vm-out
 ```
 
-The boot test starts the ISO and checks the Plasma session, network, audio,
+The boot test starts the ISO and checks the desktop session, network, audio,
 Bluetooth daemon, printing and security services from inside the guest. The
 status of each CI run is the record of what passed.
 

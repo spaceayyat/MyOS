@@ -1,0 +1,2 @@
+# Read by livesys-scripts, which only runs when booted from live media.
+livesys_session="gnome"

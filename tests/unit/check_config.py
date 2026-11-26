@@ -38,10 +38,25 @@ def main(root: pathlib.Path) -> int:
         if source.find("signing") is None:
             problems.append(f"{repo.get('alias')}: no signing key")
 
-    names = [p.get("name") for p in xml.iter("package")]
-    for name, count in collections.Counter(names).items():
-        if count > 1:
-            problems.append(f"package listed {count} times: {name}")
+    names = set()
+    for edition in ("GNOME", "Plasma"):
+        listed = [p.get("name") for group in xml.iter("packages")
+                  if group.get("profiles") in (None, edition)
+                  for p in group.iter("package")]
+        names.update(listed)
+        for name, count in collections.Counter(listed).items():
+            if count > 1:
+                problems.append(f"{edition}: package listed {count} times: {name}")
+        if edition == "GNOME" and "firefox" in listed:
+            problems.append("GNOME edition must ship Helium, not Firefox")
+
+    # The Helium key shipped to users must be the one the build trusts.
+    key = "image/config/rootfs-gnome/etc/pki/rpm-gpg/RPM-GPG-KEY-imput-helium"
+    if not (root / key).is_file():
+        problems.append(f"missing {key}")
+    if "gpgcheck=1" not in (root / "image/config/rootfs-gnome/etc/yum.repos.d/"
+                            "imput-helium.repo").read_text().splitlines():
+        problems.append("installed Helium repository must keep gpgcheck=1")
 
     # Every unit enabled in config.sh that this repository ships must exist.
     script = (root / "image/kiwi/config.sh").read_text()

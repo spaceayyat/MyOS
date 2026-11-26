@@ -12,6 +12,17 @@
 | Updates | Security updates applied daily, no automatic reboot, off on live media | boot test checks the live case only |
 | Secure Boot | Fedora's signed shim and GRUB | boot test in QEMU with Microsoft keys |
 
+## Helium Browser (GNOME edition)
+
+Helium comes from a third-party repository, the project's own COPR. Packages
+must be signed with the key stored in this repository (fingerprint
+`07BC FCA3 0AC7 E51B CFED FFF7 4A31 86EA 4791 2C39`), which was first fetched
+over HTTPS from the COPR server. The repository's metadata is not signed.
+
+**Automatic security updates do not cover Helium**, because the repository
+publishes no security advisories. Update it with Software or
+`sudo dnf upgrade helium-bin`.
+
 ## Limits
 
 - Root on an installed system has not been tested.

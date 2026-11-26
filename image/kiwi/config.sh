@@ -2,6 +2,10 @@
 # KIWI image configuration script. Runs inside the new image root (a chroot),
 # after the packages and the overlay (image/config/rootfs plus the built
 # desktop) are in place. It never touches the build host.
+# KIWI tells us which edition (profile) is being built.
+# shellcheck disable=SC1091
+test -f /.profile && . /.profile
+
 set -euxo pipefail
 
 # The optional MyOS session must be executable.
@@ -15,9 +19,18 @@ grep -qx 'SELINUX=enforcing' /etc/selinux/config
 
 systemctl set-default graphical.target
 
+case "${kiwi_profiles:-}" in
+    GNOME)
+        display_manager=gdm.service
+        glib-compile-schemas --strict /usr/share/glib-2.0/schemas
+        ;;
+    Plasma) display_manager=plasmalogin.service ;;
+    *) echo "unknown profile '${kiwi_profiles:-}'" >&2; exit 1 ;;
+esac
+
 # A missing unit is a build error, not something to ignore.
 systemctl enable \
-    plasmalogin.service \
+    "${display_manager}" \
     NetworkManager.service \
     bluetooth.service \
     cups.socket \

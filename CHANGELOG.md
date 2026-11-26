@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.2.0 (unreleased)
+## 0.3.0 (unreleased)
+
+- New main edition: GNOME with Helium Browser (no Firefox). KDE Plasma remains
+  as a second edition.
+- CI builds and boot-tests both editions.
 
 - KDE Plasma is the default desktop; the myos-shell session is optional.
 - Anaconda live installer included.

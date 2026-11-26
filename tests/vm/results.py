@@ -12,14 +12,20 @@ script can never be silently ignored.
 """
 import re
 
-REQUIRED = frozenset({
-    "live-user", "kwin", "plasmashell", "display-manager", "networkmanager",
-    "network-connected", "https", "soundcard", "pipewire", "wireplumber",
-    "audio-sink", "bluetooth-service", "cups-socket", "cups-scheduler",
-    "selinux-enforcing", "firewalld", "root-no-usable-password",
-    "root-su-refused", "ssh-server-off", "no-auto-update-on-live",
+COMMON = frozenset({
+    "live-user", "compositor", "desktop-shell", "user-session",
+    "display-manager", "networkmanager", "network-connected", "https",
+    "soundcard", "pipewire", "wireplumber", "audio-sink", "bluetooth-service",
+    "cups-socket", "cups-scheduler", "selinux-enforcing", "firewalld",
+    "root-no-usable-password", "root-su-refused", "ssh-server-off",
+    "no-auto-update-on-live", "applications", "default-theme",
     "myos-binaries", "installer",
 })
+EDITIONS = {
+    "gnome": COMMON | {"helium-runs", "default-browser", "no-firefox",
+                       "customization-tools"},
+    "plasma": COMMON,
+}
 
 FATAL = ("Kernel panic", "You are in emergency mode",
          "Entering emergency mode", "dracut-emergency")
@@ -27,8 +33,9 @@ FATAL = ("Kernel panic", "You are in emergency mode",
 CHECK = re.compile(r"^MYOS-CHECK ([a-z0-9-]+) (PASS|FAIL)(?: (.*))?$")
 
 
-def evaluate(serial: str, mode: str, required=REQUIRED) -> list:
+def evaluate(serial: str, mode: str, edition: str) -> list:
     """Return a list of problems. An empty list means the boot test passed."""
+    required = EDITIONS[edition]
     problems = []
     checks = {}
     facts = {}
@@ -84,6 +91,9 @@ def evaluate(serial: str, mode: str, required=REQUIRED) -> list:
     if facts.get("firmware") != firmware:
         problems.append(f"expected {firmware} firmware, guest reported "
                         f"{facts.get('firmware')!r}")
+    if facts.get("edition") != edition:
+        problems.append(f"expected the {edition} edition, guest reported "
+                        f"{facts.get('edition')!r}")
     if mode == "secureboot" and facts.get("secureboot") != "SecureBoot enabled":
         problems.append("Secure Boot is not enabled in the guest: "
                         f"{facts.get('secureboot')!r}")

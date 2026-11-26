@@ -1,0 +1,11 @@
+# Helium Browser, from the project's own COPR repository (third party).
+# Packages are checked against the key shipped with MyOS.
+[imput-helium]
+name=Helium Browser (imput/helium COPR)
+baseurl=https://download.copr.fedorainfracloud.org/results/imput/helium/fedora-$releasever-$basearch/
+type=rpm-md
+enabled=1
+gpgcheck=1
+repo_gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-imput-helium
+skip_if_unavailable=True

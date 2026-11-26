@@ -5,7 +5,7 @@
 # already built by scripts/build-desktop.sh. scripts/build-in-container.sh does
 # all of this for you with Docker or Podman.
 #   dnf install -y kiwi kiwi-systemdeps distribution-gpg-keys
-# Usage: sudo scripts/build-iso.sh
+# Usage: sudo [MYOS_EDITION=gnome|plasma] scripts/build-iso.sh   (default gnome)
 # Output: output/iso/*.iso and output/iso/SHA256SUMS
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
@@ -20,6 +20,13 @@ stage="${MYOS_ROOT}/build/stage"
 [[ -x "${stage}/usr/bin/myos-shell" ]] \
   || die "Desktop not built. Run scripts/build-desktop.sh first."
 
+edition="${MYOS_EDITION:-gnome}"
+case "${edition}" in
+  gnome) profile=GNOME; suffix="" ;;
+  plasma) profile=Plasma; suffix="-plasma" ;;
+  *) die "MYOS_EDITION must be gnome or plasma, not '${edition}'" ;;
+esac
+
 description="${MYOS_ROOT}/build/kiwi"
 target="${MYOS_ROOT}/build/target"
 output="${MYOS_ROOT}/output/iso"
@@ -33,10 +40,12 @@ mkdir -p "${description}/root" "${target}" "${output}"
 
 cp -- "${MYOS_ROOT}/image/kiwi/config.xml" "${MYOS_ROOT}/image/kiwi/config.sh" "${description}/"
 cp -a -- "${MYOS_ROOT}/image/config/rootfs/." "${description}/root/"
+cp -a -- "${MYOS_ROOT}/image/config/rootfs-${edition}/." "${description}/root/"
 cp -a -- "${stage}/." "${description}/root/"
+sed -i "s|@ROOT@|${MYOS_ROOT}|g" "${description}/config.xml"
 
 info "Running KIWI (this downloads packages and can take a while)"
-if ! kiwi-ng --type iso system build \
+if ! kiwi-ng --profile "${profile}" --type iso system build \
       --description "${description}" \
       --target-dir "${target}"; then
   die "KIWI failed. Read the log above, then see docs/troubleshooting.md."
@@ -49,9 +58,9 @@ iso="$(find "${target}" -maxdepth 1 -name '*.iso' -print -quit)"
 version="$(sed -n 's|.*<version>\(.*\)</version>.*|\1|p' "${description}/config.xml")"
 commit="${MYOS_COMMIT:-$(git -C "${MYOS_ROOT}" rev-parse HEAD 2>/dev/null || echo unknown)}"
 if [[ "${MYOS_REF:-}" == "refs/tags/v${version}" ]]; then
-  name="MyOS-${version}-x86_64"
+  name="MyOS-${version}${suffix}-x86_64"
 else
-  name="MyOS-${version}-dev.${commit:0:7}-x86_64"
+  name="MyOS-${version}-dev.${commit:0:7}${suffix}-x86_64"
 fi
 rm -f -- "${output}"/*.iso "${output}"/*.packages
 mv -- "${iso}" "${output}/${name}.iso"
@@ -62,6 +71,7 @@ cp -- "${packages}" "${output}/${name}.packages"
 cat > "${output}/BUILD-INFO.txt" <<EOF
 name:     ${name}.iso
 version:  ${version}
+edition:  ${edition}
 commit:   ${commit}
 ref:      ${MYOS_REF:-local}
 built:    $(date -u +%Y-%m-%dT%H:%M:%SZ)
