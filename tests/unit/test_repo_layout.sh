@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Unit test: repository layout, script hygiene, and honesty of the docs.
 # Needs only bash and grep. Usage: tests/unit/test_repo_layout.sh
+# ok() and bad() always succeed, so "test && ok || bad" is safe here.
+# shellcheck disable=SC2015
 set -uo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 pass=0; failed=0

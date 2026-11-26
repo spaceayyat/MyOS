@@ -61,6 +61,8 @@ check cups-socket active cups.socket
 check cups-scheduler bash -c 'lpstat -r | grep -x "scheduler is running"'
 
 # Security
+# Single quotes are intentional: the inner bash expands this.
+# shellcheck disable=SC2016
 check selinux-enforcing bash -c '[[ $(getenforce) == Enforcing ]] && getenforce'
 check firewalld active firewalld.service
 check root-locked bash -c 'passwd -S root | grep -E "^root (L|LK) "'

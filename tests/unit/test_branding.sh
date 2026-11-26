@@ -2,6 +2,8 @@
 # Branding checks: the project is called "My OS" (two words) for people and
 # "myos" / "MyOS" / "MYOS_" in technical identifiers. Needs bash and grep.
 # Usage: tests/unit/test_branding.sh
+# ok() and bad() always succeed, so "test && ok || bad" is safe here.
+# shellcheck disable=SC2015
 set -uo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 pass=0; failed=0

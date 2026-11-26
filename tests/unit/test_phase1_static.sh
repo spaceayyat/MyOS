@@ -3,6 +3,8 @@
 # These do NOT compile Qt code or build an ISO; they catch typos and unsafe
 # patterns early. Needs bash, grep and python3.
 # Usage: tests/unit/test_phase1_static.sh
+# ok() and bad() always succeed, so "test && ok || bad" is safe here.
+# shellcheck disable=SC2015
 set -uo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 pass=0; failed=0

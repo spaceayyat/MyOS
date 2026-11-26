@@ -5,7 +5,10 @@
 MYOS_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export MYOS_ROOT
 
+# Used by the scripts that source this file.
+# shellcheck disable=SC2034
 IMAGE_NAME="${MYOS_IMAGE_NAME:-localhost/myos}"
+# shellcheck disable=SC2034
 IMAGE_TAG="${MYOS_IMAGE_TAG:-dev}"
 DEFAULT_BASE="quay.io/fedora/fedora-bootc:44"
 BASE_ENV_FILE="${MYOS_ROOT}/image/base-image.env"

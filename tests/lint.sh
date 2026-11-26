@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck every shell script in the repository (found by shebang).
+# Run ShellCheck on every shell script in the repository (found by shebang).
 # Usage: tests/lint.sh
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
