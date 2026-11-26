@@ -7,25 +7,35 @@ set -euo pipefail
 # shellcheck source=scripts/lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-require_cmd podman "Install it: sudo apt install -y podman (see docs/development.md)"
-
-builder_image="${MYOS_BUILDER_IMAGE:-quay.io/fedora/fedora:44}"
+builder_image="${MYOS_BUILDER_IMAGE:-registry.fedoraproject.org/fedora:44}"
 stage="${MYOS_ROOT}/build/stage"
 mkdir -p "${stage}"
 
-info "Building the desktop in ${builder_image} (first run downloads packages)"
-if ! podman run --rm \
-      -v "${MYOS_ROOT}:/src:ro,Z" \
-      -v "${stage}:/stage:Z" \
+build_packages=(cmake gcc-c++ make qt6-qtbase-devel qt6-qtdeclarative-devel layer-shell-qt-devel)
+
+# Runs on Fedora 44, either directly (MYOS_NATIVE=1) or inside Podman.
+native_build() {
+  local src="$1" dest="$2" work
+  work="$(mktemp -d)"
+  cmake -S "${src}" -B "${work}" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+    -DMYOS_DISPLAY_NAME="${MYOS_DISPLAY_NAME:-My OS}"
+  cmake --build "${work}" -j"$(nproc)"
+  DESTDIR="${dest}" cmake --install "${work}"
+  rm -r -- "${work}"
+}
+
+if [[ "${MYOS_NATIVE:-0}" == 1 ]]; then
+  dnf install -y "${build_packages[@]}"
+  native_build "${MYOS_ROOT}" "${stage}"
+else
+  require_cmd podman "Install it: sudo apt install -y podman (see docs/development.md)"
+  info "Building the desktop in ${builder_image} (first run downloads packages)"
+  podman run --rm \
+      -v "${MYOS_ROOT}:/src:Z" \
+      -e MYOS_NATIVE=1 \
       -e "MYOS_DISPLAY_NAME=${MYOS_DISPLAY_NAME:-My OS}" \
-      "${builder_image}" \
-      bash -euxo pipefail -c '
-        dnf install -y cmake gcc-c++ make qt6-qtbase-devel qt6-qtdeclarative-devel layer-shell-qt-devel
-        cmake -S /src -B /tmp/build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DMYOS_DISPLAY_NAME="$MYOS_DISPLAY_NAME"
-        cmake --build /tmp/build -j"$(nproc)"
-        DESTDIR=/stage cmake --install /tmp/build
-      '; then
-  die "Desktop build failed. Read the compiler output above; paste it into an issue if you are stuck."
+      "${builder_image}" /src/scripts/build-desktop.sh \
+    || die "Desktop build failed. Read the compiler output above."
 fi
 
 for f in usr/bin/myos-shell usr/bin/myos-settings usr/share/applications/myos-settings.desktop; do

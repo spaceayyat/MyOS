@@ -20,18 +20,19 @@ for f in CMakeLists.txt \
          desktop/launcher/Launcher.qml \
          desktop/settings/{CMakeLists.txt,main.cpp,main.qml,myos-settings.desktop} \
          image/kiwi/{config.xml,config.sh} \
-         image/config/rootfs/etc/systemd/system/getty@tty1.service.d/autologin.conf \
-         image/config/rootfs/etc/profile.d/myos-session.sh \
-         image/config/rootfs/etc/xdg/labwc/{environment,autostart} \
+         image/config/rootfs/usr/share/myos/labwc/{environment,autostart} \
+         image/config/rootfs/usr/share/wayland-sessions/myos.desktop \
          image/config/rootfs/usr/bin/myos-session \
+         image/config/rootfs/etc/sysconfig/livesys \
+         tests/{lint.sh,validate-image.sh,check_packages.py,vm/boot_test.py,vm/guest-check.sh} \
          scripts/build-desktop.sh scripts/build-iso.sh; do
   [[ -f "${root}/${f}" ]] && ok "file exists: ${f}" || bad "file missing: ${f}"
 done
 
 # --- syntax ---------------------------------------------------------------
-for s in "${root}"/scripts/*.sh "${root}"/image/kiwi/config.sh \
-         "${root}"/image/config/rootfs/usr/bin/myos-session \
-         "${root}"/image/config/rootfs/etc/profile.d/myos-session.sh; do
+for s in "${root}"/scripts/*.sh "${root}"/tests/*.sh "${root}"/tests/vm/*.sh \
+         "${root}"/image/kiwi/config.sh "${root}"/image/config/rootfs/usr/bin/myos-session \
+         "${root}"/image/config/rootfs/usr/libexec/myos/snapper-setup; do
   bash -n "${s}" 2>/dev/null && ok "shell syntax ok: ${s#"${root}"/}" || bad "shell syntax error: ${s#"${root}"/}"
 done
 
@@ -75,8 +76,8 @@ grep -q 'openTerminal' "${root}/desktop/launcher/Launcher.qml" && ok "launcher c
 grep -q 'AnchorBottom' "${root}/desktop/shell/main.cpp" && ok "panel is anchored to the bottom" || bad "panel is not anchored to the bottom"
 
 # --- image security rules --------------------------------------------------
-! grep -q 'pwdformat="plain"' "${root}/image/kiwi/config.xml" && ok "no plain-text passwords in kiwi config" || bad "plain-text password in kiwi config"
-[[ "$(grep -c 'password="\*"' "${root}/image/kiwi/config.xml")" -ge 2 ]] && ok "root and liveuser accounts are locked" || bad "an account is not locked"
+check "image defines no user except a locked root (config validation)" \
+  python3 -I "${root}/tests/unit/check_config.py" "${root}"
 ! grep -Eq '<source path="http://' "${root}/image/kiwi/config.xml" && ok "repositories use https" || bad "a repository uses plain http"
 grep -q 'package_gpgcheck="true"' "${root}/image/kiwi/config.xml" && ok "package signatures are checked" || bad "package signature checking is not enabled"
 ! grep -Eqi 'curl[^|]*\|[[:space:]]*(ba)?sh|chpasswd|NOPASSWD' \

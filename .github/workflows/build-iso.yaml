@@ -1,31 +1,153 @@
-
 name: Build MyOS ISO
 
 on:
   workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-iso-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  lint:
+    name: Lint and unit tests
     runs-on: ubuntu-24.04
     steps:
-      - name: Get source code
-        uses: actions/checkout@v4
-
-      - name: Install KIWI
+      - uses: actions/checkout@v4
+      - name: shellcheck every script
+        run: tests/lint.sh
+      - name: Unit tests
         run: |
-          sudo apt-get update
-          sudo apt-get install -y kiwi
+          set -e
+          for t in tests/unit/test_*.sh; do echo "== $t"; "$t"; done
 
-      - name: Build ISO
+  validate:
+    name: Validate image description and package names
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: kiwi-ng image info + dnf repoquery (Fedora 44)
         run: |
-          sudo kiwi-ng --profile=Live \
-            system build \
-            --description image/kiwi \
-            --target-dir build
+          docker run --rm -v "$PWD:/work:ro" -w /work \
+            registry.fedoraproject.org/fedora:44 tests/validate-image.sh
 
-      - name: Upload ISO
-        uses: actions/upload-artifact@v4
+  build:
+    name: Build ISO
+    needs: [lint, validate]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+            /opt/hostedtoolcache/CodeQL
+          df -h /
+      - name: Build desktop and ISO in Fedora 44
+        run: sudo scripts/build-in-container.sh
+      - name: Show checksums
+        run: |
+          cd output/iso
+          ls -l
+          sha256sum -c SHA256SUMS
+      - uses: actions/upload-artifact@v4
         with:
           name: MyOS-ISO
-          path: build/*.iso
+          path: output/iso/
           if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - name: Upload KIWI log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: build/target/build/*.log
+          if-no-files-found: ignore
+
+  boot:
+    name: Boot test (${{ matrix.mode }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [bios, uefi, secureboot]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QEMU and enable KVM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-system-x86 ovmf
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
+      - uses: actions/download-artifact@v4
+        with:
+          name: MyOS-ISO
+          path: iso
+      - name: Verify checksum
+        run: cd iso && sha256sum -c SHA256SUMS
+      - name: Boot and check
+        run: |
+          python3 -I tests/vm/boot_test.py --mode "${{ matrix.mode }}" \
+            --iso "$(ls iso/*.iso)" --out vm-out
+      - name: Upload screenshot and serial log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boot-${{ matrix.mode }}
+          path: |
+            vm-out/*.png
+            vm-out/serial.log
+          if-no-files-found: ignore
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, boot]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: MyOS-ISO
+          path: iso
+      - name: Check the tag matches the image version
+        run: |
+          version="$(sed -n 's|.*<version>\(.*\)</version>.*|\1|p' image/kiwi/config.xml)"
+          test "v${version}" = "${GITHUB_REF_NAME}"
+      - name: Sign build provenance (keyless, Sigstore)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            iso/*.iso
+            iso/SHA256SUMS
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd iso
+          sha256sum -c SHA256SUMS
+          # GitHub release assets are limited to 2 GiB each: split large ISOs.
+          for f in *.iso; do
+            if (( $(stat -c %s "$f") >= 2000000000 )); then
+              split -b 1900M -d "$f" "$f.part"
+              rm "$f"
+            fi
+          done
+          gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+            --title "MyOS ${GITHUB_REF_NAME}" --notes-file ../CHANGELOG.md ./*
