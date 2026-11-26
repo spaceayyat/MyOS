@@ -20,11 +20,15 @@ check() { local n="$1"; shift; if "$@"; then echo "MYOS-CHECK ${n} PASS"; else e
 
 for _ in $(seq 60); do id liveuser >/dev/null 2>&1 && break; sleep 5; done
 
+# Copy from the same source the graphical installer detects (Anaconda's
+# DetectLiveOSImageTask): the read-only base of the running live system.
 image=""
-for candidate in /run/initramfs/live/LiveOS/squashfs.img /run/initramfs/squashed.img; do
-  [[ -f "${candidate}" ]] && { image="${candidate}"; break; }
+for candidate in /dev/mapper/live-base /dev/mapper/live-osimg-min \
+    "$(findmnt -n -o SOURCE /run/rootfsbase 2>/dev/null)"; do
+  [[ -b "${candidate}" ]] && { image="${candidate}"; break; }
 done
-echo "MYOS-FACT payload ${image:-not-found}" /run/initramfs/live/LiveOS/*
+echo "MYOS-FACT payload ${image:-not-found}"
+echo "MYOS-FACT block-devices $(lsblk -nro NAME,TYPE,FSTYPE,MOUNTPOINT | tr '\n' ';')"
 check payload-found test -n "${image}"
 
 encrypt=""
@@ -74,6 +78,7 @@ if (( status != 0 )); then
   for f in /tmp/anaconda.out /tmp/anaconda.log /tmp/storage.log /tmp/program.log /tmp/packaging.log; do
     [[ -f "${f}" ]] && tail -n 40 "${f}" | sed "s|^|[${f##*/}] |"
   done
+  dmesg | tail -n 15 | sed "s|^|[dmesg] |"
 fi
 sync
 echo "MYOS-DONE"
