@@ -4,7 +4,7 @@
 exec >/dev/ttyS0 2>&1
 set -u
 
-result() { echo "MYOS-CHECK $2 $1 ${3:-}"; }
+result() { echo "MYOS-CHECK $1 $2 ${3:-}"; }
 check() {
   local name="$1"; shift
   local out
@@ -65,7 +65,26 @@ check cups-scheduler bash -c 'lpstat -r | grep -x "scheduler is running"'
 # shellcheck disable=SC2016
 check selinux-enforcing bash -c '[[ $(getenforce) == Enforcing ]] && getenforce'
 check firewalld active firewalld.service
-check root-locked bash -c 'passwd -S root | grep -E "^root (L|LK) "'
+
+# Root account. Record the real state first, then test how it behaves.
+root_state() {
+  local field
+  field="$(getent shadow root | cut -d: -f2)"
+  case "${field}" in
+    "") echo "empty" ;;
+    "!"*|"*"*) echo "locked" ;;
+    *) echo "password-set" ;;
+  esac
+}
+echo "MYOS-FACT root-password $(root_state)"
+echo "MYOS-FACT root-passwd-status $(passwd -S root 2>&1)"
+echo "MYOS-FACT root-before-lock $(journalctl -b -u livesys.service -o cat 2>/dev/null | grep -m1 'root password before')"
+echo "MYOS-FACT livesys-passwd-lines $(grep -h 'passwd' /usr/libexec/livesys/livesys-main 2>&1 | tr '\n' ';')"
+echo "MYOS-FACT liveuser-groups $(id -nG liveuser 2>&1)"
+check root-no-usable-password bash -c "[[ \$(getent shadow root | cut -d: -f2) == [!*]* ]] && echo locked"
+# An unprivileged account must not become root by pressing Enter.
+check root-su-refused bash -c '! echo | timeout 30 runuser -u nobody -- su root -c true'
+check ssh-server-off bash -c '! systemctl is-active --quiet sshd.service sshd.socket'
 check no-auto-update-on-live bash -c '! systemctl is-active --quiet dnf5-automatic.timer'
 
 # MyOS extras

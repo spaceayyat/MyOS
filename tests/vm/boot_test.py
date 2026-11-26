@@ -20,15 +20,11 @@ import subprocess
 import sys
 import time
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import results  # noqa: E402
+
 HERE = pathlib.Path(__file__).resolve().parent
 OVMF = pathlib.Path("/usr/share/OVMF")
-REQUIRED = {
-    "live-user", "kwin", "plasmashell", "display-manager", "networkmanager",
-    "network-connected", "https", "soundcard", "pipewire", "wireplumber",
-    "audio-sink", "bluetooth-service", "cups-socket", "cups-scheduler",
-    "selinux-enforcing", "firewalld", "root-locked", "no-auto-update-on-live",
-    "myos-binaries", "installer",
-}
 UNIT = """[Unit]
 Description=MyOS boot smoke test
 After=multi-user.target
@@ -148,22 +144,18 @@ def main() -> int:
         except subprocess.TimeoutExpired:
             process.kill()
 
-    results = {}
-    for line in serial.read_text(errors="replace").splitlines():
-        parts = line.split(maxsplit=3)
-        if len(parts) >= 3 and parts[0] == "MYOS-CHECK":
-            results[parts[1]] = parts[2]
-        if args.mode == "secureboot" and line.startswith("MYOS-FACT secureboot"):
-            results["secureboot-enabled"] = "PASS" if "SecureBoot enabled" in line else "FAIL"
-    required = REQUIRED | ({"secureboot-enabled"} if args.mode == "secureboot" else set())
-    failed = sorted(k for k, v in results.items() if v != "PASS")
-    missing = sorted(required - results.keys())
-    print(f"\n{args.mode}: finished={done} passed={len(results) - len(failed)} "
-          f"failed={failed} not-run={missing}")
+    log = serial.read_text(errors="replace")
+    problems = results.evaluate(log, args.mode)
+    if process.returncode not in (0, None):
+        problems.append(f"QEMU exited with status {process.returncode}")
+    for problem in problems:
+        print(f"PROBLEM {problem}")
+    print(f"\n{args.mode}: {results.passed_checks(log)}/{len(results.REQUIRED)} "
+          f"checks passed, {len(problems)} problem(s)")
     if not done:
         print("--- last 60 serial lines ---")
-        print("\n".join(serial.read_text(errors="replace").splitlines()[-60:]))
-    return 0 if done and not failed and not missing else 1
+        print("\n".join(log.splitlines()[-60:]))
+    return 1 if problems else 0
 
 
 if __name__ == "__main__":
