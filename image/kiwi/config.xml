@@ -198,6 +198,9 @@
     <!-- Live session and installer -->
     <package name="livesys-scripts"/>
     <package name="anaconda-live"/>
+    <!-- Storage plugins and filesystem tools the installer needs to partition
+         disks; without them every installation fails -->
+    <package name="anaconda-install-env-deps"/>
 
     <!-- Optional MyOS session (myos-shell on labwc); never the default -->
     <package name="labwc"/>
