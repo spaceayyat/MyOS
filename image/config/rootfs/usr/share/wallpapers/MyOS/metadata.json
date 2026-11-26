@@ -1,0 +1,8 @@
+{
+    "KPlugin": {
+        "Id": "MyOS",
+        "Name": "MyOS",
+        "License": "MIT",
+        "Authors": [{ "Name": "MyOS contributors" }]
+    }
+}

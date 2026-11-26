@@ -1,0 +1,10 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "org.myos.light.desktop",
+        "Name": "MyOS Light",
+        "License": "MIT",
+        "Authors": [{ "Name": "MyOS contributors" }]
+    },
+    "X-Plasma-APIVersion": "2"
+}

@@ -1,0 +1,10 @@
+{
+    "KPackageStructure": "Plasma/LookAndFeel",
+    "KPlugin": {
+        "Id": "org.myos.dark.desktop",
+        "Name": "MyOS Dark",
+        "License": "MIT",
+        "Authors": [{ "Name": "MyOS contributors" }]
+    },
+    "X-Plasma-APIVersion": "2"
+}
