@@ -67,7 +67,7 @@ exec /usr/bin/systemctl "$@"
 WRAPPER
 chmod 755 /run/myos-bin/systemctl
 chcon -t bin_t /run/myos-bin/systemctl
-PATH="/run/myos-bin:${PATH}" timeout 1500 anaconda --cmdline --kickstart=/run/myos-test.ks </dev/null >/tmp/anaconda.out 2>&1
+PATH="/run/myos-bin:${PATH}" timeout -k 30 1500 anaconda --cmdline --kickstart=/run/myos-test.ks </dev/null >/tmp/anaconda.out 2>&1
 status=$?
 setenforce 1
 echo "MYOS-FACT anaconda-exit ${status}"
