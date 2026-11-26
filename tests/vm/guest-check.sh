@@ -119,6 +119,7 @@ setting() { as_live dbus-run-session gsettings get "$1" "$2"; }
 
 # Browser: Helium is the default in both editions and must actually start.
 if [[ "${edition}" == gnome ]]; then desktop_name=GNOME; else desktop_name=KDE; fi
+export desktop_name
 check default-browser eval '[[ $(as_live env XDG_CURRENT_DESKTOP=${desktop_name} xdg-mime query default x-scheme-handler/https) == helium.desktop ]] && echo helium.desktop'
 check helium-runs eval 'as_live timeout 90 helium --headless --disable-gpu --dump-dom https://fedoraproject.org/static/hotspot.txt | grep -m1 OK'
 
