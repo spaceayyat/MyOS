@@ -5,7 +5,7 @@
 
 ## Get and verify the ISO
 
-Download the `MyOS-ISO` artifact from a successful **Build MyOS ISO** run (or
+Download the `MyOS-ISO-gnome` or `MyOS-ISO-plasma` artifact from a successful **Build MyOS ISO** run (or
 the assets of a tagged release), then:
 
 ```bash
