@@ -9,7 +9,7 @@ set -euo pipefail
 # shellcheck source=scripts/lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-require_cmd podman "Install it: sudo apt install -y podman (see docs/development.md)"
+require_cmd podman "Install it: sudo apt install -y podman (see docs/troubleshooting.md)"
 
 base="$(resolve_base_image)"
 if [[ "${base}" != *@sha256:* ]]; then

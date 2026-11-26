@@ -7,7 +7,7 @@ set -uo pipefail
 # shellcheck source=scripts/lib.sh
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-require_cmd podman "Install it: sudo apt install -y podman (see docs/development.md)"
+require_cmd podman "Install it: sudo apt install -y podman (see docs/troubleshooting.md)"
 
 pass=0; failed=0
 check() {

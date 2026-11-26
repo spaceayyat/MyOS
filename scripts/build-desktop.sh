@@ -28,7 +28,7 @@ if [[ "${MYOS_NATIVE:-0}" == 1 ]]; then
   dnf install -y "${build_packages[@]}"
   native_build "${MYOS_ROOT}" "${stage}"
 else
-  require_cmd podman "Install it: sudo apt install -y podman (see docs/development.md)"
+  require_cmd podman "Install it: sudo apt install -y podman (see docs/troubleshooting.md)"
   info "Building the desktop in ${builder_image} (first run downloads packages)"
   podman run --rm \
       -v "${MYOS_ROOT}:/src:Z" \

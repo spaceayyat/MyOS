@@ -48,7 +48,7 @@ if command -v podman >/dev/null 2>&1; then
 fi
 
 if (( fail )); then
-  warn "Required tools are missing. See docs/development.md for install commands."
+  warn "Required tools are missing. See docs/troubleshooting.md for install commands."
   exit 1
 fi
 info "Environment check passed (required tools present)."

@@ -10,7 +10,7 @@ ok()   { printf '  PASS  %s\n' "$1"; pass=$((pass + 1)); }
 bad()  { printf '  FAIL  %s\n' "$1"; failed=$((failed + 1)); }
 
 for f in README.md LICENSE .gitignore \
-         docs/architecture.md docs/roadmap.md docs/security.md docs/development.md \
+         docs/install.md docs/customization.md docs/troubleshooting.md docs/security.md CHANGELOG.md \
          image/Containerfile \
          scripts/lib.sh scripts/check-env.sh scripts/pin-base-digest.sh scripts/build-image.sh scripts/smoke-test.sh; do
   [[ -f "${root}/${f}" ]] && ok "file exists: ${f}" || bad "file missing: ${f}"
