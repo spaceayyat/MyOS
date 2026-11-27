@@ -191,7 +191,7 @@ ApplicationWindow {
             Text { text: "Make Space Yours."; font.family: th.fontUi; font.pixelSize: 15; color: th.accent }
             Text {
                 Layout.fillWidth: true; wrapMode: Text.WordWrap
-                text: "A Fedora-based desktop, still early. Window switching in the dock, notifications, network and Bluetooth controls are not built yet."
+                text: "A Fedora-based desktop, still early. Network and Bluetooth controls, movable widgets and themes you can share are not built yet."
                 font.family: th.fontUi; font.pixelSize: th.textBody; color: th.textMuted
             }
             Item { Layout.fillHeight: true }

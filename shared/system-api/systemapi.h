@@ -44,8 +44,7 @@ class SystemApi : public QObject
     Q_PROPERTY(int volume READ volume NOTIFY volumeChanged) // percent, -1: no audio service
     Q_PROPERTY(bool muted READ muted NOTIFY volumeChanged)
     Q_PROPERTY(QString userName READ userName CONSTANT)
-    // Capability flags. Both are false until a real integration exists.
-    Q_PROPERTY(bool windowManagementAvailable READ windowManagementAvailable CONSTANT)
+    // "unconfigured" until a weather provider exists.
     Q_PROPERTY(QString weatherState READ weatherState CONSTANT) // "unconfigured"
 
 public:
@@ -63,7 +62,6 @@ public:
     double memUsedPercent() const { return m_memPct; }
     double memUsedGb() const { return m_memUsedGb; }
     double memTotalGb() const { return m_memTotalGb; }
-    bool windowManagementAvailable() const { return false; }
     QString weatherState() const { return QStringLiteral("unconfigured"); }
 
     QString networkState() const { return m_network; }

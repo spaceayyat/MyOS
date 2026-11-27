@@ -2,13 +2,14 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Window
 
-// Opened from the right of the bar: volume and a month calendar.
+// Opened from the right of the bar: volume, connection and battery,
+// notifications and a month calendar.
 Window {
     id: win
     objectName: "flyout"
     title: "VYLO OS Quick Panel"
-    width: 320
-    height: 396
+    width: 340
+    height: 600
     color: "transparent"
     visible: Shell.flyoutOpen
 
@@ -23,9 +24,11 @@ Window {
         theme: th
         anchors.fill: parent
         color: th.popup
+
         Column {
-            anchors.fill: parent
-            spacing: 16
+            id: top
+            width: parent.width
+            spacing: 12
             Row {
                 width: parent.width
                 spacing: 10
@@ -56,8 +59,60 @@ Window {
                     font.family: th.fontUi; font.pixelSize: th.textBody; color: th.textMuted
                 }
             }
+            Text {
+                text: ({ wired: "Wired network", wifi: "Wi-Fi connected", offline: "Not connected" })[Sys.networkState]
+                      + (Sys.batteryPercent >= 0 ? "   ·   Battery " + Sys.batteryPercent + "%" : "")
+                font.family: th.fontUi; font.pixelSize: 12; color: th.textMuted
+            }
             Rectangle { width: parent.width; height: 1; color: th.border }
-            MonthView { id: month; theme: th; width: parent.width }
+            Item {
+                width: parent.width; height: 24
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Notifications"
+                    font.family: th.fontHead; font.pixelSize: 14; font.weight: Font.DemiBold; color: th.text
+                }
+                Row {
+                    anchors.right: parent.right; spacing: 10
+                    Text {
+                        visible: Notices.history.length > 0
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Clear"
+                        font.family: th.fontUi; font.pixelSize: 12; color: th.textMuted
+                        MouseArea { anchors.fill: parent; anchors.margins: -6; onClicked: Notices.clearAll() }
+                    }
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "Do not disturb"
+                        font.family: th.fontUi; font.pixelSize: 12; color: th.textMuted
+                    }
+                    Toggle { theme: th; checked: Notices.quiet; onToggled: function (value) { Notices.quiet = value } }
+                }
+            }
         }
+
+        ListView {
+            anchors.top: top.bottom; anchors.topMargin: 10
+            anchors.bottom: month.top; anchors.bottomMargin: 12
+            width: parent.width
+            clip: true
+            spacing: 8
+            model: Notices.history
+            delegate: NoticeCard {
+                required property var modelData
+                theme: th
+                notice: modelData
+                width: ListView.view.width
+                onDismissed: Notices.dismiss(modelData.id)
+            }
+            Text {
+                anchors.centerIn: parent
+                visible: Notices.history.length === 0
+                text: "All quiet"
+                font.family: th.fontUi; font.pixelSize: th.textBody; color: th.textMuted
+            }
+        }
+
+        MonthView { id: month; theme: th; width: parent.width; anchors.bottom: parent.bottom }
     }
 }

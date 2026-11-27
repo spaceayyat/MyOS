@@ -17,7 +17,7 @@ for f in CMakeLists.txt \
          shared/system-api/{CMakeLists.txt,systemapi.h,systemapi.cpp} \
          shared/theme/Theme.qml \
          desktop/shell/{CMakeLists.txt,main.cpp,shellstate.h,appicons.h,Wallpaper.qml,Panel.qml,Widgets.qml,Dock.qml,Flyout.qml} \
-         desktop/widgets/{ClockWidget,CalendarWidget,MonthView,WeatherWidget,MonitorWidget}.qml shared/ui/{Card,Icon,AppIcon,Toggle,Logo}.qml \
+         desktop/widgets/{ClockWidget,CalendarWidget,MonthView,WeatherWidget,MonitorWidget}.qml shared/ui/{Card,Icon,AppIcon,Toggle,Logo,NoticeCard}.qml desktop/shell/{Toasts.qml,windows.h,windows.cpp,notifications.h,notifications.cpp} \
          shared/system-api/procparse.h tests/unit/{check_qml_refs.py,test_procparse.sh} \
          desktop/launcher/Launcher.qml \
          desktop/settings/{CMakeLists.txt,main.cpp,main.qml,vylo-settings.desktop} \
@@ -48,6 +48,7 @@ check "kiwi config.xml is well-formed XML" \
 # Balanced braces / parentheses / brackets in QML and C++ (see check_brackets.py).
 for f in desktop/shell/Wallpaper.qml desktop/shell/Panel.qml desktop/launcher/Launcher.qml \
          desktop/shell/Widgets.qml desktop/shell/Dock.qml desktop/shell/Flyout.qml \
+         desktop/shell/Toasts.qml shared/ui/NoticeCard.qml shared/ui/Toggle.qml desktop/shell/windows.cpp desktop/shell/notifications.cpp \
          desktop/widgets/MonthView.qml shared/ui/Icon.qml shared/ui/AppIcon.qml \
          desktop/widgets/ClockWidget.qml desktop/widgets/CalendarWidget.qml \
          desktop/widgets/WeatherWidget.qml desktop/widgets/MonitorWidget.qml shared/ui/Card.qml \
@@ -64,7 +65,7 @@ done
 grep -q 'Launcher.qml' "${root}/desktop/shell/CMakeLists.txt" && ok "shell CMake lists Launcher.qml" || bad "shell CMake does not list Launcher.qml"
 grep -q 'main.qml' "${root}/desktop/settings/CMakeLists.txt" && ok "settings CMake lists main.qml" || bad "settings CMake does not list main.qml"
 # main.cpp loads every shell window.
-for f in Wallpaper Widgets Panel Dock Launcher Flyout; do
+for f in Wallpaper Widgets Panel Dock Launcher Flyout Toasts; do
   grep -q "QStringLiteral(\"${f}\")" "${root}/desktop/shell/main.cpp" && ok "main.cpp loads ${f}" || bad "main.cpp does not load ${f}"
 done
 
@@ -75,6 +76,8 @@ grep -q 'Qt.formatTime' "${root}/desktop/widgets/ClockWidget.qml" && ok "clock w
 grep -q 'Sys.cpuPercent' "${root}/desktop/widgets/MonitorWidget.qml" && ok "monitor widget reads system data" || bad "monitor widget has no system data"
 for w in 'Search applications' 'All apps' 'Sys.launch' 'Sys.power' 'Sys.togglePin'; do grep -q "${w}" "${root}/desktop/launcher/Launcher.qml" && ok "launcher has: ${w}" || bad "launcher lacks: ${w}"; done
 grep -q 'Sys.pinnedApps' "${root}/desktop/shell/Dock.qml" && ok "dock shows the pinned applications" || bad "dock does not show pinned applications"
+grep -q 'Windows.activate' "${root}/desktop/shell/Dock.qml" && ok "dock switches between open windows" || bad "dock cannot switch windows"
+grep -q 'Text.PlainText' "${root}/shared/ui/NoticeCard.qml" && ok "notification text is shown as plain text" || bad "notification text may be interpreted"
 check "QML cross-references resolve (Sys/Shell/Theme/CMake)" python3 "${root}/tests/unit/check_qml_refs.py"
 check "/proc parser unit tests pass" bash "${root}/tests/unit/test_procparse.sh"
 grep -q 'Sys.prefs.wallpaper' "${root}/desktop/shell/Wallpaper.qml" && ok "wallpaper follows the user's choice" || bad "wallpaper ignores the user's choice"

@@ -10,7 +10,7 @@ out="$(mkdir -p "$1" && cd "$1" && pwd)"
 
 dnf install -y labwc xorg-x11-server-Xwayland grim wlr-randr dbus-daemon qt6-qtwayland qt6-qtsvg layer-shell-qt \
   rsms-inter-fonts jetbrains-mono-fonts google-noto-sans-fonts papirus-icon-theme \
-  foot nautilus gnome-text-editor gnome-software lxqt-policykit
+  foot nautilus gnome-text-editor gnome-software lxqt-policykit libnotify
 echo "== policy agent files"
 rpm -ql lxqt-policykit | grep -E '/(bin|libexec)/' | tee "${out}/policy-agent.log"
 VYLO_NATIVE=1 "${VYLO_ROOT}/scripts/build-desktop.sh"
@@ -48,6 +48,24 @@ behind=$!
 sleep 4
 shot settings vylo-settings
 kill "${behind}"
+# Two open windows and a notification: the dock and the popups.
+vylo-shell >"${OUT}/windows.log" 2>&1 &
+behind=$!
+sleep 4
+foot >/dev/null 2>&1 &
+terminal=$!
+sleep 2
+vylo-settings >>"${OUT}/windows.log" 2>&1 &
+settings=$!
+sleep 4
+notify-send -a "VYLO" "Welcome aboard" "Notifications show up here." || echo "notify-send failed" >>"${OUT}/errors"
+sleep 2
+grim "${OUT}/windows.png"
+vylo-shell --launcher || echo "launcher shortcut failed" >>"${OUT}/errors"
+sleep 2
+grim "${OUT}/shortcut.png"
+kill "${terminal}" "${settings}" "${behind}"
+wait
 # The same desktop after choosing another accent colour.
 mkdir -p "${HOME}/.config/vylo"
 printf '[prefs]\naccent=lilac\n' >"${HOME}/.config/vylo/vylo.conf"
@@ -58,7 +76,7 @@ chmod +x "${work}/shots.sh"
 timeout 180 dbus-run-session labwc -C "${work}/labwc" -S "${work}/shots.sh" >"${out}/labwc.log" 2>&1 || true
 
 status=0
-for name in desktop launcher quick-panel settings lilac; do
+for name in desktop launcher quick-panel settings windows shortcut lilac; do
   [[ -s "${out}/${name}.png" ]] || { echo "missing screenshot: ${name}"; status=1; }
 done
 [[ ! -s "${out}/errors" ]] || { cat "${out}/errors"; status=1; }
@@ -66,7 +84,7 @@ echo "== program output"
 tail -n +1 "${out}"/*.log
 # Any QML complaint is a failure.
 if grep -nE 'qrc:/|TypeError|ReferenceError|is not installed|Binding loop' \
-     "${out}"/{desktop,launcher,quick-panel,settings,lilac,shell-behind}.log; then
+     "${out}"/{desktop,launcher,quick-panel,settings,windows,lilac,shell-behind}.log; then
   echo "QML problems found"; status=1
 fi
 exit "${status}"

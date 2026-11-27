@@ -11,7 +11,8 @@ builder_image="${VYLO_BUILDER_IMAGE:-registry.fedoraproject.org/fedora:44}"
 stage="${VYLO_ROOT}/build/stage"
 mkdir -p "${stage}"
 
-build_packages=(cmake gcc-c++ make qt6-qtbase-devel qt6-qtdeclarative-devel layer-shell-qt-devel)
+build_packages=(cmake gcc-c++ make qt6-qtbase-devel qt6-qtdeclarative-devel layer-shell-qt-devel
+  wayland-devel wlr-protocols-devel pkgconf-pkg-config)
 
 # Runs on Fedora 44, either directly (VYLO_NATIVE=1) or inside Podman.
 native_build() {

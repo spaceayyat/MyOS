@@ -8,6 +8,8 @@
 
 #include <QGuiApplication>
 #include <QIcon>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QMargins>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -17,8 +19,10 @@
 #include <QUrl>
 
 #include "appicons.h"
+#include "notifications.h"
 #include "shellstate.h"
 #include "systemapi.h"
+#include "windows.h"
 
 namespace {
 
@@ -44,6 +48,27 @@ void configureLayer(QWindow *window,
     ls->setMargins(margins);
 }
 
+// One name per Wayland session, in the user's runtime directory.
+QString controlSocket()
+{
+    return qEnvironmentVariable("XDG_RUNTIME_DIR") + QStringLiteral("/vylo-shell-")
+           + qEnvironmentVariable("WAYLAND_DISPLAY", QStringLiteral("0"));
+}
+
+// "vylo-shell --launcher" asks the running shell to open or close the launcher.
+int sendToRunningShell(const QByteArray &command)
+{
+    QLocalSocket socket;
+    socket.connectToServer(controlSocket());
+    if (!socket.waitForConnected(1000)) {
+        QTextStream(stderr) << "vylo-shell: no running shell to talk to\n";
+        return 1;
+    }
+    socket.write(command);
+    socket.waitForBytesWritten(1000);
+    return 0;
+}
+
 } // namespace
 
 int main(int argc, char *argv[])
@@ -53,6 +78,9 @@ int main(int argc, char *argv[])
     QGuiApplication::setDesktopFileName(QStringLiteral("vylo-shell"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
+    if (app.arguments().contains(QStringLiteral("--launcher")))
+        return sendToRunningShell("launcher");
+
     // Application icons: Papirus ships in the VYLO image.
     if (QIcon::themeName().isEmpty() || QIcon::themeName() == QLatin1String("hicolor"))
         QIcon::setThemeName(QStringLiteral("Papirus-Dark"));
@@ -61,15 +89,37 @@ int main(int argc, char *argv[])
     VYLO::SystemApi system;
     ShellState state;
 
+    Windows windows;
+    Notifications notifications;
+    if (!notifications.start())
+        QTextStream(stderr) << "vylo-shell: another notification service is running\n";
+
+    QLocalServer control;
+    control.setSocketOptions(QLocalServer::UserAccessOption);
+    QLocalServer::removeServer(controlSocket());
+    if (!control.listen(controlSocket()))
+        QTextStream(stderr) << "vylo-shell: the launcher shortcut is unavailable\n";
+    QObject::connect(&control, &QLocalServer::newConnection, &state, [&control, &state] {
+        QLocalSocket *client = control.nextPendingConnection();
+        QObject::connect(client, &QLocalSocket::readyRead, &state, [client, &state] {
+            if (client->readAll() == "launcher")
+                state.setLauncherOpen(!state.launcherOpen());
+        });
+        QObject::connect(client, &QLocalSocket::disconnected, client, &QObject::deleteLater);
+    });
+
     QQmlApplicationEngine engine;
     engine.addImageProvider(QStringLiteral("appicon"), new AppIconProvider);
     engine.rootContext()->setContextProperty(QStringLiteral("Sys"), &system);
     engine.rootContext()->setContextProperty(QStringLiteral("Shell"), &state);
+    engine.rootContext()->setContextProperty(QStringLiteral("Windows"), &windows);
+    engine.rootContext()->setContextProperty(QStringLiteral("Notices"), &notifications);
 
     // Load order is stacking order within a layer.
     const QStringList files = {QStringLiteral("Wallpaper"), QStringLiteral("Widgets"),
                                QStringLiteral("Panel"), QStringLiteral("Dock"),
-                               QStringLiteral("Launcher"), QStringLiteral("Flyout")};
+                               QStringLiteral("Launcher"), QStringLiteral("Flyout"),
+                               QStringLiteral("Toasts")};
     for (const QString &file : files)
         engine.load(QUrl(QStringLiteral("qrc:/vylo/shell/%1.qml").arg(file)));
 
@@ -118,6 +168,10 @@ int main(int argc, char *argv[])
             configureLayer(window, LayerWindow::LayerTop, L(A::AnchorTop) | A::AnchorLeft, 0,
                            QStringLiteral("vylo-launcher"), KI::KeyboardInteractivityExclusive,
                            QMargins(10, 8, 0, 0));
+        } else if (name == QLatin1String("toasts")) {
+            configureLayer(window, LayerWindow::LayerOverlay, L(A::AnchorTop) | A::AnchorRight, 0,
+                           QStringLiteral("vylo-toasts"), KI::KeyboardInteractivityNone,
+                           QMargins(0, 8, 10, 0));
         } else if (name == QLatin1String("flyout")) {
             configureLayer(window, LayerWindow::LayerTop, L(A::AnchorTop) | A::AnchorRight, 0,
                            QStringLiteral("vylo-flyout"), KI::KeyboardInteractivityOnDemand,

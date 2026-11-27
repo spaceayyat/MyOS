@@ -264,6 +264,7 @@
     <package name="papers"/>
     <package name="file-roller"/>
     <package name="pavucontrol"/>
+    <package name="libnotify"/>
     <package name="nm-connection-editor"/>
     <package name="blueman"/>
     <package name="adwaita-icon-theme"/>
