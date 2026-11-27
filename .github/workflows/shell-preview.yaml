@@ -1,0 +1,53 @@
+# Quick check of the desktop itself (a few minutes): compile it on Fedora 44,
+# run it headless and save real screenshots to docs/screenshots on the branch.
+name: Desktop preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [vylo]
+    paths:
+      - "desktop/**"
+      - "shared/**"
+      - "assets/brand/**"
+      - "CMakeLists.txt"
+      - "image/config/rootfs/usr/share/wallpapers/vylo/**"
+      - "image/config/rootfs/usr/share/vylo/**"
+      - "scripts/preview-shell.sh"
+      - ".github/workflows/shell-preview.yaml"
+
+permissions:
+  contents: write
+
+jobs:
+  preview:
+    name: Compile, run and photograph the desktop
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build and run in Fedora 44
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work \
+            registry.fedoraproject.org/fedora:44 scripts/preview-shell.sh /work/output/preview
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: desktop-preview
+          path: output/preview/
+          if-no-files-found: ignore
+      # Also on failure, so that a broken build can be diagnosed from the logs.
+      - name: Save screenshots and logs to the branch
+        if: always() && github.ref == 'refs/heads/vylo'
+        run: |
+          rm -rf docs/screenshots/preview-logs
+          mkdir -p docs/screenshots/preview-logs
+          cp output/preview/*.log docs/screenshots/preview-logs/ 2>/dev/null || true
+          for f in output/preview/*.png; do [ -f "$f" ] && cp "$f" docs/screenshots/vylo-"$(basename "$f")"; done
+          git config user.name spaceayyat
+          git config user.email azsr2710@gmail.com
+          git add docs/screenshots
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Update desktop screenshots from the preview run"
+          git pull --rebase origin vylo
+          git push origin HEAD:vylo
