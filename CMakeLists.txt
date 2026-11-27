@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(VYLO VERSION 0.1.0 LANGUAGES CXX)
+project(VYLO VERSION 0.4.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,7 +7,7 @@ set(CMAKE_AUTOMOC ON)
 
 include(GNUInstallDirs)
 
-# Name shown on the wallpaper and the panel menu button.
+# Name shown in the top bar and in Settings.
 set(VYLO_DISPLAY_NAME "VYLO OS" CACHE STRING "OS name shown in the desktop")
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Gui Qml Quick QuickControls2)

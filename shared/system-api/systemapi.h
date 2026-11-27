@@ -34,6 +34,16 @@ class SystemApi : public QObject
     Q_PROPERTY(double memUsedPercent READ memUsedPercent NOTIFY statsChanged)
     Q_PROPERTY(double memUsedGb READ memUsedGb NOTIFY statsChanged)
     Q_PROPERTY(double memTotalGb READ memTotalGb NOTIFY statsChanged)
+    // Status shown in the bar. Anything the machine does not report is flagged
+    // unavailable rather than guessed.
+    Q_PROPERTY(QString networkState READ networkState NOTIFY statsChanged) // wired, wifi, offline
+    Q_PROPERTY(int batteryPercent READ batteryPercent NOTIFY statsChanged) // -1: no battery
+    Q_PROPERTY(bool batteryCharging READ batteryCharging NOTIFY statsChanged)
+    Q_PROPERTY(double diskUsedPercent READ diskUsedPercent NOTIFY statsChanged) // -1: unknown
+    Q_PROPERTY(double temperature READ temperature NOTIFY statsChanged) // Celsius, -1: no sensor
+    Q_PROPERTY(int volume READ volume NOTIFY volumeChanged) // percent, -1: no audio service
+    Q_PROPERTY(bool muted READ muted NOTIFY volumeChanged)
+    Q_PROPERTY(QString userName READ userName CONSTANT)
     // Capability flags. Both are false until a real integration exists.
     Q_PROPERTY(bool windowManagementAvailable READ windowManagementAvailable CONSTANT)
     Q_PROPERTY(QString weatherState READ weatherState CONSTANT) // "unconfigured"
@@ -56,6 +66,24 @@ public:
     bool windowManagementAvailable() const { return false; }
     QString weatherState() const { return QStringLiteral("unconfigured"); }
 
+    QString networkState() const { return m_network; }
+    int batteryPercent() const { return m_battery; }
+    bool batteryCharging() const { return m_charging; }
+    double diskUsedPercent() const { return m_disk; }
+    double temperature() const { return m_temp; }
+    int volume() const { return m_volume; }
+    bool muted() const { return m_muted; }
+    QString userName() const;
+
+    Q_INVOKABLE void setVolume(int percent);
+    Q_INVOKABLE void toggleMute();
+    Q_INVOKABLE void refreshVolume();
+    // action: poweroff, reboot, suspend or logout. Anything else is refused.
+    Q_INVOKABLE bool power(const QString &action);
+    Q_INVOKABLE bool isPinned(const QString &id) const;
+    Q_INVOKABLE void togglePin(const QString &id);
+    Q_INVOKABLE QString wallpaperUrl(const QString &name) const;
+
     // Validates and saves one preference. Unknown keys / bad values are ignored.
     Q_INVOKABLE void setPref(const QString &key, const QVariant &value);
     // Exposed for tests: returns an invalid QVariant if key or value is not allowed.
@@ -63,6 +91,8 @@ public:
     static QVariantMap defaultPrefs();
     static QStringList accentNames();
     static QStringList wallpaperNames();
+    static QStringList defaultPins();
+    static QStringList powerCommand(const QString &action);
 
     // Start a program from a command line (a .desktop Exec value or a plain
     // program name). Returns false if it could not be started.
@@ -73,7 +103,8 @@ public:
 
     // Exposed for tests.
     static QStringList commandToArgs(const QString &exec);
-    static bool parseDesktopFile(const QString &path, QString *name, QString *exec);
+    static bool parseDesktopFile(const QString &path, QString *name, QString *exec,
+                                 QString *icon = nullptr, QStringList *categories = nullptr);
     static QString findTerminal();
 
 signals:
@@ -81,6 +112,7 @@ signals:
     void applicationsChanged();
     void prefsChanged();
     void statsChanged();
+    void volumeChanged();
 
 private:
     static QString configFilePath();
@@ -90,6 +122,8 @@ private:
     static QVariantMap readPrefsFromDisk();
     void updateStats();
     void resolvePinned();
+    void updateStatus();
+    void runWpctl(const QStringList &args);
 
     QString m_theme;
     QVariantList m_applications;
@@ -100,6 +134,12 @@ private:
     QTimer m_statsTimer;
     vylo::CpuTimes m_prevCpu;
     bool m_havePrevCpu = false;
+    QString m_network = QStringLiteral("offline");
+    int m_battery = -1;
+    bool m_charging = false;
+    double m_disk = -1, m_temp = -1;
+    int m_volume = -1;
+    bool m_muted = false;
     bool m_statsOk = false;
     double m_cpu = 0, m_memPct = 0, m_memUsedGb = 0, m_memTotalGb = 0;
 };

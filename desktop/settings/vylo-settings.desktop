@@ -1,7 +1,8 @@
 [Desktop Entry]
 Type=Application
 Name=VYLO OS Settings
-Comment=Change the VYLO OS appearance and widgets
+Comment=Change how the VYLO OS desktop looks
+Icon=vylo
 Exec=vylo-settings
 Terminal=false
 Categories=Settings;

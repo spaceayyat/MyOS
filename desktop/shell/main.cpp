@@ -1,13 +1,14 @@
-// vylo-shell: wallpaper, top widgets, bottom panel, left launcher, right drawer.
+// vylo-shell: the wallpaper, bar, widgets, dock, launcher and quick panel.
 //
-// Six QML windows are loaded and then turned into wlr-layer-shell surfaces
-// (via layer-shell-qt) so the compositor (labwc) keeps ordinary application
-// windows out of the panel area.
+// Each is a QML window turned into a wlr-layer-shell surface (via
+// layer-shell-qt), so the compositor (labwc) keeps application windows clear of
+// the bar and the dock.
 
 #include <LayerShellQt/Shell>
 #include <LayerShellQt/Window>
 
 #include <QGuiApplication>
+#include <QIcon>
 #include <QMargins>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -16,12 +17,14 @@
 #include <QTextStream>
 #include <QUrl>
 
+#include "appicons.h"
 #include "shellstate.h"
 #include "systemapi.h"
 
 namespace {
 
-constexpr int kPanelHeight = 44;
+constexpr int kBarHeight = 40;
+constexpr int kDockZone = 74; // visible dock; its hover label floats above
 
 using LayerWindow = LayerShellQt::Window;
 
@@ -54,21 +57,25 @@ int main(int argc, char *argv[])
     QGuiApplication::setDesktopFileName(QStringLiteral("vylo-shell"));
     QQuickStyle::setStyle(QStringLiteral("Basic"));
 
+    // Application icons: Papirus ships in the VYLO image.
+    if (QIcon::themeName().isEmpty() || QIcon::themeName() == QLatin1String("hicolor"))
+        QIcon::setThemeName(QStringLiteral("Papirus-Dark"));
+    QIcon::setFallbackThemeName(QStringLiteral("Adwaita"));
+
     VYLO::SystemApi system;
     ShellState state;
 
     QQmlApplicationEngine engine;
+    engine.addImageProvider(QStringLiteral("appicon"), new AppIconProvider);
     engine.rootContext()->setContextProperty(QStringLiteral("Sys"), &system);
     engine.rootContext()->setContextProperty(QStringLiteral("Shell"), &state);
 
-    const QStringList files = {QStringLiteral("qrc:/vylo/shell/Wallpaper.qml"),
-                               QStringLiteral("qrc:/vylo/shell/Widgets.qml"),
-                               QStringLiteral("qrc:/vylo/shell/Panel.qml"),
-                               QStringLiteral("qrc:/vylo/shell/EdgeHandle.qml"),
-                               QStringLiteral("qrc:/vylo/shell/Drawer.qml"),
-                               QStringLiteral("qrc:/vylo/shell/Launcher.qml")};
+    // Load order is stacking order within a layer.
+    const QStringList files = {QStringLiteral("Wallpaper"), QStringLiteral("Widgets"),
+                               QStringLiteral("Panel"), QStringLiteral("Dock"),
+                               QStringLiteral("Launcher"), QStringLiteral("Flyout")};
     for (const QString &file : files)
-        engine.load(QUrl(file));
+        engine.load(QUrl(QStringLiteral("qrc:/vylo/shell/%1.qml").arg(file)));
 
     if (engine.rootObjects().size() != files.size()) {
         QTextStream(stderr) << "vylo-shell: failed to load all QML files\n";
@@ -76,12 +83,7 @@ int main(int argc, char *argv[])
     }
 
     using A = LayerWindow::Anchor;
-    const LayerWindow::Anchors all = LayerWindow::Anchors(A::AnchorTop) | A::AnchorBottom
-                                     | A::AnchorLeft | A::AnchorRight;
-    const LayerWindow::Anchors top = LayerWindow::Anchors(A::AnchorTop) | A::AnchorLeft | A::AnchorRight;
-    const LayerWindow::Anchors bottom = LayerWindow::Anchors(A::AnchorBottom) | A::AnchorLeft | A::AnchorRight;
-    const LayerWindow::Anchors left = LayerWindow::Anchors(A::AnchorTop) | A::AnchorBottom | A::AnchorLeft;
-    const LayerWindow::Anchors right = LayerWindow::Anchors(A::AnchorTop) | A::AnchorBottom | A::AnchorRight;
+    using L = LayerWindow::Anchors;
     using KI = LayerWindow::KeyboardInteractivity;
 
     for (QObject *object : engine.rootObjects()) {
@@ -90,35 +92,49 @@ int main(int argc, char *argv[])
             continue;
         const QString name = window->objectName();
 
-        // Always-visible surfaces are shown here; the launcher and drawer show
-        // themselves from QML when their state changes.
+        // Always-visible surfaces are shown here; the launcher and quick panel
+        // show themselves from QML when their state changes.
         if (name == QLatin1String("wallpaper")) {
-            configureLayer(window, LayerWindow::LayerBackground, all, -1,
+            configureLayer(window, LayerWindow::LayerBackground,
+                           L(A::AnchorTop) | A::AnchorBottom | A::AnchorLeft | A::AnchorRight, -1,
                            QStringLiteral("vylo-wallpaper"), KI::KeyboardInteractivityNone);
             window->show();
         } else if (name == QLatin1String("widgets")) {
             // Bottom layer: application windows cover the widgets.
-            configureLayer(window, LayerWindow::LayerBottom, top, 0,
-                           QStringLiteral("vylo-widgets"), KI::KeyboardInteractivityNone);
+            configureLayer(window, LayerWindow::LayerBottom,
+                           L(A::AnchorTop) | A::AnchorRight, 0,
+                           QStringLiteral("vylo-widgets"), KI::KeyboardInteractivityNone,
+                           QMargins(0, 0, 4, 0));
             window->show();
         } else if (name == QLatin1String("panel")) {
-            window->setHeight(kPanelHeight);
-            configureLayer(window, LayerWindow::LayerTop, bottom, kPanelHeight,
-                           QStringLiteral("vylo-panel"), KI::KeyboardInteractivityNone);
+            window->setHeight(kBarHeight);
+            configureLayer(window, LayerWindow::LayerTop,
+                           L(A::AnchorTop) | A::AnchorLeft | A::AnchorRight, kBarHeight,
+                           QStringLiteral("vylo-bar"), KI::KeyboardInteractivityNone);
             window->show();
-        } else if (name == QLatin1String("edge")) {
-            configureLayer(window, LayerWindow::LayerTop, right, 0,
-                           QStringLiteral("vylo-edge"), KI::KeyboardInteractivityNone);
+        } else if (name == QLatin1String("dock")) {
+            // Anchored to one edge only, so the compositor centres it.
+            configureLayer(window, LayerWindow::LayerTop, L(A::AnchorBottom), kDockZone,
+                           QStringLiteral("vylo-dock"), KI::KeyboardInteractivityNone);
             window->show();
         } else if (name == QLatin1String("launcher")) {
             // Exclusive keyboard focus while open so search and arrow keys work.
-            configureLayer(window, LayerWindow::LayerTop, left, 0,
-                           QStringLiteral("vylo-launcher"), KI::KeyboardInteractivityExclusive);
-        } else if (name == QLatin1String("drawer")) {
-            configureLayer(window, LayerWindow::LayerTop, right, 0,
-                           QStringLiteral("vylo-drawer"), KI::KeyboardInteractivityOnDemand);
+            configureLayer(window, LayerWindow::LayerTop, L(A::AnchorTop) | A::AnchorLeft, 0,
+                           QStringLiteral("vylo-launcher"), KI::KeyboardInteractivityExclusive,
+                           QMargins(10, 8, 0, 0));
+        } else if (name == QLatin1String("flyout")) {
+            configureLayer(window, LayerWindow::LayerTop, L(A::AnchorTop) | A::AnchorRight, 0,
+                           QStringLiteral("vylo-flyout"), KI::KeyboardInteractivityOnDemand,
+                           QMargins(0, 8, 10, 0));
         }
     }
+
+    // Opens a surface at start, for the screenshots taken in CI.
+    const QString preview = qEnvironmentVariable("VYLO_PREVIEW");
+    if (preview == QLatin1String("launcher"))
+        state.setLauncherOpen(true);
+    else if (preview == QLatin1String("flyout"))
+        state.setFlyoutOpen(true);
 
     return app.exec();
 }

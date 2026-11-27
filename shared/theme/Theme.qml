@@ -1,58 +1,67 @@
 import QtQuick
 
-// The single source of truth for VYLO OS colours, shapes and wallpapers.
+// The VYLO design system: colour, type, spacing, shape, glass and motion.
 // Instantiate once per window and pass it to components:
-//     Theme { id: th; dark: Sys.theme === "dark"; accentName: Sys.prefs.accent }
+//     Theme { id: th; dark: Sys.theme === "dark"; accentName: Sys.prefs.accent
+//             reducedMotion: Sys.prefs.reducedMotion === true }
 QtObject {
     property bool dark: true
-    property string accentName: "blue"
+    property string accentName: "violet"
+    property bool reducedMotion: false
 
-    // ---- shape and rhythm -------------------------------------------------
-    readonly property int radius: 14
-    readonly property int radiusSmall: 8
-    readonly property int gap: 12
-    readonly property int fast: 140      // ms, hover/press feedback
-    readonly property int slide: 220     // ms, drawers
+    // ---- brand colours ------------------------------------------------------
+    readonly property color voidBlack:   "#100B25"
+    readonly property color violet:      "#713BFA"
+    readonly property color cyan:        "#37D9FF"
+    readonly property color starlight:   "#C5AEFF"
+    readonly property color cosmicWhite: "#F4F2FF"
 
     // ---- accents (dark value, light value) ----------------------------------
     readonly property var accents: ({
-        blue:   { d: "#6c93ff", l: "#2f5bff" },
-        teal:   { d: "#3fd0c4", l: "#0a8f86" },
-        violet: { d: "#a98bff", l: "#6a43e0" },
-        rose:   { d: "#ff7fa3", l: "#d02a5f" },
-        amber:  { d: "#ffb84d", l: "#b86e00" }
+        violet:    { d: "#713BFA", l: "#5c26e6" },
+        cyan:      { d: "#37D9FF", l: "#0889ad" },
+        starlight: { d: "#C5AEFF", l: "#7a5bd6" },
+        rose:      { d: "#ff6fa8", l: "#c9246a" },
+        amber:     { d: "#ffb84d", l: "#a96500" }
     })
-    readonly property color accent: (accents[accentName] || accents.blue)[dark ? "d" : "l"]
-    readonly property color accentSoft: Qt.alpha(accent, dark ? 0.20 : 0.14)
-    readonly property color onAccent: dark ? "#07102b" : "#ffffff"
+    readonly property color accent: (accents[accentName] || accents.violet)[dark ? "d" : "l"]
+    readonly property color accentSoft: Qt.alpha(accent, dark ? 0.24 : 0.14)
+    // Dark text on the pale accents, white on the deep ones.
+    readonly property color onAccent: (accent.r * 0.3 + accent.g * 0.59 + accent.b * 0.11) > 0.6 ? voidBlack : "#ffffff"
 
-    // ---- surfaces (deep navy / charcoal in dark mode) -------------------------
-    readonly property color panel:     dark ? "#0e1224" : "#f4f6fd"
-    readonly property color surface:   dark ? "#141a30" : "#ffffff"
-    readonly property color card:      dark ? "#171e38" : "#ffffff"
-    readonly property color cardAlt:   dark ? "#1d2543" : "#eef2ff"
-    readonly property color border:    dark ? "#2a3358" : "#d3dcf5"
-    readonly property color hover:     dark ? "#222b4d" : "#e4eaff"
-    readonly property color text:      dark ? "#edf0ff" : "#0f1a3a"
-    readonly property color textMuted: dark ? "#98a2cc" : "#5a6a96"
-    readonly property color track:     dark ? "#262f55" : "#dbe3fa"
+    // ---- glass surfaces -------------------------------------------------------
+    // Translucency without blur: blur needs compositor support labwc lacks.
+    readonly property color panel:     dark ? "#d90f0a22" : "#e6f4f2ff"
+    readonly property color surface:   dark ? "#ee130d2c" : "#f4ffffff"
+    readonly property color card:      dark ? "#c2160f33" : "#dcffffff"
+    readonly property color cardAlt:   dark ? "#801f1647" : "#99ebe4ff"
+    readonly property color border:    dark ? "#40a284ff" : "#406a45d9"
+    readonly property color edge:      dark ? "#26ffffff" : "#80ffffff"   // top highlight
+    readonly property color hover:     dark ? "#33a284ff" : "#26713BFA"
+    readonly property color text:      dark ? cosmicWhite : "#1b1238"
+    readonly property color textMuted: dark ? "#a99fd0" : "#5b5080"
+    readonly property color track:     dark ? "#33c5aeff" : "#26713BFA"
+    readonly property color iconTile:  dark ? "#00000000" : "#cc2a1d55"   // behind line icons in light mode
 
-    // Names kept from the first version of the shell.
-    readonly property color panelText:     text
-    readonly property color surfaceText:   text
-    readonly property color surfaceMuted:  textMuted
-    readonly property color wallpaperText: dark ? "#e8ecff" : "#0d1b3d"
-    readonly property color wallpaperMuted: dark ? "#8f9ac4" : "#35508f"
+    // ---- type -------------------------------------------------------------------
+    readonly property string fontUi: "Inter"
+    // Space Grotesk is not packaged by Fedora; it is used when installed.
+    readonly property string fontHead: Qt.fontFamilies().indexOf("Space Grotesk") >= 0 ? "Space Grotesk" : "Inter"
+    readonly property string fontMono: "JetBrains Mono"
+    readonly property int textSmall: 11
+    readonly property int textBody: 13
+    readonly property int textTitle: 18
 
-    // ---- wallpapers: generated gradients bundled with the app --------------------
-    readonly property var wallpapers: ({
-        midnight: { dt: "#18224d", db: "#070a16", lt: "#8fb0ff", lb: "#e3ecff" },
-        aurora:   { dt: "#0f3a45", db: "#080d1c", lt: "#8fe0d6", lb: "#e2f6f3" },
-        graphite: { dt: "#2a2d38", db: "#0d0e13", lt: "#c9ccd8", lb: "#f1f2f6" },
-        dusk:     { dt: "#3b2358", db: "#0c0a1c", lt: "#c9a8ff", lb: "#f1e8ff" }
-    })
-    function wallTop(name)    { var w = wallpapers[name] || wallpapers.midnight; return dark ? w.dt : w.lt }
-    function wallBottom(name) { var w = wallpapers[name] || wallpapers.midnight; return dark ? w.db : w.lb }
-    readonly property color wallpaperTop:    wallTop("midnight")
-    readonly property color wallpaperBottom: wallBottom("midnight")
+    // ---- space and shape ------------------------------------------------------------
+    readonly property int space: 8
+    readonly property int gap: 12
+    readonly property int radius: 18
+    readonly property int radiusSmall: 10
+    readonly property int barHeight: 40
+    readonly property int dockIcon: 44
+    readonly property int iconSmall: 17
+
+    // ---- motion (milliseconds; zero when reduced) ------------------------------------
+    readonly property int fast: reducedMotion ? 0 : 130
+    readonly property int slide: reducedMotion ? 0 : 230
 }

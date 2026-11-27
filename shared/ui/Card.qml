@@ -1,6 +1,6 @@
 import QtQuick
 
-// Reusable rounded card used by every widget and by settings sections.
+// A pane of glass: used by widgets, popups and settings sections.
 Rectangle {
     id: card
     required property var theme
@@ -12,22 +12,29 @@ Rectangle {
     border.width: 1
     border.color: theme.border
 
+    // A thin highlight along the top edge, as light would catch glass.
+    Rectangle {
+        x: card.radius
+        y: 1
+        width: card.width - card.radius * 2
+        height: 1
+        color: card.theme.edge
+    }
     Text {
         id: heading
         visible: card.title !== ""
-        anchors.left: parent.left
-        anchors.top: parent.top
-        anchors.margins: 14
-        text: card.title.toUpperCase()
-        font.pixelSize: 10
-        font.letterSpacing: 1.4
-        font.bold: true
-        color: card.theme.textMuted
+        x: 16
+        y: 13
+        text: card.title
+        font.family: card.theme.fontHead
+        font.pixelSize: card.theme.textBody
+        font.weight: Font.DemiBold
+        color: card.theme.text
     }
     Item {
         id: body
         anchors.fill: parent
-        anchors.margins: 14
-        anchors.topMargin: heading.visible ? 34 : 14
+        anchors.margins: 16
+        anchors.topMargin: heading.visible ? 40 : 16
     }
 }

@@ -9,7 +9,7 @@ Card {
     Column {
         anchors.verticalCenter: parent.verticalCenter
         spacing: 6
-        Text { text: "Not configured"; font.pixelSize: 18; font.bold: true; color: root.theme.text }
+        Text { text: "Not configured"; font.family: root.theme.fontHead; font.pixelSize: 18; font.bold: true; color: root.theme.text }
         Text {
             width: root.width - 28
             wrapMode: Text.WordWrap

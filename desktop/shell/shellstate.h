@@ -2,19 +2,19 @@
 
 #include <QObject>
 
-// State shared between the shell's windows. The launcher (left) and the
-// workspace drawer (right) are never open at the same time.
+// State shared between the shell's windows. The launcher and the quick panel
+// are never open at the same time.
 class ShellState : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool launcherOpen READ launcherOpen WRITE setLauncherOpen NOTIFY launcherOpenChanged)
-    Q_PROPERTY(bool drawerOpen READ drawerOpen WRITE setDrawerOpen NOTIFY drawerOpenChanged)
+    Q_PROPERTY(bool flyoutOpen READ flyoutOpen WRITE setFlyoutOpen NOTIFY flyoutOpenChanged)
 
 public:
     using QObject::QObject;
 
     bool launcherOpen() const { return m_launcher; }
-    bool drawerOpen() const { return m_drawer; }
+    bool flyoutOpen() const { return m_flyout; }
 
     void setLauncherOpen(bool open)
     {
@@ -23,28 +23,28 @@ public:
         m_launcher = open;
         emit launcherOpenChanged();
         if (open)
-            setDrawerOpen(false);
+            setFlyoutOpen(false);
     }
-    void setDrawerOpen(bool open)
+    void setFlyoutOpen(bool open)
     {
-        if (open == m_drawer)
+        if (open == m_flyout)
             return;
-        m_drawer = open;
-        emit drawerOpenChanged();
+        m_flyout = open;
+        emit flyoutOpenChanged();
         if (open)
             setLauncherOpen(false);
     }
     Q_INVOKABLE void closeAll()
     {
         setLauncherOpen(false);
-        setDrawerOpen(false);
+        setFlyoutOpen(false);
     }
 
 signals:
     void launcherOpenChanged();
-    void drawerOpenChanged();
+    void flyoutOpenChanged();
 
 private:
     bool m_launcher = false;
-    bool m_drawer = false;
+    bool m_flyout = false;
 };

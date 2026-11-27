@@ -2,135 +2,196 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-// VYLO OS Settings: appearance and widgets. Every change is saved immediately and
-// the running desktop updates live (the shell watches the same config file).
+// VYLO OS Settings: look and widgets. Every change is saved at once and the
+// running desktop follows (the shell watches the same config file).
 ApplicationWindow {
     id: win
     title: "VYLO OS Settings"
-    width: 640
-    height: 640
-    minimumWidth: 420
-    minimumHeight: 360
+    width: 760
+    height: 560
+    minimumWidth: 620
+    minimumHeight: 420
     visible: true
-    color: th.panel
+    color: th.dark ? th.voidBlack : th.cosmicWhite
 
-    Theme { id: th; dark: Sys.theme === "dark"; accentName: Sys.prefs.accent }
+    property int page: 0
+    readonly property var pages: ["Appearance", "Wallpaper", "Widgets", "About"]
 
-    ScrollView {
-        anchors.fill: parent
-        contentWidth: availableWidth
-        clip: true
+    Theme { id: th; dark: Sys.theme === "dark"; accentName: Sys.prefs.accent; reducedMotion: Sys.prefs.reducedMotion === true }
 
+    component Heading: Text {
+        font.family: th.fontUi; font.pixelSize: th.textSmall; font.weight: Font.DemiBold
+        color: th.textMuted
+    }
+    component Option: RowLayout {
+        id: option
+        property string label
+        property string hint
+        property alias checked: toggle.checked
+        signal toggled(bool value)
+        Layout.fillWidth: true
+        spacing: 12
+        Column {
+            Layout.fillWidth: true
+            Text { text: option.label; font.family: th.fontUi; font.pixelSize: 14; color: th.text }
+            Text { visible: text !== ""; text: option.hint; font.family: th.fontUi; font.pixelSize: th.textSmall; color: th.textMuted }
+        }
+        Switch { id: toggle; onToggled: option.toggled(checked) }
+    }
+
+    Rectangle {
+        id: side
+        width: 180; height: parent.height
+        color: th.card
+        Image {
+            x: 18; y: 18; width: 110; height: 28
+            source: th.dark ? "qrc:/vylo/settings/brand/vylo-logo-dark.svg" : "qrc:/vylo/settings/brand/vylo-logo.svg"
+            sourceSize.width: 220
+            fillMode: Image.PreserveAspectFit
+            horizontalAlignment: Image.AlignLeft
+        }
+        Column {
+            x: 10; y: 70; width: parent.width - 20; spacing: 3
+            Repeater {
+                model: win.pages
+                delegate: Rectangle {
+                    required property string modelData
+                    required property int index
+                    width: parent.width; height: 36; radius: th.radiusSmall
+                    color: win.page === index ? th.accent : (area.containsMouse ? th.hover : "transparent")
+                    Text {
+                        x: 12; anchors.verticalCenter: parent.verticalCenter
+                        text: parent.modelData
+                        font.family: th.fontUi; font.pixelSize: th.textBody
+                        color: win.page === parent.index ? th.onAccent : th.text
+                    }
+                    MouseArea { id: area; anchors.fill: parent; hoverEnabled: true; onClicked: win.page = parent.index }
+                }
+            }
+        }
+    }
+
+    StackLayout {
+        anchors.left: side.right; anchors.right: parent.right
+        anchors.top: parent.top; anchors.bottom: parent.bottom
+        anchors.margins: 26
+        currentIndex: win.page
+
+        // ---- Appearance ---------------------------------------------------
         ColumnLayout {
-            width: win.width - 40
-            x: 20
             spacing: 16
-
-            Item { Layout.preferredHeight: 4 }
-            Text { text: "Settings"; font.pixelSize: 26; font.weight: Font.DemiBold; color: th.text }
-
-            // ---- Appearance ------------------------------------------------------
-            Card {
-                theme: th; title: "Appearance"
-                Layout.fillWidth: true; Layout.preferredHeight: 190
-                Column {
-                    anchors.fill: parent
-                    spacing: 16
-                    Row {
-                        spacing: 14
-                        Switch {
-                            id: darkSwitch
-                            checked: Sys.theme === "dark"
-                            onToggled: Sys.theme = checked ? "dark" : "light"
-                        }
-                        Text { anchors.verticalCenter: parent.verticalCenter; text: "Dark theme"; font.pixelSize: 15; color: th.text }
-                    }
-                    Text { text: "Accent colour"; font.pixelSize: 12; color: th.textMuted }
-                    Row {
-                        spacing: 12
-                        Repeater {
-                            model: ["blue", "teal", "violet", "rose", "amber"]
-                            delegate: Rectangle {
-                                width: 36; height: 36; radius: 18
-                                color: (th.accents[modelData])[th.dark ? "d" : "l"]
-                                border.width: Sys.prefs.accent === modelData ? 3 : 0
-                                border.color: th.text
-                                Behavior on border.width { NumberAnimation { duration: th.fast } }
-                                MouseArea { anchors.fill: parent; onClicked: Sys.setPref("accent", modelData) }
-                            }
-                        }
+            Text { text: "Appearance"; font.family: th.fontHead; font.pixelSize: 24; font.weight: Font.DemiBold; color: th.text }
+            Option {
+                label: "Dark theme"
+                checked: Sys.theme === "dark"
+                onToggled: function (value) { Sys.theme = value ? "dark" : "light" }
+            }
+            Option {
+                label: "Reduce motion"
+                hint: "Turns off fades and hover movement"
+                checked: Sys.prefs.reducedMotion === true
+                onToggled: function (value) { Sys.setPref("reducedMotion", value) }
+            }
+            Heading { text: "Accent colour" }
+            Row {
+                spacing: 12
+                Repeater {
+                    model: ["violet", "cyan", "starlight", "rose", "amber"]
+                    delegate: Rectangle {
+                        required property string modelData
+                        width: 34; height: 34; radius: 17
+                        color: th.accents[modelData][th.dark ? "d" : "l"]
+                        border.width: Sys.prefs.accent === modelData ? 3 : 0
+                        border.color: th.text
+                        MouseArea { anchors.fill: parent; onClicked: Sys.setPref("accent", parent.modelData) }
                     }
                 }
             }
+            Heading { text: "Greeting in the top bar" }
+            TextField {
+                Layout.preferredWidth: 300
+                text: Sys.prefs.greeting
+                maximumLength: 40
+                placeholderText: "Leave empty to hide"
+                placeholderTextColor: th.textMuted
+                color: th.text
+                font.family: th.fontUi
+                background: Rectangle { radius: th.radiusSmall; color: th.cardAlt; border.width: 1; border.color: parent.activeFocus ? th.accent : th.border }
+                onEditingFinished: Sys.setPref("greeting", text)
+            }
+            Item { Layout.fillHeight: true }
+        }
 
-            // ---- Wallpaper ---------------------------------------------------------
-            Card {
-                theme: th; title: "Wallpaper"
-                Layout.fillWidth: true; Layout.preferredHeight: 150
-                Row {
-                    anchors.fill: parent
-                    spacing: 12
-                    Repeater {
-                        model: ["midnight", "aurora", "graphite", "dusk"]
-                        delegate: Item {
-                            width: (parent.width - 36) / 4; height: parent.height
-                            Rectangle {
-                                anchors.fill: parent; anchors.bottomMargin: 22; radius: th.radiusSmall
-                                gradient: Gradient {
-                                    GradientStop { position: 0; color: th.wallTop(modelData) }
-                                    GradientStop { position: 1; color: th.wallBottom(modelData) }
-                                }
-                                border.width: Sys.prefs.wallpaper === modelData ? 3 : 1
-                                border.color: Sys.prefs.wallpaper === modelData ? th.accent : th.border
+        // ---- Wallpaper ----------------------------------------------------
+        ColumnLayout {
+            spacing: 16
+            Text { text: "Wallpaper"; font.family: th.fontHead; font.pixelSize: 24; font.weight: Font.DemiBold; color: th.text }
+            GridLayout {
+                columns: 2
+                columnSpacing: 14; rowSpacing: 14
+                Repeater {
+                    model: [
+                        { key: "observatory-isles", label: "Observatory isles" },
+                        { key: "nebula-drift", label: "Nebula drift" },
+                        { key: "deep-void", label: "Deep void" }
+                    ]
+                    delegate: Column {
+                        id: choice
+                        required property var modelData
+                        spacing: 6
+                        Rectangle {
+                            width: 230; height: 134; radius: th.radiusSmall
+                            color: "transparent"
+                            border.width: Sys.prefs.wallpaper === choice.modelData.key ? 3 : 1
+                            border.color: Sys.prefs.wallpaper === choice.modelData.key ? th.accent : th.border
+                            Image {
+                                anchors.fill: parent; anchors.margins: 4
+                                source: Sys.wallpaperUrl(choice.modelData.key)
+                                sourceSize.width: 460
+                                fillMode: Image.PreserveAspectCrop
+                                asynchronous: true
                             }
-                            Text {
-                                anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
-                                text: modelData.charAt(0).toUpperCase() + modelData.slice(1)
-                                font.pixelSize: 12; color: th.textMuted
-                            }
-                            MouseArea { anchors.fill: parent; onClicked: Sys.setPref("wallpaper", modelData) }
+                            MouseArea { anchors.fill: parent; onClicked: Sys.setPref("wallpaper", choice.modelData.key) }
                         }
+                        Text { text: choice.modelData.label; font.family: th.fontUi; font.pixelSize: 12; color: th.textMuted }
                     }
                 }
             }
+            Item { Layout.fillHeight: true }
+        }
 
-            // ---- Widgets --------------------------------------------------------------
-            Card {
-                theme: th; title: "Top widgets"
-                Layout.fillWidth: true; Layout.preferredHeight: 232
-                Column {
-                    anchors.fill: parent
-                    spacing: 2
-                    Repeater {
-                        model: [
-                            { key: "showClock", label: "Clock and date" },
-                            { key: "showCalendar", label: "Calendar" },
-                            { key: "showWeather", label: "Weather" },
-                            { key: "showMonitor", label: "System monitor (CPU, memory)" }
-                        ]
-                        delegate: Row {
-                            spacing: 14
-                            Switch {
-                                checked: Sys.prefs[modelData.key] === true
-                                onToggled: Sys.setPref(modelData.key, checked)
-                            }
-                            Text { anchors.verticalCenter: parent.verticalCenter; text: modelData.label; font.pixelSize: 14; color: th.text }
-                        }
-                    }
+        // ---- Widgets ------------------------------------------------------
+        ColumnLayout {
+            spacing: 16
+            Text { text: "Widgets"; font.family: th.fontHead; font.pixelSize: 24; font.weight: Font.DemiBold; color: th.text }
+            Repeater {
+                model: [
+                    { key: "showClock", label: "Clock and date" },
+                    { key: "showMonitor", label: "System (CPU, memory, disk, temperature)" },
+                    { key: "showCalendar", label: "Calendar" },
+                    { key: "showWeather", label: "Weather (no provider set up yet)" }
+                ]
+                delegate: Option {
+                    required property var modelData
+                    label: modelData.label
+                    checked: Sys.prefs[modelData.key] === true
+                    onToggled: function (value) { Sys.setPref(modelData.key, value) }
                 }
             }
+            Item { Layout.fillHeight: true }
+        }
 
-            // ---- Panel (read-only for now) -------------------------------------------------
-            Card {
-                theme: th; title: "Panel"
-                Layout.fillWidth: true; Layout.preferredHeight: 96
-                Text {
-                    width: parent.width; wrapMode: Text.WordWrap
-                    text: "The panel sits at the bottom of the screen. Moving it or changing its size is not available yet."
-                    font.pixelSize: 13; color: th.textMuted
-                }
+        // ---- About --------------------------------------------------------
+        ColumnLayout {
+            spacing: 12
+            Text { text: Sys.osName; font.family: th.fontHead; font.pixelSize: 24; font.weight: Font.DemiBold; color: th.text }
+            Text { text: "Make Space Yours."; font.family: th.fontUi; font.pixelSize: 15; color: th.accent }
+            Text {
+                Layout.fillWidth: true; wrapMode: Text.WordWrap
+                text: "A Fedora-based desktop, still early. Window switching in the dock, notifications, network and Bluetooth controls are not built yet."
+                font.family: th.fontUi; font.pixelSize: th.textBody; color: th.textMuted
             }
-            Item { Layout.preferredHeight: 12 }
+            Item { Layout.fillHeight: true }
         }
     }
 }

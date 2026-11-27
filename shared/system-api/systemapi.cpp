@@ -9,6 +9,8 @@
 #include <QRegularExpression>
 #include <QSet>
 #include <QSettings>
+#include <QStorageInfo>
+#include <QUrl>
 #include <QStandardPaths>
 #include <QTextStream>
 #include <algorithm>
@@ -34,6 +36,7 @@ SystemApi::SystemApi(QObject *parent)
     connect(&m_statsTimer, &QTimer::timeout, this, &SystemApi::updateStats);
     m_statsTimer.start(2000);
     updateStats();
+    refreshVolume();
 
     // Watch the config directory (not the file): QSettings replaces the file
     // atomically, which would drop a file-level watch. This is what keeps the
@@ -113,12 +116,17 @@ void SystemApi::refreshApplications()
                 continue; // earlier directories (user) win
             QString name;
             QString exec;
-            if (!parseDesktopFile(fi.absoluteFilePath(), &name, &exec))
+            QString icon;
+            QStringList categories;
+            if (!parseDesktopFile(fi.absoluteFilePath(), &name, &exec, &icon, &categories))
                 continue;
             seenIds.insert(fi.fileName());
             QVariantMap entry;
             entry.insert(QStringLiteral("name"), name);
             entry.insert(QStringLiteral("exec"), exec);
+            entry.insert(QStringLiteral("id"), fi.completeBaseName());
+            entry.insert(QStringLiteral("icon"), icon);
+            entry.insert(QStringLiteral("categories"), categories);
             result.append(entry);
         }
     }
@@ -149,7 +157,8 @@ QStringList SystemApi::commandToArgs(const QString &exec)
     return out;
 }
 
-bool SystemApi::parseDesktopFile(const QString &path, QString *name, QString *exec)
+bool SystemApi::parseDesktopFile(const QString &path, QString *name, QString *exec,
+                                 QString *icon, QStringList *categories)
 {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -161,6 +170,8 @@ bool SystemApi::parseDesktopFile(const QString &path, QString *name, QString *ex
     QString type;
     QString parsedName;
     QString parsedExec;
+    QString parsedIcon;
+    QString parsedCategories;
 
     while (!in.atEnd()) {
         const QString line = in.readLine().trimmed();
@@ -181,6 +192,10 @@ bool SystemApi::parseDesktopFile(const QString &path, QString *name, QString *ex
             parsedName = value;
         else if (key == QLatin1String("Exec"))
             parsedExec = value;
+        else if (key == QLatin1String("Icon"))
+            parsedIcon = value;
+        else if (key == QLatin1String("Categories"))
+            parsedCategories = value;
         else if (key == QLatin1String("Type"))
             type = value;
         else if (key == QLatin1String("NoDisplay") || key == QLatin1String("Hidden")) {
@@ -198,6 +213,10 @@ bool SystemApi::parseDesktopFile(const QString &path, QString *name, QString *ex
 
     *name = parsedName;
     *exec = parsedExec;
+    if (icon)
+        *icon = parsedIcon;
+    if (categories)
+        *categories = parsedCategories.split(QLatin1Char(';'), Qt::SkipEmptyParts);
     return true;
 }
 
@@ -254,6 +273,8 @@ void SystemApi::onConfigDirChanged()
     if (prefsOnDisk != m_prefs) {
         m_prefs = prefsOnDisk;
         emit prefsChanged();
+        resolvePinned();
+        emit applicationsChanged();
     }
     const QString onDisk = readThemeFromDisk();
     if (onDisk != m_theme) {
@@ -265,23 +286,34 @@ void SystemApi::onConfigDirChanged()
 
 QStringList SystemApi::accentNames()
 {
-    return {QStringLiteral("blue"), QStringLiteral("teal"), QStringLiteral("violet"),
+    return {QStringLiteral("violet"), QStringLiteral("cyan"), QStringLiteral("starlight"),
             QStringLiteral("rose"), QStringLiteral("amber")};
 }
 
 QStringList SystemApi::wallpaperNames()
 {
-    return {QStringLiteral("midnight"), QStringLiteral("aurora"),
-            QStringLiteral("graphite"), QStringLiteral("dusk")};
+    return {QStringLiteral("observatory-isles"), QStringLiteral("nebula-drift"),
+            QStringLiteral("deep-void")};
+}
+
+QStringList SystemApi::defaultPins()
+{
+    // Desktop file names without ".desktop". Missing applications are skipped.
+    return {QStringLiteral("vylo-install"), QStringLiteral("org.gnome.Nautilus"), QStringLiteral("helium"),
+            QStringLiteral("foot"), QStringLiteral("org.gnome.TextEditor"),
+            QStringLiteral("org.gnome.Software"), QStringLiteral("vylo-settings")};
 }
 
 QVariantMap SystemApi::defaultPrefs()
 {
-    return {{QStringLiteral("accent"), QStringLiteral("blue")},
-            {QStringLiteral("wallpaper"), QStringLiteral("midnight")},
+    return {{QStringLiteral("accent"), QStringLiteral("violet")},
+            {QStringLiteral("wallpaper"), QStringLiteral("observatory-isles")},
+            {QStringLiteral("greeting"), QStringLiteral("Make Space Yours.")},
+            {QStringLiteral("pins"), defaultPins().join(QLatin1Char(';'))},
+            {QStringLiteral("reducedMotion"), false},
             {QStringLiteral("showClock"), true},
             {QStringLiteral("showCalendar"), true},
-            {QStringLiteral("showWeather"), true},
+            {QStringLiteral("showWeather"), false},
             {QStringLiteral("showMonitor"), true}};
 }
 
@@ -295,7 +327,18 @@ QVariant SystemApi::normalizePref(const QString &key, const QVariant &value)
         const QString v = value.toString();
         return wallpaperNames().contains(v) ? QVariant(v) : QVariant();
     }
-    if (key.startsWith(QLatin1String("show")) && defaultPrefs().contains(key)) {
+    if (key == QLatin1String("greeting")) {
+        const QString v = value.toString().simplified();
+        return v.size() <= 40 ? QVariant(v) : QVariant();
+    }
+    if (key == QLatin1String("pins")) {
+        static const QRegularExpression valid(QStringLiteral("^[A-Za-z0-9._;-]{0,600}$"));
+        // QSettings may hand back a list if the value held separators.
+        const QString v = value.toStringList().join(QLatin1Char(';'));
+        return valid.match(v).hasMatch() ? QVariant(v) : QVariant();
+    }
+    if (key == QLatin1String("reducedMotion")
+        || (key.startsWith(QLatin1String("show")) && defaultPrefs().contains(key))) {
         if (value.typeId() == QMetaType::Bool)
             return value;
         const QString v = value.toString().toLower();
@@ -330,6 +373,10 @@ void SystemApi::setPref(const QString &key, const QVariant &value)
     settings.setValue(QStringLiteral("prefs/") + key, ok);
     settings.sync();
     emit prefsChanged();
+    if (key == QLatin1String("pins")) {
+        resolvePinned();
+        emit applicationsChanged();
+    }
 }
 
 namespace {
@@ -360,26 +407,173 @@ void SystemApi::updateStats()
         m_memTotalGb = double(mem.totalKb) / 1048576.0;
         m_memUsedGb = double(mem.totalKb - mem.availableKb) / 1048576.0;
     }
+    updateStatus();
     emit statsChanged();
 }
 
 void SystemApi::resolvePinned()
 {
-    // Pinned apps are matched against installed .desktop metadata; anything
-    // not installed is simply not shown.
-    static const QStringList wanted = {QStringLiteral("foot"), QStringLiteral("vylo-settings")};
+    // Pins are matched against installed applications, in the user's order.
+    const QStringList wanted = m_prefs.value(QStringLiteral("pins")).toString()
+                                   .split(QLatin1Char(';'), Qt::SkipEmptyParts);
     QVariantList pinned;
-    for (const QString &program : wanted) {
+    for (const QString &id : wanted) {
         for (const QVariant &v : std::as_const(m_applications)) {
-            const QVariantMap app = v.toMap();
-            const QStringList args = commandToArgs(app.value(QStringLiteral("exec")).toString());
-            if (!args.isEmpty() && QFileInfo(args.first()).fileName() == program) {
-                pinned.append(app);
+            if (v.toMap().value(QStringLiteral("id")).toString() == id) {
+                pinned.append(v);
                 break;
             }
         }
     }
     m_pinned = pinned;
+}
+
+bool SystemApi::isPinned(const QString &id) const
+{
+    return m_prefs.value(QStringLiteral("pins")).toString()
+        .split(QLatin1Char(';'), Qt::SkipEmptyParts).contains(id);
+}
+
+void SystemApi::togglePin(const QString &id)
+{
+    QStringList pins = m_prefs.value(QStringLiteral("pins")).toString()
+                           .split(QLatin1Char(';'), Qt::SkipEmptyParts);
+    if (!pins.removeOne(id))
+        pins.append(id);
+    setPref(QStringLiteral("pins"), pins.join(QLatin1Char(';')));
+}
+
+QString SystemApi::wallpaperUrl(const QString &name) const
+{
+    const QString safe = wallpaperNames().contains(name) ? name : wallpaperNames().first();
+    // VYLO_DATA_DIR lets the preview run from a source tree.
+    const QString base = qEnvironmentVariable("VYLO_DATA_DIR", QStringLiteral("/usr/share"));
+    return QUrl::fromLocalFile(base + QStringLiteral("/wallpapers/vylo/") + safe
+                               + QStringLiteral(".jpg")).toString();
+}
+
+QString SystemApi::userName() const
+{
+    return qEnvironmentVariable("USER");
+}
+
+namespace {
+QString readLine(const QString &path)
+{
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly))
+        return {};
+    return QString::fromLatin1(f.readAll()).trimmed();
+}
+} // namespace
+
+void SystemApi::updateStatus()
+{
+    QString network = QStringLiteral("offline");
+    const QDir net(QStringLiteral("/sys/class/net"));
+    const QStringList links = net.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QString &name : links) {
+        const QString dir = net.filePath(name);
+        // Only hardware interfaces (they have a "device" link).
+        if (!QFileInfo::exists(dir + QStringLiteral("/device"))
+            || readLine(dir + QStringLiteral("/operstate")) != QLatin1String("up"))
+            continue;
+        if (QFileInfo::exists(dir + QStringLiteral("/wireless"))) {
+            network = QStringLiteral("wifi");
+        } else {
+            network = QStringLiteral("wired");
+            break;
+        }
+    }
+    m_network = network;
+
+    m_battery = -1;
+    m_charging = false;
+    const QDir power(QStringLiteral("/sys/class/power_supply"));
+    const QStringList supplies = power.entryList({QStringLiteral("BAT*")}, QDir::Dirs);
+    if (!supplies.isEmpty()) {
+        bool ok = false;
+        const int level = readLine(power.filePath(supplies.first()) + QStringLiteral("/capacity")).toInt(&ok);
+        if (ok)
+            m_battery = qBound(0, level, 100);
+        m_charging = readLine(power.filePath(supplies.first()) + QStringLiteral("/status"))
+                     == QLatin1String("Charging");
+    }
+
+    // The live system's root is an overlay, so report the home directory's disk.
+    const QStorageInfo disk(QDir::homePath());
+    m_disk = (disk.isValid() && disk.bytesTotal() > 0)
+                 ? 100.0 * double(disk.bytesTotal() - disk.bytesAvailable()) / double(disk.bytesTotal())
+                 : -1;
+
+    m_temp = -1;
+    const QDir thermal(QStringLiteral("/sys/class/thermal"));
+    const QStringList zones = thermal.entryList({QStringLiteral("thermal_zone*")}, QDir::Dirs);
+    for (const QString &zone : zones) {
+        bool ok = false;
+        const double milli = readLine(thermal.filePath(zone) + QStringLiteral("/temp")).toDouble(&ok);
+        if (ok && milli > 0)
+            m_temp = qMax(m_temp, milli / 1000.0);
+    }
+}
+
+void SystemApi::refreshVolume()
+{
+    runWpctl({QStringLiteral("get-volume"), QStringLiteral("@DEFAULT_AUDIO_SINK@")});
+}
+
+void SystemApi::setVolume(int percent)
+{
+    const QString value = QString::number(qBound(0, percent, 100) / 100.0, 'f', 2);
+    runWpctl({QStringLiteral("set-volume"), QStringLiteral("@DEFAULT_AUDIO_SINK@"), value});
+}
+
+void SystemApi::toggleMute()
+{
+    runWpctl({QStringLiteral("set-mute"), QStringLiteral("@DEFAULT_AUDIO_SINK@"), QStringLiteral("toggle")});
+}
+
+// Runs wpctl without blocking the desktop. A change is followed by a read, so
+// the bar shows what the audio service really did.
+void SystemApi::runWpctl(const QStringList &args)
+{
+    auto *process = new QProcess(this);
+    const bool reading = args.first() == QLatin1String("get-volume");
+    connect(process, &QProcess::errorOccurred, process, &QObject::deleteLater);
+    connect(process, &QProcess::finished, this, [this, process, reading](int code) {
+        process->deleteLater();
+        if (!reading) {
+            refreshVolume();
+            return;
+        }
+        // Output: "Volume: 0.40" or "Volume: 0.40 [MUTED]"
+        const QString out = QString::fromUtf8(process->readAllStandardOutput());
+        static const QRegularExpression pattern(QStringLiteral("Volume:\\s*([0-9.]+)"));
+        const auto match = pattern.match(out);
+        m_volume = (code == 0 && match.hasMatch()) ? qRound(match.captured(1).toDouble() * 100) : -1;
+        m_muted = out.contains(QLatin1String("[MUTED]"));
+        emit volumeChanged();
+    });
+    process->start(QStringLiteral("wpctl"), args);
+}
+
+QStringList SystemApi::powerCommand(const QString &action)
+{
+    if (action == QLatin1String("poweroff") || action == QLatin1String("reboot")
+        || action == QLatin1String("suspend"))
+        return {QStringLiteral("systemctl"), action};
+    if (action == QLatin1String("logout"))
+        return {QStringLiteral("labwc"), QStringLiteral("--exit")};
+    return {};
+}
+
+bool SystemApi::power(const QString &action)
+{
+    QStringList command = powerCommand(action);
+    if (command.isEmpty())
+        return false;
+    const QString program = command.takeFirst();
+    return startDetachedClean(program, command);
 }
 
 } // namespace VYLO
