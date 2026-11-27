@@ -4,7 +4,6 @@
 // layer-shell-qt), so the compositor (labwc) keeps application windows clear of
 // the bar and the dock.
 
-#include <LayerShellQt/Shell>
 #include <LayerShellQt/Window>
 
 #include <QGuiApplication>
@@ -49,9 +48,6 @@ void configureLayer(QWindow *window,
 
 int main(int argc, char *argv[])
 {
-    // Must be called before the QGuiApplication is created.
-    LayerShellQt::Shell::useLayerShell();
-
     QGuiApplication app(argc, argv);
     QGuiApplication::setApplicationName(QStringLiteral("vylo-shell"));
     QGuiApplication::setDesktopFileName(QStringLiteral("vylo-shell"));

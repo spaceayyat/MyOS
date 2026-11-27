@@ -8,7 +8,7 @@ set -euo pipefail
 [[ $# -eq 1 ]] || die "usage: $0 OUTPUT-DIR"
 out="$(mkdir -p "$1" && cd "$1" && pwd)"
 
-dnf install -y labwc grim wlr-randr dbus-daemon qt6-qtwayland qt6-qtsvg layer-shell-qt \
+dnf install -y labwc xorg-x11-server-Xwayland grim wlr-randr dbus-daemon qt6-qtwayland qt6-qtsvg layer-shell-qt \
   rsms-inter-fonts jetbrains-mono-fonts google-noto-sans-fonts papirus-icon-theme \
   foot nautilus gnome-text-editor gnome-software
 VYLO_NATIVE=1 "${VYLO_ROOT}/scripts/build-desktop.sh"
