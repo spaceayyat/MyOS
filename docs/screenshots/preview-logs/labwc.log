@@ -1,0 +1,2 @@
+00:00:00.022 [ERROR] [xwayland/server.c:472] Cannot find Xwayland binary "/usr/bin/Xwayland"
+00:00:00.022 [ERROR] [../src/xwayland.c:1216] cannot create xwayland server
