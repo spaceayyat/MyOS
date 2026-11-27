@@ -131,14 +131,14 @@ def main() -> int:
             # The last line may still be incomplete unless it is a newline.
             complete = serial.read_text(errors="replace").count("\n")
             for line in lines[seen:complete]:
-                if "VYLO-" in line:
+                if "VYLOTEST-" in line:
                     print(f"[{int(time.time() - start):4d}s] {line.strip()}", flush=True)
             seen = complete
-            if not shot and any(l.strip() == "VYLO-SHOT" for l in lines):
+            if not shot and any(l.strip() == "VYLOTEST-SHOT" for l in lines):
                 qmp(str(out / "qmp.sock"), "screendump",
                     filename=str(out / "desktop.png"), format="png")
                 shot = True
-            if any(l.strip() == "VYLO-DONE" for l in lines):
+            if any(l.strip() == "VYLOTEST-DONE" for l in lines):
                 done = True
                 break
             if process.poll() is not None:

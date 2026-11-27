@@ -13,14 +13,14 @@ import results  # noqa: E402
 def log(mode="uefi", drop=(), extra=(), done=True, override=None,
         edition="gnome"):
     override = override or {}
-    lines = ["\x1b[2J firmware noise VYLO-BEGIN Fedora",
-             f"VYLO-FACT edition {edition}",
-             f"VYLO-FACT firmware {'bios' if mode == 'bios' else 'uefi'}"]
+    lines = ["\x1b[2J firmware noise VYLOTEST-BEGIN Fedora",
+             f"VYLOTEST-FACT edition {edition}",
+             f"VYLOTEST-FACT firmware {'bios' if mode == 'bios' else 'uefi'}"]
     if mode == "secureboot":
-        lines.append("VYLO-FACT secureboot SecureBoot enabled")
-    lines += [override.get(n, f"VYLO-CHECK {n} PASS ok")
+        lines.append("VYLOTEST-FACT secureboot SecureBoot enabled")
+    lines += [override.get(n, f"VYLOTEST-CHECK {n} PASS ok")
               for n in sorted(results.EDITIONS[edition]) if n not in drop]
-    lines += list(extra) + ["VYLO-SHOT"] + (["VYLO-DONE"] if done else [])
+    lines += list(extra) + ["VYLOTEST-SHOT"] + (["VYLOTEST-DONE"] if done else [])
     return "\r\n".join(lines) + "\r\n"
 
 
@@ -40,32 +40,32 @@ class Judge(unittest.TestCase):
         self.assert_problem("expected the gnome", log(edition="plasma"))
 
     def test_failed_check(self):
-        serial = log(override={"https": "VYLO-CHECK https FAIL timeout"})
+        serial = log(override={"https": "VYLOTEST-CHECK https FAIL timeout"})
         self.assert_problem("check failed: https timeout", serial)
 
     def test_missing_check(self):
         self.assert_problem("check missing: compositor", log(drop={"compositor"}))
 
     def test_old_reversed_order_is_rejected(self):
-        serial = log(override={"compositor": "VYLO-CHECK PASS compositor"})
+        serial = log(override={"compositor": "VYLOTEST-CHECK PASS compositor"})
         self.assert_problem("malformed check line", serial)
         self.assert_problem("check missing: compositor", serial)
 
     def test_unknown_status_check_and_record(self):
-        self.assert_problem("malformed", log(extra=["VYLO-CHECK compositor MAYBE"]))
-        self.assert_problem("unknown check", log(extra=["VYLO-CHECK x PASS"]))
-        self.assert_problem("unexpected output", log(extra=["VYLO-WAT 1"]))
+        self.assert_problem("malformed", log(extra=["VYLOTEST-CHECK compositor MAYBE"]))
+        self.assert_problem("unknown check", log(extra=["VYLOTEST-CHECK x PASS"]))
+        self.assert_problem("unexpected output", log(extra=["VYLOTEST-WAT 1"]))
 
     def test_duplicate_cannot_hide_a_failure(self):
-        serial = log(override={"compositor": "VYLO-CHECK compositor FAIL"},
-                     extra=["VYLO-CHECK compositor PASS"])
+        serial = log(override={"compositor": "VYLOTEST-CHECK compositor FAIL"},
+                     extra=["VYLOTEST-CHECK compositor PASS"])
         self.assert_problem("check failed: compositor", serial)
         self.assert_problem("reported twice", serial)
 
     def test_boot_failures(self):
         self.assert_problem("never started", "")
         self.assert_problem("Kernel panic", "Kernel panic - not syncing\n")
-        self.assert_problem("no VYLO-DONE", log(done=False))
+        self.assert_problem("no VYLOTEST-DONE", log(done=False))
 
     def test_wrong_firmware_and_secure_boot_off(self):
         self.assert_problem("expected bios", log("uefi"), "bios")
@@ -88,15 +88,15 @@ class Judge(unittest.TestCase):
             self.assertEqual(names, set(wanted), script)
 
     def test_installed_stage_needs_one_reboot(self):
-        lines = ["VYLO-BEGIN x", "VYLO-FACT firmware uefi",
-                 "VYLO-FACT edition gnome"]
-        lines += [f"VYLO-CHECK {n} PASS" for n in sorted(results.INSTALLED)]
-        ok = lines + ["VYLO-REQUEST login", "VYLO-REBOOT", "VYLO-REBOOTED",
-                      "VYLO-DONE"]
+        lines = ["VYLOTEST-BEGIN x", "VYLOTEST-FACT firmware uefi",
+                 "VYLOTEST-FACT edition gnome"]
+        lines += [f"VYLOTEST-CHECK {n} PASS" for n in sorted(results.INSTALLED)]
+        ok = lines + ["VYLOTEST-REQUEST login", "VYLOTEST-REBOOT", "VYLOTEST-REBOOTED",
+                      "VYLOTEST-DONE"]
         judge = lambda l: results.evaluate("\n".join(l), "uefi", "gnome",
                                            "installed")
         self.assertEqual(judge(ok), [])
-        self.assertTrue(any("reboot" in p for p in judge(lines + ["VYLO-DONE"])))
+        self.assertTrue(any("reboot" in p for p in judge(lines + ["VYLOTEST-DONE"])))
 
     def test_guest_output_format_matches_parser(self):
         """Run the real shell functions and parse what they print."""

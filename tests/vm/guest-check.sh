@@ -7,7 +7,7 @@
 exec >/dev/ttyS0 2>&1
 set -u
 
-result() { echo "VYLO-CHECK $1 $2 ${3:-}"; }
+result() { echo "VYLOTEST-CHECK $1 $2 ${3:-}"; }
 check() {
   local name="$1"; shift
   local out
@@ -27,13 +27,13 @@ as_live() {
   runuser -u liveuser -- env XDG_RUNTIME_DIR="/run/user/$(id -u liveuser)" "$@"
 }
 
-echo "VYLO-BEGIN $(. /etc/os-release; echo "${PRETTY_NAME}") kernel $(uname -r)"
+echo "VYLOTEST-BEGIN $(. /etc/os-release; echo "${PRETTY_NAME}") kernel $(uname -r)"
 
 if [[ -d /sys/firmware/efi ]]; then
-  echo "VYLO-FACT firmware uefi"
-  echo "VYLO-FACT secureboot $(mokutil --sb-state 2>&1 | head -1)"
+  echo "VYLOTEST-FACT firmware uefi"
+  echo "VYLOTEST-FACT secureboot $(mokutil --sb-state 2>&1 | head -1)"
 else
-  echo "VYLO-FACT firmware bios"
+  echo "VYLOTEST-FACT firmware bios"
 fi
 
 if command -v gnome-shell >/dev/null; then
@@ -41,7 +41,7 @@ if command -v gnome-shell >/dev/null; then
 else
   edition=plasma compositor=kwin_wayland shell=plasmashell dm=plasmalogin.service
 fi
-echo "VYLO-FACT edition ${edition}"
+echo "VYLOTEST-FACT edition ${edition}"
 
 wayland_session() {
   local id
@@ -96,11 +96,11 @@ root_state() {
     *) echo "password-set" ;;
   esac
 }
-echo "VYLO-FACT root-password $(root_state)"
-echo "VYLO-FACT root-passwd-status $(passwd -S root 2>&1)"
-echo "VYLO-FACT root-before-lock $(journalctl -b -u livesys.service -o cat 2>/dev/null | grep -m1 'root password before')"
-echo "VYLO-FACT livesys-passwd-lines $(grep -h 'passwd' /usr/libexec/livesys/livesys-main 2>&1 | tr '\n' ';')"
-echo "VYLO-FACT liveuser-groups $(id -nG liveuser 2>&1)"
+echo "VYLOTEST-FACT root-password $(root_state)"
+echo "VYLOTEST-FACT root-passwd-status $(passwd -S root 2>&1)"
+echo "VYLOTEST-FACT root-before-lock $(journalctl -b -u livesys.service -o cat 2>/dev/null | grep -m1 'root password before')"
+echo "VYLOTEST-FACT livesys-passwd-lines $(grep -h 'passwd' /usr/libexec/livesys/livesys-main 2>&1 | tr '\n' ';')"
+echo "VYLOTEST-FACT liveuser-groups $(id -nG liveuser 2>&1)"
 check root-no-usable-password bash -c "[[ \$(getent shadow root | cut -d: -f2) == [!*]* ]] && echo locked"
 # An unprivileged account must not become root by pressing Enter.
 check root-su-refused bash -c '! echo | timeout 30 runuser -u nobody -- su root -c true'
@@ -133,13 +133,13 @@ else
   check default-theme eval '[[ $(as_live kreadconfig6 --file kdeglobals --group KDE --key LookAndFeelPackage) == org.vylo.dark.desktop ]] && echo org.vylo.dark.desktop'
 fi
 
-echo "VYLO-FACT default-sink $(as_live wpctl inspect @DEFAULT_AUDIO_SINK@ 2>&1 | grep -m1 node.description)"
-echo "VYLO-FACT avc-denials $(journalctl -b --no-pager -q _AUDIT_TYPE_NAME=AVC 2>/dev/null | grep -c 'denied')"
-journalctl -b --no-pager -q 2>/dev/null | grep 'avc:  *denied' | head -20 | sed 's/^/VYLO-AVC /'
-echo "VYLO-FACT failed-units $(systemctl --failed --plain --no-legend | awk '{print $1}' | tr '\n' ' ')"
+echo "VYLOTEST-FACT default-sink $(as_live wpctl inspect @DEFAULT_AUDIO_SINK@ 2>&1 | grep -m1 node.description)"
+echo "VYLOTEST-FACT avc-denials $(journalctl -b --no-pager -q _AUDIT_TYPE_NAME=AVC 2>/dev/null | grep -c 'denied')"
+journalctl -b --no-pager -q 2>/dev/null | grep 'avc:  *denied' | head -20 | sed 's/^/VYLOTEST-AVC /'
+echo "VYLOTEST-FACT failed-units $(systemctl --failed --plain --no-legend | awk '{print $1}' | tr '\n' ' ')"
 
 sleep 30          # let the desktop finish drawing
-echo "VYLO-SHOT"
+echo "VYLOTEST-SHOT"
 sleep 15
-echo "VYLO-DONE"
+echo "VYLOTEST-DONE"
 systemctl poweroff

@@ -45,25 +45,25 @@ def run_stage(command, out: pathlib.Path, luks: bool, timeout: int) -> str:
             log = serial.read_text(errors="replace")
             complete = log.count("\n")
             for line in log.splitlines()[seen:complete]:
-                if "VYLO-" not in line:
+                if "VYLOTEST-" not in line:
                     if line.startswith("["):
                         print(line, flush=True)
                     continue
                 print(f"[{int(time.time() - start):4d}s] {line.strip()}", flush=True)
-                record = line[line.find("VYLO-"):].strip()
-                if record.startswith(("VYLO-BEGIN", "VYLO-REBOOTED")):
+                record = line[line.find("VYLOTEST-"):].strip()
+                if record.startswith(("VYLOTEST-BEGIN", "VYLOTEST-REBOOTED")):
                     waiting_for_unlock = False
-                elif record == "VYLO-REQUEST login":
+                elif record == "VYLOTEST-REQUEST login":
                     time.sleep(3)
                     boot_test.qmp(sock, "screendump", format="png",
                                   filename=str(out / "login-screen.png"))
                     type_line(sock, "")  # choose the only user
                     time.sleep(5)
                     type_line(sock, USER_PASSWORD)
-                elif record == "VYLO-SHOT":
+                elif record == "VYLOTEST-SHOT":
                     boot_test.qmp(sock, "screendump", format="png",
                                   filename=str(out / "desktop.png"))
-                elif record == "VYLO-REBOOT" and luks:
+                elif record == "VYLOTEST-REBOOT" and luks:
                     waiting_for_unlock = True
                     last_typed = time.time() + 15
             seen = complete

@@ -1,13 +1,13 @@
 """Parse and judge the serial output of tests/vm/guest-check.sh.
 
-Protocol (one record per line, anything before "VYLO-" is firmware noise):
-    VYLO-BEGIN <description>
-    VYLO-FACT <key> [value]
-    VYLO-CHECK <name> PASS|FAIL [detail]
-    VYLO-AVC <text>
-    VYLO-SHOT
-    VYLO-DONE
-Anything else that starts with "VYLO-" is an error, so a change to the guest
+Protocol (one record per line, anything before "VYLOTEST-" is firmware noise):
+    VYLOTEST-BEGIN <description>
+    VYLOTEST-FACT <key> [value]
+    VYLOTEST-CHECK <name> PASS|FAIL [detail]
+    VYLOTEST-AVC <text>
+    VYLOTEST-SHOT
+    VYLOTEST-DONE
+Anything else that starts with "VYLOTEST-" is an error, so a change to the guest
 script can never be silently ignored.
 """
 import re
@@ -46,7 +46,7 @@ def required(edition: str, stage: str = "live") -> frozenset:
 FATAL = ("Kernel panic", "You are in emergency mode",
          "Entering emergency mode", "dracut-emergency")
 
-CHECK = re.compile(r"^VYLO-CHECK ([a-z0-9-]+) (PASS|FAIL)(?: (.*))?$")
+CHECK = re.compile(r"^VYLOTEST-CHECK ([a-z0-9-]+) (PASS|FAIL)(?: (.*))?$")
 
 
 def evaluate(serial: str, mode: str, edition: str,
@@ -64,19 +64,19 @@ def evaluate(serial: str, mode: str, edition: str,
             problems.append(f"guest boot failure: '{marker}' on the console")
 
     for raw in serial.splitlines():
-        start = raw.find("VYLO-")
+        start = raw.find("VYLOTEST-")
         if start < 0:
             continue
         line = raw[start:].rstrip()
         if done:
-            problems.append(f"output after VYLO-DONE: {line}")
-        elif line.startswith("VYLO-BEGIN "):
+            problems.append(f"output after VYLOTEST-DONE: {line}")
+        elif line.startswith("VYLOTEST-BEGIN "):
             if begun:
                 problems.append("test script started twice (guest rebooted?)")
             begun = True
         elif not begun:
-            problems.append(f"output before VYLO-BEGIN: {line}")
-        elif line.startswith("VYLO-CHECK"):
+            problems.append(f"output before VYLOTEST-BEGIN: {line}")
+        elif line.startswith("VYLOTEST-CHECK"):
             match = CHECK.match(line)
             if not match:
                 problems.append(f"malformed check line: {line}")
@@ -89,24 +89,24 @@ def evaluate(serial: str, mode: str, edition: str,
             checks[name] = status
             if status == "FAIL":
                 problems.append(f"check failed: {name} {detail or ''}".rstrip())
-        elif stage == "installed" and line in ("VYLO-REQUEST login",
-                                              "VYLO-REBOOT"):
+        elif stage == "installed" and line in ("VYLOTEST-REQUEST login",
+                                              "VYLOTEST-REBOOT"):
             continue
-        elif stage == "installed" and line == "VYLO-REBOOTED":
+        elif stage == "installed" and line == "VYLOTEST-REBOOTED":
             reboots += 1
-        elif line.startswith("VYLO-FACT "):
+        elif line.startswith("VYLOTEST-FACT "):
             parts = line.split(" ", 2)
             facts[parts[1]] = parts[2] if len(parts) > 2 else ""
-        elif line == "VYLO-DONE":
+        elif line == "VYLOTEST-DONE":
             done = True
-        elif line != "VYLO-SHOT" and not line.startswith("VYLO-AVC "):
+        elif line != "VYLOTEST-SHOT" and not line.startswith("VYLOTEST-AVC "):
             problems.append(f"unexpected output: {line}")
 
     if not begun:
         problems.append("guest boot failure: the test script never started")
         return problems
     if not done:
-        problems.append("guest did not finish: no VYLO-DONE")
+        problems.append("guest did not finish: no VYLOTEST-DONE")
     for name in sorted(wanted - checks.keys()):
         problems.append(f"check missing: {name}")
 
@@ -128,5 +128,5 @@ def evaluate(serial: str, mode: str, edition: str,
 
 def passed_checks(serial: str) -> int:
     return len({m.group(1) for line in serial.splitlines()
-                if (m := CHECK.match(line[max(line.find('VYLO-'), 0):].rstrip()))
+                if (m := CHECK.match(line[max(line.find('VYLOTEST-'), 0):].rstrip()))
                 and m.group(2) == "PASS"})

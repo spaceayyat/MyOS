@@ -14,12 +14,12 @@
 exec >/dev/ttyS0 2>&1
 set -u
 
-echo "VYLO-BEGIN live installer"
-[[ -d /sys/firmware/efi ]] && echo "VYLO-FACT firmware uefi" || echo "VYLO-FACT firmware bios"
-if command -v gnome-shell >/dev/null; then echo "VYLO-FACT edition gnome"
-else echo "VYLO-FACT edition plasma"; fi
+echo "VYLOTEST-BEGIN live installer"
+[[ -d /sys/firmware/efi ]] && echo "VYLOTEST-FACT firmware uefi" || echo "VYLOTEST-FACT firmware bios"
+if command -v gnome-shell >/dev/null; then echo "VYLOTEST-FACT edition gnome"
+else echo "VYLOTEST-FACT edition plasma"; fi
 disk_mode="$(cat "${CREDENTIALS_DIRECTORY}/vylo.disk")"
-check() { local n="$1"; shift; if "$@"; then echo "VYLO-CHECK ${n} PASS"; else echo "VYLO-CHECK ${n} FAIL"; fi; }
+check() { local n="$1"; shift; if "$@"; then echo "VYLOTEST-CHECK ${n} PASS"; else echo "VYLOTEST-CHECK ${n} FAIL"; fi; }
 
 for _ in $(seq 60); do id liveuser >/dev/null 2>&1 && break; sleep 5; done
 
@@ -30,8 +30,8 @@ for candidate in /dev/mapper/live-base /dev/mapper/live-osimg-min \
     "$(findmnt -n -o SOURCE /run/rootfsbase 2>/dev/null)"; do
   [[ -b "${candidate}" ]] && { image="${candidate}"; break; }
 done
-echo "VYLO-FACT payload ${image:-not-found}"
-echo "VYLO-FACT block-devices $(lsblk -nro NAME,TYPE,FSTYPE,MOUNTPOINT | tr '\n' ';')"
+echo "VYLOTEST-FACT payload ${image:-not-found}"
+echo "VYLOTEST-FACT block-devices $(lsblk -nro NAME,TYPE,FSTYPE,MOUNTPOINT | tr '\n' ';')"
 check payload-found test -n "${image}"
 
 encrypt=""
@@ -74,10 +74,10 @@ chcon -t bin_t /run/vylo-bin/systemctl
 PATH="/run/vylo-bin:${PATH}" timeout -k 30 1500 anaconda --cmdline --kickstart=/run/vylo-test.ks </dev/null >/tmp/anaconda.out 2>&1
 status=$?
 setenforce 1
-echo "VYLO-FACT anaconda-exit ${status}"
+echo "VYLOTEST-FACT anaconda-exit ${status}"
 check anaconda-finished test "${status}" -eq 0
 check partitions-created bash -c '[[ $(lsblk -nro NAME /dev/vda | wc -l) -ge 3 ]]'
-echo "VYLO-FACT layout $(lsblk -nro NAME,FSTYPE /dev/vda | tr '\n' ';')"
+echo "VYLOTEST-FACT layout $(lsblk -nro NAME,FSTYPE /dev/vda | tr '\n' ';')"
 if (( status != 0 )); then
   for f in /tmp/anaconda.out /tmp/anaconda.log /tmp/storage.log /tmp/program.log /tmp/packaging.log; do
     [[ -f "${f}" ]] && tail -n 40 "${f}" | sed "s|^|[${f##*/}] |"
@@ -85,5 +85,5 @@ if (( status != 0 )); then
   dmesg | tail -n 15 | sed "s|^|[dmesg] |"
 fi
 sync
-echo "VYLO-DONE"
+echo "VYLOTEST-DONE"
 systemctl poweroff

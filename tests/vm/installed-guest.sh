@@ -10,8 +10,8 @@ disk_mode="$(cat "${CREDENTIALS_DIRECTORY}/vylo.disk")"
 marker=/var/lib/vylo-install-test.rebooted
 check() {
   local n="$1" out; shift
-  if out="$("$@" 2>&1)"; then echo "VYLO-CHECK ${n} PASS $(tail -n1 <<<"${out}")"
-  else echo "VYLO-CHECK ${n} FAIL $(tail -n3 <<<"${out}" | tr '\n' ' ')"; fi
+  if out="$("$@" 2>&1)"; then echo "VYLOTEST-CHECK ${n} PASS $(tail -n1 <<<"${out}")"
+  else echo "VYLOTEST-CHECK ${n} FAIL $(tail -n3 <<<"${out}" | tr '\n' ' ')"; fi
 }
 wait_for() {
   local end=$((SECONDS + $1)); shift
@@ -27,21 +27,21 @@ else
 fi
 
 if [[ -e "${marker}" ]]; then
-  echo "VYLO-REBOOTED"
+  echo "VYLOTEST-REBOOTED"
   check reboot-selinux bash -c '[[ $(getenforce) == Enforcing ]]'
   check reboot-display-manager active "${dm}"
   check reboot-network online
   check reboot-persistence grep -qx persisted "${marker}"
   sleep 10
-  echo "VYLO-DONE"
+  echo "VYLOTEST-DONE"
   systemctl poweroff
   exit 0
 fi
 
-echo "VYLO-BEGIN installed system $(. /etc/os-release; echo "${PRETTY_NAME}")"
-[[ -d /sys/firmware/efi ]] && echo "VYLO-FACT firmware uefi" || echo "VYLO-FACT firmware bios"
-echo "VYLO-FACT edition ${edition}"
-echo "VYLO-FACT default-target $(systemctl get-default)"
+echo "VYLOTEST-BEGIN installed system $(. /etc/os-release; echo "${PRETTY_NAME}")"
+[[ -d /sys/firmware/efi ]] && echo "VYLOTEST-FACT firmware uefi" || echo "VYLOTEST-FACT firmware bios"
+echo "VYLOTEST-FACT edition ${edition}"
+echo "VYLOTEST-FACT default-target $(systemctl get-default)"
 
 check not-live bash -c '! grep -q rd.live.image /proc/cmdline'
 check no-live-user bash -c '! id liveuser'
@@ -49,7 +49,7 @@ check user-created bash -c 'id -nG tester | grep -wq wheel && id -nG tester'
 check root-locked bash -c '[[ $(getent shadow root | cut -d: -f2) == [!*]* ]]'
 check no-empty-passwords bash -c '[[ -z $(awk -F: "\$2 == \"\"" /etc/shadow) ]]'
 check root-btrfs bash -c '[[ $(findmnt -no FSTYPE /) == btrfs ]]'
-echo "VYLO-FACT disk $(lsblk -nro NAME,TYPE,FSTYPE /dev/vda | tr '\n' ';')"
+echo "VYLOTEST-FACT disk $(lsblk -nro NAME,TYPE,FSTYPE /dev/vda | tr '\n' ';')"
 if [[ "${disk_mode}" == luks ]]; then
   check disk-encryption bash -c '[[ $(findmnt -no SOURCE /) == /dev/mapper/luks-* ]] && lsblk -nro FSTYPE /dev/vda | grep -x crypto_LUKS'
 else
@@ -77,13 +77,13 @@ check system-update timeout 900 dnf -y upgrade --refresh curl ca-certificates he
 
 # Real login: the host types the password into the login screen.
 sleep 20
-echo "VYLO-REQUEST login"
+echo "VYLOTEST-REQUEST login"
 check login wait_for 180 pgrep -u tester -x "${shell}"
-echo "VYLO-FACT avc-denials $(journalctl -b --no-pager -q _AUDIT_TYPE_NAME=AVC 2>/dev/null | grep -c denied)"
-echo "VYLO-FACT failed-units $(systemctl --failed --plain --no-legend | awk '{print $1}' | tr '\n' ' ')"
+echo "VYLOTEST-FACT avc-denials $(journalctl -b --no-pager -q _AUDIT_TYPE_NAME=AVC 2>/dev/null | grep -c denied)"
+echo "VYLOTEST-FACT failed-units $(systemctl --failed --plain --no-legend | awk '{print $1}' | tr '\n' ' ')"
 sleep 40
-echo "VYLO-SHOT"
+echo "VYLOTEST-SHOT"
 sleep 15
 echo persisted > "${marker}"; sync
-echo "VYLO-REBOOT"
+echo "VYLOTEST-REBOOT"
 systemctl reboot
