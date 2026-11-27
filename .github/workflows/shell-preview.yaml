@@ -36,14 +36,11 @@ jobs:
           name: desktop-preview
           path: output/preview/
           if-no-files-found: ignore
-      # Also on failure, so that a broken build can be diagnosed from the logs.
-      - name: Save screenshots and logs to the branch
-        if: always() && github.ref == 'refs/heads/vylo'
+      - name: Save screenshots to the branch
+        if: github.ref == 'refs/heads/vylo'
         run: |
-          rm -rf docs/screenshots/preview-logs
-          mkdir -p docs/screenshots/preview-logs
-          cp output/preview/*.log docs/screenshots/preview-logs/ 2>/dev/null || true
-          for f in output/preview/*.png; do [ -f "$f" ] && cp "$f" docs/screenshots/vylo-"$(basename "$f")"; done
+          mkdir -p docs/screenshots
+          for f in output/preview/*.png; do cp "$f" docs/screenshots/vylo-"$(basename "$f")"; done
           git config user.name spaceayyat
           git config user.email azsr2710@gmail.com
           git add docs/screenshots

@@ -1,147 +1,100 @@
-<p align="center"><img src="docs/images/logo.svg" alt="VYLO" width="360"></p>
-
 <p align="center">
-An open-source, Fedora-based desktop that you can read, change and rebuild yourself.
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/vylo-logo-dark.svg">
+    <img src="assets/brand/vylo-logo.svg" alt="VYLO" width="260">
+  </picture>
 </p>
 
-<p align="center">
-<a href="https://github.com/spaceayyat/MyOS/releases">Download</a> ·
-<a href="docs/install.md">Install</a> ·
-<a href="docs/customization.md">Customize</a> ·
-<a href="docs/security.md">Security</a> ·
-<a href="CHANGELOG.md">Changelog</a>
-</p>
+<p align="center"><b>Make Space Yours.</b></p>
 
-> **Preview software.** Try it in a virtual machine before using it anywhere else.
+VYLO is a Linux system built on Fedora, with its own desktop written in Qt and
+QML. Everything that goes into it is in this repository, so you can read it,
+change it and build your own ISO.
 
-## The idea
+**It is early.** It runs in virtual machines. It has not been tried on real
+hardware, so don't put it on a computer you rely on yet.
 
-An operating system should not be a black box. In VYLO, the whole system is
-described by files in this repository: which packages go in, which services
-start, how the desktop looks. Change a file, push, and GitHub Actions builds a
-new ISO and tests it in virtual machines.
+![The VYLO desktop](docs/screenshots/vylo-desktop.png)
 
-- **Fedora underneath.** Fedora 44 packages, signed and SELinux enforcing.
-- **Your choice of desktop.** GNOME is the main edition; KDE Plasma is the second.
-- **Tested, not assumed.** Each push boots the ISOs and installs them to a
-  virtual disk.
-- **Room to experiment.** An optional desktop shell written in Qt 6 and QML lives
-  in this repository.
+The screenshots on this page are taken by an automated run of the desktop on
+Fedora 44, in a headless screen with no sound card or network adapter.
 
-## Screenshots
+## What the desktop does today
 
-Taken automatically from the virtual machines that tested the release.
+- **Top bar** with search, network, volume, battery and clock
+- **Orbit Dock** showing pinned apps and open windows. Click to switch or
+  minimise, middle click for a new window, right click to pin or close
+- **Constellation**, the app launcher, with search and categories
+  (`Super` + `Space`)
+- **Notifications** with a short history and Do not disturb
+- **Widgets** for time, system load and calendar
+- **Themes:** dark or light, five accent colours. The logo and the Orbit hills
+  wallpaper change colour with the accent
 
-| GNOME, live | KDE Plasma, live |
+| Launcher | Open windows and notifications |
 | --- | --- |
-| ![GNOME live session](docs/screenshots/gnome-live.png) | ![Plasma live session](docs/screenshots/plasma-live.png) |
-| **GNOME, login screen** | **KDE Plasma, login screen** |
-| ![GNOME login screen](docs/screenshots/gnome-login.png) | ![Plasma login screen](docs/screenshots/plasma-login.png) |
-| **GNOME, installed** | **KDE Plasma, installed** |
-| ![Installed GNOME system](docs/screenshots/gnome-installed.png) | ![Installed Plasma system](docs/screenshots/plasma-installed.png) |
+| ![Launcher](docs/screenshots/vylo-launcher.png) | ![Dock and notification](docs/screenshots/vylo-windows.png) |
+| **Settings** | **Lilac accent** |
+| ![Settings](docs/screenshots/vylo-settings.png) | ![Lilac theme](docs/screenshots/vylo-lilac.png) |
+
+## Not built yet
+
+Wi-Fi and Bluetooth controls in the desktop (the Network and Bluetooth apps are
+included), movable widgets, themes you can export, the connected-star view in
+the launcher, Spaces, the Pulse monitor, the PIP companion and a first-run
+guide. Space Grotesk, the planned heading font, is not packaged by Fedora, so
+headings use Inter unless you install it.
 
 ## Editions
 
-| | GNOME (main) | KDE Plasma |
+| Edition | Desktop | Build name |
 | --- | --- | --- |
-| Default browser | [Helium](https://helium.computer) | Helium |
-| Other browser | none | Firefox |
-| Files, terminal | Files, Ptyxis | Dolphin, Konsole |
-| Editor | Text Editor | Kate |
-| Software store | GNOME Software | Discover |
-| Documents, images | Papers, Loupe | Okular, Gwenview |
-| Customize with | Tweaks, Extensions | System Settings, global themes |
+| VYLO | The VYLO desktop | `vylo` |
+| GNOME | GNOME | `gnome` |
+| Plasma | KDE Plasma | `plasma` |
 
-Helium is beta software from the project's own `imput/helium` package repository.
+All three use the [Helium](https://helium.computer) browser (beta software, from
+its own package repository). Plasma also includes Firefox.
 
-## Features
+## Get it
 
-- Live session you can try without installing
-- Anaconda installer, with optional LUKS disk encryption
-- btrfs by default, with a snapper configuration for undoing file changes
-- SELinux enforcing, firewalld on, SSH server off, root account locked
-- Daily automatic **security** updates on installed systems (not for Helium)
-- Flatpak, printing, Bluetooth, PipeWire audio and common Wi-Fi firmware
-- VYLO wallpaper with light and dark variants
+Every push builds the ISOs on GitHub. Open the
+[Actions tab](https://github.com/spaceayyat/MyOS/actions), pick a successful
+**Build VYLO ISO** run and download `VYLO-ISO-vylo`, `VYLO-ISO-gnome` or
+`VYLO-ISO-plasma`. Check the file against `SHA256SUMS`, then boot it in a
+virtual machine with 6 GB of memory and a 40 GB empty disk.
+The [install guide](docs/install.md) has the steps.
 
-## Download
-
-Get the ISOs from the [Releases page](https://github.com/spaceayyat/MyOS/releases):
-
-- **GNOME:** [VYLO-0.3.0-preview.1-x86_64.iso](https://github.com/spaceayyat/MyOS/releases/download/v0.3.0-preview.1/VYLO-0.3.0-preview.1-x86_64.iso)
-- **KDE Plasma:** download both `.part` files and
-  [join them](docs/install.md#get-and-verify-the-iso)
-- **Checksums:** [SHA256SUMS](https://github.com/spaceayyat/MyOS/releases/download/v0.3.0-preview.1/SHA256SUMS)
-
-## Requirements
-
-A 64-bit Intel or AMD computer or VM. The automated tests use **6 GB of RAM** and
-a **40 GB disk**; smaller sizes have not been tested.
-
-## Install
-
-Start the live system, open **Install to Hard Drive**, pick a disk, create your
-user and reboot. Full steps: [install guide](docs/install.md). The installer
-erases or resizes the disk you choose, so back up first.
-
-## Build it yourself
-
-On GitHub, the **Build VYLO ISO** workflow runs on every push; download the
-`VYLO-ISO-gnome` or `VYLO-ISO-plasma` artifact. Locally, with Docker or root
-Podman:
+To build one yourself, with Docker or root Podman:
 
 ```bash
-sudo scripts/build-in-container.sh                        # GNOME, in output/iso/
-sudo VYLO_EDITION=plasma scripts/build-in-container.sh    # KDE Plasma
+sudo VYLO_EDITION=vylo scripts/build-in-container.sh    # ISO appears in output/iso/
 ```
 
-## Testing
+## How it is tested
 
-| Test (QEMU, both editions) | What it checks |
+For each edition, virtual machines boot the ISO (BIOS, UEFI and Secure Boot) and
+install it to a blank disk, with and without encryption. Check the latest run
+for current results. The graphical installer screens and real hardware are not
+covered.
+
+## Security
+
+SELinux stays enforcing, the firewall is on, packages are signature checked, the
+root account is locked and the SSH server is off. Automatic login exists only on
+the live ISO. See [security](docs/security.md).
+
+## Where things are
+
+| Path | What |
 | --- | --- |
-| Live boot: BIOS, UEFI, Secure Boot | Desktop, network, audio and Bluetooth services, printing, SELinux, firewall, locked root, applications, Helium |
-| Install: plain and encrypted (UEFI) | Installation, first boot, login, applications, network, snapshot undo, update command, reboot |
-
-Run the quick checks locally:
-
-```bash
-tests/lint.sh                                    # needs shellcheck
-for t in tests/unit/test_*.sh; do "$t"; done     # needs bash, python3, g++
-```
-
-## Known limitations
-
-- The graphical installer screens are not tested; automated installs run in text mode.
-- Real hardware (graphics, Wi-Fi, Bluetooth, printers, suspend) is untested.
-- Installed systems are tested with UEFI only, not BIOS or Secure Boot.
-- Automatic updates do not cover Helium: its repository has no security advisories.
-- Booting an older snapshot from the boot menu is not supported.
-- The optional VYLO shell is not covered by the desktop tests.
-- No custom welcome app, boot splash, GRUB theme or login screen theme yet.
-- Fedora names and logos still appear in places. VYLO is not affiliated with or
-  endorsed by the Fedora Project.
-
-## Roadmap
-
-1. Test the graphical installer and real hardware.
-2. VYLO branding for boot, login and welcome screens.
-3. A VYLO customization app.
-4. Snapshot recovery from the boot menu.
-5. A bootc image as an additional output.
-
-Details: [roadmap](docs/roadmap.md).
-
-## Repository layout
-
-| Path | Purpose |
-| --- | --- |
-| `image/kiwi` | ISO description: packages, services, editions |
-| `image/config/rootfs*` | Files copied into the image |
-| `desktop/`, `shared/` | Optional VYLO Shell and Settings (Qt 6 / QML) |
-| `scripts/`, `tests/` | Build and test |
-| `image/Containerfile` | Early bootc experiment, not built by CI |
+| `desktop/`, `shared/` | The desktop and Settings |
+| `image/kiwi` | Packages, services and editions |
+| `image/config/` | Files copied into the system |
+| `assets/brand` | Logo files |
+| `scripts/`, `tests/` | Building and testing |
 
 ## License
 
-[MIT](LICENSE) for the files in this repository. The software inside the ISOs
-keeps its own licenses.
+[MIT](LICENSE) for the files in this repository. Software inside the ISOs keeps
+its own licences. VYLO is not affiliated with or endorsed by the Fedora Project.

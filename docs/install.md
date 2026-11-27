@@ -7,27 +7,27 @@
 ## Get and verify the ISO
 
 Download from the [Releases page](https://github.com/spaceayyat/MyOS/releases),
-including `SHA256SUMS`. The Plasma ISO is split into parts; join them first.
+including `SHA256SUMS`. ISOs over 2 GB are split into parts; join those first.
 
 Linux:
 
 ```bash
-cat VYLO-*-plasma-x86_64.iso.part* > VYLO-0.3.0-preview.1-plasma-x86_64.iso
+cat VYLO-*-plasma-x86_64.iso.part* > VYLO-0.4.0-preview.1-plasma-x86_64.iso
 sha256sum -c SHA256SUMS --ignore-missing
 ```
 
 Windows (Command Prompt, in the download folder):
 
 ```bat
-copy /b VYLO-0.3.0-preview.1-plasma-x86_64.iso.part00+VYLO-0.3.0-preview.1-plasma-x86_64.iso.part01 VYLO-0.3.0-preview.1-plasma-x86_64.iso
-certutil -hashfile VYLO-0.3.0-preview.1-plasma-x86_64.iso SHA256
+copy /b VYLO-0.4.0-preview.1-plasma-x86_64.iso.part00+VYLO-0.4.0-preview.1-plasma-x86_64.iso.part01 VYLO-0.4.0-preview.1-plasma-x86_64.iso
+certutil -hashfile VYLO-0.4.0-preview.1-plasma-x86_64.iso SHA256
 ```
 
 Compare the printed value with the matching line in `SHA256SUMS`. To verify who
 built an ISO:
 
 ```bash
-gh attestation verify VYLO-0.3.0-preview.1-x86_64.iso --repo spaceayyat/MyOS
+gh attestation verify VYLO-0.4.0-preview.1-x86_64.iso --repo spaceayyat/MyOS
 ```
 
 ## Try it in a VM
