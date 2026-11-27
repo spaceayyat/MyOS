@@ -10,4 +10,4 @@ Try it in a virtual machine first.
 | Plasma | KDE Plasma | Helium and Firefox |
 
 Large ISOs are split into parts. How to join them, verify checksums and install:
-[install guide](https://github.com/spaceayyat/MyOS/blob/vylo/docs/install.md).
+[install guide](https://github.com/spaceayyat/MyOS/blob/main/docs/install.md).

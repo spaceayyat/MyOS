@@ -237,7 +237,7 @@ jobs:
     permissions:
       contents: write
     env:
-      SCREENSHOT_BRANCH: vylo
+      SCREENSHOT_BRANCH: main
     steps:
       - uses: actions/checkout@v7
         with:
