@@ -136,8 +136,9 @@ if [[ "${edition}" == gnome ]]; then
   check no-firefox eval '! rpm -q firefox'
 elif [[ "${edition}" == vylo ]]; then
   check applications have_commands nautilus gnome-text-editor gnome-software foot vylo-settings helium
-  check default-theme eval '[[ -s /usr/share/wallpapers/vylo/observatory-isles.jpg ]] && grep -qx Current=vylo /etc/sddm.conf.d/10-vylo.conf && grep -qx Theme=vylo /etc/plymouth/plymouthd.conf && echo "VYLO wallpaper, login and boot themes"'
+  check default-theme eval '[[ -s /usr/share/wallpapers/vylo/orbit-hills-indigo.jpg ]] && grep -qx Current=vylo /etc/sddm.conf.d/10-vylo.conf && grep -qx Theme=vylo /etc/plymouth/plymouthd.conf && echo "VYLO wallpaper, login and boot themes"'
   check vylo-session-parts eval 'wait_for 60 pgrep -u liveuser -f lxqt-policykit-agent && [[ $(fc-match Inter family) == Inter* ]] && echo "policy agent and Inter font"'
+  echo "VYLOTEST-FACT policy-agent-files $(rpm -ql lxqt-policykit | grep -E '/(bin|libexec)/' | tr '\n' ' ')"
   echo "VYLOTEST-FACT shell-log $(tail -n5 /home/liveuser/.local/state/vylo/session.log 2>&1 | tr '\n' ' ')"
   check no-firefox eval '! rpm -q firefox'
 else

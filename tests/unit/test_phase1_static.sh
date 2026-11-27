@@ -17,7 +17,7 @@ for f in CMakeLists.txt \
          shared/system-api/{CMakeLists.txt,systemapi.h,systemapi.cpp} \
          shared/theme/Theme.qml \
          desktop/shell/{CMakeLists.txt,main.cpp,shellstate.h,appicons.h,Wallpaper.qml,Panel.qml,Widgets.qml,Dock.qml,Flyout.qml} \
-         desktop/widgets/{ClockWidget,CalendarWidget,MonthView,WeatherWidget,MonitorWidget}.qml shared/ui/{Card,Icon,AppIcon}.qml \
+         desktop/widgets/{ClockWidget,CalendarWidget,MonthView,WeatherWidget,MonitorWidget}.qml shared/ui/{Card,Icon,AppIcon,Toggle,Logo}.qml \
          shared/system-api/procparse.h tests/unit/{check_qml_refs.py,test_procparse.sh} \
          desktop/launcher/Launcher.qml \
          desktop/settings/{CMakeLists.txt,main.cpp,main.qml,vylo-settings.desktop} \
@@ -78,10 +78,10 @@ grep -q 'Sys.pinnedApps' "${root}/desktop/shell/Dock.qml" && ok "dock shows the 
 check "QML cross-references resolve (Sys/Shell/Theme/CMake)" python3 "${root}/tests/unit/check_qml_refs.py"
 check "/proc parser unit tests pass" bash "${root}/tests/unit/test_procparse.sh"
 grep -q 'Sys.prefs.wallpaper' "${root}/desktop/shell/Wallpaper.qml" && ok "wallpaper follows the user's choice" || bad "wallpaper ignores the user's choice"
-for w in observatory-isles nebula-drift deep-void; do
+for w in orbit-hills-{indigo,lilac,cyan,rose,amber} observatory-isles nebula-drift deep-void; do
   [[ -s "${root}/image/config/rootfs/usr/share/wallpapers/vylo/${w}.jpg" ]] && ok "wallpaper shipped: ${w}" || bad "wallpaper missing: ${w}"
 done
-grep -q 'Switch' "${root}/desktop/settings/main.qml" && ok "settings has a theme switch" || bad "settings has no theme switch"
+grep -q 'Toggle {' "${root}/desktop/settings/main.qml" && ok "settings has a theme switch" || bad "settings has no theme switch"
 grep -q 'AnchorTop' "${root}/desktop/shell/main.cpp" && ok "bar is anchored to the top" || bad "bar is not anchored to the top"
 grep -q 'password.text === ""' "${root}/image/config/rootfs-vylo/usr/share/sddm/themes/vylo/Main.qml" && ok "login screen never sends an empty password" || bad "login screen may send an empty password"
 grep -q 'ConditionKernelCommandLine=rd.live.image' "${root}/image/config/rootfs-vylo/etc/systemd/system/vylo-live.service" && ok "automatic login is limited to live media" || bad "automatic login is not limited to live media"

@@ -46,11 +46,10 @@ Window {
         BarButton {
             active: Shell.launcherOpen
             onClicked: Shell.launcherOpen = !Shell.launcherOpen
-            Image {
-                source: "qrc:/vylo/shell/brand/vylo-mark.svg"
-                height: 24; width: 28
-                sourceSize.width: 56; sourceSize.height: 48
-                fillMode: Image.PreserveAspectFit
+            Logo {
+                colour: th.accent
+                height: 21
+                anchors.verticalCenter: parent.verticalCenter
             }
             Text {
                 anchors.verticalCenter: parent.verticalCenter

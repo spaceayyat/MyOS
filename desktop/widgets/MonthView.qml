@@ -62,7 +62,7 @@ Column {
                     anchors.centerIn: parent
                     text: parent.day.getDate()
                     font.family: root.theme.fontUi; font.pixelSize: 12
-                    color: parent.isToday ? root.theme.onAccent : root.theme.text
+                    color: parent.isToday ? root.theme.accentText : root.theme.text
                     opacity: parent.day.getMonth() === root.first.getMonth() ? 1 : 0.35
                 }
             }

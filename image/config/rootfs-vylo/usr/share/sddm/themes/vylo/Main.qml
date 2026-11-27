@@ -98,7 +98,7 @@ Rectangle {
                 font.family: "Inter"; font.pixelSize: 14
                 background: Rectangle {
                     radius: 12; color: "#661f1647"
-                    border.width: 1; border.color: parent.activeFocus ? "#713BFA" : "#40a284ff"
+                    border.width: 1; border.color: parent.activeFocus ? "#4A47FF" : "#40a284ff"
                 }
                 onAccepted: root.login()
             }
@@ -112,7 +112,7 @@ Rectangle {
             }
             Rectangle {
                 width: parent.width; height: 40; radius: 12
-                color: signIn.containsMouse ? "#8657ff" : "#713BFA"
+                color: signIn.containsMouse ? "#6a68ff" : "#4A47FF"
                 Text { anchors.centerIn: parent; text: "Sign in"; font.family: "Inter"; font.pixelSize: 14; font.weight: Font.DemiBold; color: "white" }
                 MouseArea { id: signIn; anchors.fill: parent; hoverEnabled: true; onClicked: root.login() }
             }

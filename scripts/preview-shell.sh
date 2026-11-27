@@ -10,7 +10,9 @@ out="$(mkdir -p "$1" && cd "$1" && pwd)"
 
 dnf install -y labwc xorg-x11-server-Xwayland grim wlr-randr dbus-daemon qt6-qtwayland qt6-qtsvg layer-shell-qt \
   rsms-inter-fonts jetbrains-mono-fonts google-noto-sans-fonts papirus-icon-theme \
-  foot nautilus gnome-text-editor gnome-software
+  foot nautilus gnome-text-editor gnome-software lxqt-policykit
+echo "== policy agent files"
+rpm -ql lxqt-policykit | grep -E '/(bin|libexec)/' | tee "${out}/policy-agent.log"
 VYLO_NATIVE=1 "${VYLO_ROOT}/scripts/build-desktop.sh"
 cp -a "${VYLO_ROOT}/build/stage/usr/." /usr/
 
@@ -46,12 +48,17 @@ behind=$!
 sleep 4
 shot settings vylo-settings
 kill "${behind}"
+# The same desktop after choosing another accent colour.
+mkdir -p "${HOME}/.config/vylo"
+printf '[prefs]\naccent=lilac\n' >"${HOME}/.config/vylo/vylo.conf"
+shot lilac vylo-shell
+rm "${HOME}/.config/vylo/vylo.conf"
 SHOTS
 chmod +x "${work}/shots.sh"
 timeout 180 dbus-run-session labwc -C "${work}/labwc" -S "${work}/shots.sh" >"${out}/labwc.log" 2>&1 || true
 
 status=0
-for name in desktop launcher quick-panel settings; do
+for name in desktop launcher quick-panel settings lilac; do
   [[ -s "${out}/${name}.png" ]] || { echo "missing screenshot: ${name}"; status=1; }
 done
 [[ ! -s "${out}/errors" ]] || { cat "${out}/errors"; status=1; }
@@ -59,7 +66,7 @@ echo "== program output"
 tail -n +1 "${out}"/*.log
 # Any QML complaint is a failure.
 if grep -nE 'qrc:/|TypeError|ReferenceError|is not installed|Binding loop' \
-     "${out}"/{desktop,launcher,quick-panel,settings,shell-behind}.log; then
+     "${out}"/{desktop,launcher,quick-panel,settings,lilac,shell-behind}.log; then
   echo "QML problems found"; status=1
 fi
 exit "${status}"

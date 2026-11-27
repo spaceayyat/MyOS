@@ -27,7 +27,7 @@ ApplicationWindow {
         id: option
         property string label
         property string hint
-        property alias checked: toggle.checked
+        property bool checked
         signal toggled(bool value)
         Layout.fillWidth: true
         spacing: 12
@@ -36,19 +36,21 @@ ApplicationWindow {
             Text { text: option.label; font.family: th.fontUi; font.pixelSize: 14; color: th.text }
             Text { visible: text !== ""; text: option.hint; font.family: th.fontUi; font.pixelSize: th.textSmall; color: th.textMuted }
         }
-        Switch { id: toggle; onToggled: option.toggled(checked) }
+        Toggle {
+            theme: th
+            checked: option.checked
+            onToggled: function (value) { option.toggled(value) }
+        }
     }
 
     Rectangle {
         id: side
         width: 180; height: parent.height
         color: th.card
-        Image {
-            x: 18; y: 18; width: 110; height: 28
-            source: th.dark ? "qrc:/vylo/settings/brand/vylo-logo-dark.svg" : "qrc:/vylo/settings/brand/vylo-logo.svg"
-            sourceSize.width: 220
-            fillMode: Image.PreserveAspectFit
-            horizontalAlignment: Image.AlignLeft
+        Row {
+            x: 18; y: 18; spacing: 12
+            Logo { colour: th.accent; height: 26 }
+            Logo { word: true; colour: th.text; height: 22; anchors.verticalCenter: parent.verticalCenter }
         }
         Column {
             x: 10; y: 70; width: parent.width - 20; spacing: 3
@@ -63,7 +65,7 @@ ApplicationWindow {
                         x: 12; anchors.verticalCenter: parent.verticalCenter
                         text: parent.modelData
                         font.family: th.fontUi; font.pixelSize: th.textBody
-                        color: win.page === parent.index ? th.onAccent : th.text
+                        color: win.page === parent.index ? th.accentText : th.text
                     }
                     MouseArea { id: area; anchors.fill: parent; hoverEnabled: true; onClicked: win.page = parent.index }
                 }
@@ -96,7 +98,7 @@ ApplicationWindow {
             Row {
                 spacing: 12
                 Repeater {
-                    model: ["violet", "cyan", "starlight", "rose", "amber"]
+                    model: ["indigo", "lilac", "cyan", "rose", "amber"]
                     delegate: Rectangle {
                         required property string modelData
                         width: 34; height: 34; radius: 17
@@ -131,6 +133,7 @@ ApplicationWindow {
                 columnSpacing: 14; rowSpacing: 14
                 Repeater {
                     model: [
+                        { key: "orbit-hills", label: "Orbit hills (follows the accent)" },
                         { key: "observatory-isles", label: "Observatory isles" },
                         { key: "nebula-drift", label: "Nebula drift" },
                         { key: "deep-void", label: "Deep void" }
@@ -140,13 +143,13 @@ ApplicationWindow {
                         required property var modelData
                         spacing: 6
                         Rectangle {
-                            width: 230; height: 134; radius: th.radiusSmall
+                            width: 230; height: 118; radius: th.radiusSmall
                             color: "transparent"
                             border.width: Sys.prefs.wallpaper === choice.modelData.key ? 3 : 1
                             border.color: Sys.prefs.wallpaper === choice.modelData.key ? th.accent : th.border
                             Image {
                                 anchors.fill: parent; anchors.margins: 4
-                                source: Sys.wallpaperUrl(choice.modelData.key)
+                                source: Sys.wallpaperUrl(choice.modelData.key, Sys.prefs.accent)
                                 sourceSize.width: 460
                                 fillMode: Image.PreserveAspectCrop
                                 asynchronous: true

@@ -1,18 +1,15 @@
-# VYLO brand assets
+# VYLO logo
 
-The master is `source/vylo-logo-original.png`. Everything else here is made
-from it by `scripts/make-logo.py`. Wallpapers come from
-`scripts/make-wallpapers.py`.
+The originals are in `source/`. Everything else here, and `shared/ui/Logo.qml`,
+is made from them by `python3 scripts/make-logo.py`; do not edit those by hand.
 
 | File | Use |
 | --- | --- |
-| `vylo-logo-stacked.png`, `vylo-mark-glow.png` | Large, on dark backgrounds, with the glow |
-| `vylo-logo.svg`, `vylo-logo-dark.svg` | Flat logo for dark and light backgrounds |
-| `vylo-wordmark.svg` | The name on its own |
-| `vylo-mark.svg` | Compact logo |
-| `vylo-mark-small.svg` | 32 px and below (no star) |
-| `vylo-mark-mono.svg` | Single colour |
+| `vylo-mark.svg`, `vylo-mark-lilac.svg` | The mark in its two brand colours |
+| `vylo-mark-mono.svg` | One-colour printing |
+| `vylo-wordmark.svg` | The lettering |
+| `vylo-logo.svg` / `vylo-logo-dark.svg` | Mark and lettering for light / dark backgrounds |
 | `vylo-app-icon.svg` | Application icon |
+| `shared/ui/Logo.qml` | In the desktop, where it takes the accent colour |
 
-Colours: Void Black `#100B25`, Electric Violet `#713BFA`, Nebula Cyan
-`#37D9FF`, Starlight `#C5AEFF`, Cosmic White `#F4F2FF`.
+Colours: indigo `#4A47FF`, lilac `#C278FF`, night `#100B25`, white `#F4F2FF`.

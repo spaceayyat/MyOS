@@ -63,7 +63,7 @@ Window {
         id: card
         anchors.fill: parent
         radius: th.radius + 4
-        color: th.surface
+        color: th.popup
         border.width: 1; border.color: th.border
         opacity: Shell.launcherOpen ? 1 : 0
         Behavior on opacity { NumberAnimation { duration: th.slide } }
@@ -118,7 +118,7 @@ Window {
                         x: 12; anchors.verticalCenter: parent.verticalCenter
                         text: modelData.name
                         font.family: th.fontUi; font.pixelSize: th.textBody
-                        color: parent.current ? th.onAccent : th.text
+                        color: parent.current ? th.accentText : th.text
                     }
                     MouseArea {
                         id: categoryArea; anchors.fill: parent; hoverEnabled: true

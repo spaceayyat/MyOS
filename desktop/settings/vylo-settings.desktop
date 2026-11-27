@@ -2,7 +2,7 @@
 Type=Application
 Name=VYLO OS Settings
 Comment=Change how the VYLO OS desktop looks
-Icon=vylo
+Icon=vylo-settings
 Exec=vylo-settings
 Terminal=false
 Categories=Settings;

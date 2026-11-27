@@ -121,6 +121,10 @@ void SystemApi::refreshApplications()
             if (!parseDesktopFile(fi.absoluteFilePath(), &name, &exec, &icon, &categories))
                 continue;
             seenIds.insert(fi.fileName());
+            // foot's server and client entries are plumbing, not applications.
+            if (fi.completeBaseName() == QLatin1String("footclient")
+                || fi.completeBaseName() == QLatin1String("foot-server"))
+                continue;
             QVariantMap entry;
             entry.insert(QStringLiteral("name"), name);
             entry.insert(QStringLiteral("exec"), exec);
@@ -286,14 +290,14 @@ void SystemApi::onConfigDirChanged()
 
 QStringList SystemApi::accentNames()
 {
-    return {QStringLiteral("violet"), QStringLiteral("cyan"), QStringLiteral("starlight"),
+    return {QStringLiteral("indigo"), QStringLiteral("lilac"), QStringLiteral("cyan"),
             QStringLiteral("rose"), QStringLiteral("amber")};
 }
 
 QStringList SystemApi::wallpaperNames()
 {
-    return {QStringLiteral("observatory-isles"), QStringLiteral("nebula-drift"),
-            QStringLiteral("deep-void")};
+    return {QStringLiteral("orbit-hills"), QStringLiteral("observatory-isles"),
+            QStringLiteral("nebula-drift"), QStringLiteral("deep-void")};
 }
 
 QStringList SystemApi::defaultPins()
@@ -306,8 +310,8 @@ QStringList SystemApi::defaultPins()
 
 QVariantMap SystemApi::defaultPrefs()
 {
-    return {{QStringLiteral("accent"), QStringLiteral("violet")},
-            {QStringLiteral("wallpaper"), QStringLiteral("observatory-isles")},
+    return {{QStringLiteral("accent"), QStringLiteral("indigo")},
+            {QStringLiteral("wallpaper"), QStringLiteral("orbit-hills")},
             {QStringLiteral("greeting"), QStringLiteral("Make Space Yours.")},
             {QStringLiteral("pins"), defaultPins().join(QLatin1Char(';'))},
             {QStringLiteral("reducedMotion"), false},
@@ -443,12 +447,15 @@ void SystemApi::togglePin(const QString &id)
     setPref(QStringLiteral("pins"), pins.join(QLatin1Char(';')));
 }
 
-QString SystemApi::wallpaperUrl(const QString &name) const
+QString SystemApi::wallpaperUrl(const QString &name, const QString &accent) const
 {
-    const QString safe = wallpaperNames().contains(name) ? name : wallpaperNames().first();
+    QString file = wallpaperNames().contains(name) ? name : wallpaperNames().first();
+    // "orbit-hills" is painted once per accent colour.
+    if (file == QLatin1String("orbit-hills"))
+        file += QLatin1Char('-') + (accentNames().contains(accent) ? accent : accentNames().first());
     // VYLO_DATA_DIR lets the preview run from a source tree.
     const QString base = qEnvironmentVariable("VYLO_DATA_DIR", QStringLiteral("/usr/share"));
-    return QUrl::fromLocalFile(base + QStringLiteral("/wallpapers/vylo/") + safe
+    return QUrl::fromLocalFile(base + QStringLiteral("/wallpapers/vylo/") + file
                                + QStringLiteral(".jpg")).toString();
 }
 

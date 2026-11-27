@@ -82,7 +82,7 @@ public:
     Q_INVOKABLE bool power(const QString &action);
     Q_INVOKABLE bool isPinned(const QString &id) const;
     Q_INVOKABLE void togglePin(const QString &id);
-    Q_INVOKABLE QString wallpaperUrl(const QString &name) const;
+    Q_INVOKABLE QString wallpaperUrl(const QString &name, const QString &accent) const;
 
     // Validates and saves one preference. Unknown keys / bad values are ignored.
     Q_INVOKABLE void setPref(const QString &key, const QVariant &value);

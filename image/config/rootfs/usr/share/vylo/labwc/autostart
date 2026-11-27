@@ -1,6 +1,8 @@
 # Make the session visible to D-Bus services such as the desktop portals.
 dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP &
 xdg-user-dirs-update &
-# Asks for a password when an application needs administrator rights.
-lxqt-policykit-agent &
+# Asks for a password when an application needs administrator rights. The
+# program is not on PATH, so ask the package where it is.
+agent="$(rpm -ql lxqt-policykit 2>/dev/null | grep -m1 -E '^/usr/(bin|libexec)/.*policykit.*agent$')"
+[ -n "$agent" ] && "$agent" &
 vylo-shell &

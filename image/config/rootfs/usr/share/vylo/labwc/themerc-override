@@ -8,5 +8,5 @@ window.active.button.unpressed.image.color: #c5aeff
 window.inactive.button.unpressed.image.color: #6b5f9a
 menu.items.bg.color: #130d2c
 menu.items.text.color: #f4f2ff
-menu.items.active.bg.color: #713bfa
+menu.items.active.bg.color: #4a47ff
 menu.items.active.text.color: #ffffff

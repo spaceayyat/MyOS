@@ -81,10 +81,13 @@ Window {
             DockButton {
                 tip: "Constellation"
                 onClicked: Shell.launcherOpen = !Shell.launcherOpen
-                Image {
+                // The launcher button wears the accent colour.
+                Rectangle {
                     anchors.fill: parent
-                    source: "qrc:/vylo/shell/brand/vylo-app-icon.svg"
-                    sourceSize.width: th.dockIcon * 2; sourceSize.height: th.dockIcon * 2
+                    radius: th.dockIcon * 0.23
+                    color: th.accent
+                    Behavior on color { ColorAnimation { duration: th.slide } }
+                    Logo { colour: th.accentText; height: th.dockIcon * 0.62; anchors.centerIn: parent }
                 }
             }
             Rectangle { width: 1; height: 30; color: th.border; anchors.verticalCenter: parent.verticalCenter }

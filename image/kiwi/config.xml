@@ -217,7 +217,6 @@
     <package name="rsms-inter-fonts"/>
     <package name="jetbrains-mono-fonts"/>
     <package name="papirus-icon-theme"/>
-    <package name="lxqt-policykit"/>
   </packages>
 
   <packages type="image" profiles="GNOME">
@@ -255,6 +254,7 @@
     <package name="xdg-desktop-portal-wlr"/>
     <package name="xdg-desktop-portal-gtk"/>
     <package name="polkit"/>
+    <package name="lxqt-policykit"/>
     <package name="nautilus"/>
     <package name="gnome-text-editor"/>
     <package name="gnome-software"/>

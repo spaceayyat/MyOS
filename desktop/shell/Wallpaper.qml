@@ -16,7 +16,7 @@ Window {
 
     Image {
         anchors.fill: parent
-        source: Sys.wallpaperUrl(Sys.prefs.wallpaper)
+        source: Sys.wallpaperUrl(Sys.prefs.wallpaper, Sys.prefs.accent)
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
         sourceSize.width: win.width

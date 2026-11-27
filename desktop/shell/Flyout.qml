@@ -22,7 +22,7 @@ Window {
     Card {
         theme: th
         anchors.fill: parent
-        color: th.surface
+        color: th.popup
         Column {
             anchors.fill: parent
             spacing: 16

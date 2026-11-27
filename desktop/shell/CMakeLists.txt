@@ -5,6 +5,7 @@ set(VYLO_SHARED_QML
     ${CMAKE_SOURCE_DIR}/shared/ui/Card.qml
     ${CMAKE_SOURCE_DIR}/shared/ui/Icon.qml
     ${CMAKE_SOURCE_DIR}/shared/ui/AppIcon.qml
+    ${CMAKE_SOURCE_DIR}/shared/ui/Logo.qml
     ${CMAKE_SOURCE_DIR}/desktop/launcher/Launcher.qml
     ${CMAKE_SOURCE_DIR}/desktop/widgets/ClockWidget.qml
     ${CMAKE_SOURCE_DIR}/desktop/widgets/CalendarWidget.qml
@@ -14,13 +15,6 @@ set(VYLO_SHARED_QML
 foreach(f ${VYLO_SHARED_QML})
     get_filename_component(_name ${f} NAME)
     set_source_files_properties(${f} PROPERTIES QT_RESOURCE_ALIAS ${_name})
-endforeach()
-
-set(VYLO_BRAND ${CMAKE_SOURCE_DIR}/assets/brand/vylo-mark.svg
-               ${CMAKE_SOURCE_DIR}/assets/brand/vylo-app-icon.svg)
-foreach(f ${VYLO_BRAND})
-    get_filename_component(_name ${f} NAME)
-    set_source_files_properties(${f} PROPERTIES QT_RESOURCE_ALIAS brand/${_name})
 endforeach()
 
 file(GLOB VYLO_ICONS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} icons/*.svg)
@@ -36,7 +30,6 @@ qt_add_resources(vylo-shell shell_qml
         Dock.qml
         Flyout.qml
         ${VYLO_SHARED_QML}
-        ${VYLO_BRAND}
         ${VYLO_ICONS}
 )
 
