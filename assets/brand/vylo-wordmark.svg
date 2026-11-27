@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="352" height="41" viewBox="460 729 352 41" role="img" aria-label="VYLO"><defs>
+<linearGradient id="l" gradientUnits="userSpaceOnUse" x1="530" y1="495" x2="640" y2="677">
+<stop offset="0" stop-color="#b45cff"/><stop offset="0.3" stop-color="#6a0ff5"/><stop offset="0.75" stop-color="#5a00ee"/><stop offset="1" stop-color="#e3c4ff"/></linearGradient>
+<linearGradient id="r" gradientUnits="userSpaceOnUse" x1="747" y1="495" x2="645" y2="630">
+<stop offset="0" stop-color="#8a2cff"/><stop offset="1" stop-color="#35009e"/></linearGradient>
+<linearGradient id="f" gradientUnits="userSpaceOnUse" x1="747" y1="495" x2="650" y2="590">
+<stop offset="0" stop-color="#f0d9ff"/><stop offset="1" stop-color="#6a14f0"/></linearGradient>
+</defs><path d="M460 729 H471.5 L494.5 761 L517.5 729 H529 L499.5 770 H490 Z M564 729 H576 L594 745 L612 729 H624 L598 752.5 V770 H590 V752.5 Z M665 729 H673.5 V762 H715 V770 H665 Z M765 729 H800 Q812 729 812 741 V758 Q812 770 800 770 H765 Q753 770 753 758 V741 Q753 729 765 729 Z M767 737 Q761.5 737 761.5 742 V757 Q761.5 762 767 762 H798 Q803.5 762 803.5 757 V742 Q803.5 737 798 737 Z" fill="#F4F2FF" fill-rule="evenodd"/></svg>

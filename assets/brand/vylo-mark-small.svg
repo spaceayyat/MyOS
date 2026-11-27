@@ -1,5 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="VYLO"><defs>
-<linearGradient id="l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C5AEFF"/><stop offset="0.45" stop-color="#713BFA"/><stop offset="1" stop-color="#4a1fc4"/></linearGradient>
-<linearGradient id="r" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#713BFA"/><stop offset="1" stop-color="#37D9FF"/></linearGradient>
-<linearGradient id="o" gradientUnits="userSpaceOnUse" x1="16" y1="170" x2="240" y2="80"><stop offset="0" stop-color="#713BFA"/><stop offset="1" stop-color="#37D9FF"/></linearGradient>
-</defs><g transform="translate(128 128) scale(1.22) translate(-130 -126)"><path d="M34 52 L90 52 L136 164 L122 212 Z" fill="url(#l)"/><path d="M122 212 L136 164 L182 52 L226 40 L146 212 Z" fill="url(#r)"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="513 466 240 240" role="img" aria-label="VYLO"><defs>
+<linearGradient id="l" gradientUnits="userSpaceOnUse" x1="530" y1="495" x2="640" y2="677">
+<stop offset="0" stop-color="#b45cff"/><stop offset="0.3" stop-color="#6a0ff5"/><stop offset="0.75" stop-color="#5a00ee"/><stop offset="1" stop-color="#e3c4ff"/></linearGradient>
+<linearGradient id="r" gradientUnits="userSpaceOnUse" x1="747" y1="495" x2="645" y2="630">
+<stop offset="0" stop-color="#8a2cff"/><stop offset="1" stop-color="#35009e"/></linearGradient>
+<linearGradient id="f" gradientUnits="userSpaceOnUse" x1="747" y1="495" x2="650" y2="590">
+<stop offset="0" stop-color="#f0d9ff"/><stop offset="1" stop-color="#6a14f0"/></linearGradient>
+</defs><path d="M519 495 H566 L653 633 L636 677 Z" fill="url(#l)"/><path d="M708 495 H747 L636 677 L653 633 L636 606 Z" fill="url(#r)"/><path d="M708 495 H747 L636 606 Z" fill="url(#f)"/></svg>

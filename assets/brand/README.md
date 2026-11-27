@@ -1,14 +1,16 @@
 # VYLO brand assets
 
-Original artwork. Edit the scripts, not the output:
-`scripts/make-logo.py` and `scripts/make-wallpapers.py`.
+The master is `source/vylo-logo-original.png`. Everything else here is made
+from it by `scripts/make-logo.py`. Wallpapers come from
+`scripts/make-wallpapers.py`.
 
 | File | Use |
 | --- | --- |
-| `vylo-logo.svg`, `vylo-logo-dark.svg` | Main logo for dark and light backgrounds |
-| `vylo-logo-stacked.svg` | Boot, login and installer artwork |
+| `vylo-logo-stacked.png`, `vylo-mark-glow.png` | Large, on dark backgrounds, with the glow |
+| `vylo-logo.svg`, `vylo-logo-dark.svg` | Flat logo for dark and light backgrounds |
+| `vylo-wordmark.svg` | The name on its own |
 | `vylo-mark.svg` | Compact logo |
-| `vylo-mark-small.svg` | Sizes of 32 px and below (no orbit) |
+| `vylo-mark-small.svg` | 32 px and below (no star) |
 | `vylo-mark-mono.svg` | Single colour |
 | `vylo-app-icon.svg` | Application icon |
 

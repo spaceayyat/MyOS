@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="VYLO"><path d="M15.3 153.3 A118 40 -18 0 1 233.2 78.9" fill="none" stroke="#F4F2FF" stroke-width="5" stroke-linecap="round" opacity="0.65"/><path d="M34 52 L90 52 L136 164 L122 212 Z" fill="#F4F2FF"/><path d="M122 212 L136 164 L182 52 L226 40 L146 212 Z" fill="#F4F2FF"/><path d="M240.9 93.2 A118 40 -18 0 1 20.8 167.6" fill="none" stroke="#F4F2FF" stroke-width="8" stroke-linecap="round"/><path d="M234.6 62.9 L238.3 76.2 L251.6 79.9 L238.3 83.7 L234.6 96.9 L230.8 83.7 L217.6 79.9 L230.8 76.2 Z" fill="#F4F2FF"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="316" height="270" viewBox="500 428 316 270" role="img" aria-label="VYLO"><defs>
+<linearGradient id="l" gradientUnits="userSpaceOnUse" x1="530" y1="495" x2="640" y2="677">
+<stop offset="0" stop-color="#b45cff"/><stop offset="0.3" stop-color="#6a0ff5"/><stop offset="0.75" stop-color="#5a00ee"/><stop offset="1" stop-color="#e3c4ff"/></linearGradient>
+<linearGradient id="r" gradientUnits="userSpaceOnUse" x1="747" y1="495" x2="645" y2="630">
+<stop offset="0" stop-color="#8a2cff"/><stop offset="1" stop-color="#35009e"/></linearGradient>
+<linearGradient id="f" gradientUnits="userSpaceOnUse" x1="747" y1="495" x2="650" y2="590">
+<stop offset="0" stop-color="#f0d9ff"/><stop offset="1" stop-color="#6a14f0"/></linearGradient>
+</defs><path d="M519 495 H566 L653 633 L636 677 Z" fill="#F4F2FF"/><path d="M708 495 H747 L636 677 L653 633 L636 606 Z" fill="#F4F2FF"/><path d="M708 495 H747 L636 606 Z" fill="#F4F2FF"/><path d="M747 438 L751 481 L757 487 L806 491 L757 495 L751 501 L747 546 L743 501 L737 495 L690 491 L737 487 L743 481 Z" fill="#F4F2FF"/></svg>
