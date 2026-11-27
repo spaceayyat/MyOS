@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        edition: [gnome, plasma]
+        edition: [gnome, plasma, vylo]
     runs-on: ubuntu-24.04
     timeout-minutes: 120
     steps:
@@ -82,7 +82,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        edition: [gnome, plasma]
+        edition: [gnome, plasma, vylo]
         mode: [bios, uefi, secureboot]
     steps:
       - uses: actions/checkout@v7
@@ -126,7 +126,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        edition: [gnome, plasma]
+        edition: [gnome, plasma, vylo]
         disk: [plain, luks]
     steps:
       - uses: actions/checkout@v7
@@ -183,10 +183,14 @@ jobs:
         with:
           name: VYLO-ISO-plasma
           path: iso-plasma
-      - name: Verify and collect both editions
+      - uses: actions/download-artifact@v8
+        with:
+          name: VYLO-ISO-vylo
+          path: iso-vylo
+      - name: Verify and collect all editions
         run: |
           mkdir release
-          for edition in gnome plasma; do
+          for edition in gnome plasma vylo; do
             (cd "iso-${edition}" && sha256sum -c SHA256SUMS)
             mv "iso-${edition}"/*.iso "iso-${edition}"/*.packages release/
             mv "iso-${edition}/BUILD-INFO.txt" "release/BUILD-INFO-${edition}.txt"
@@ -233,7 +237,7 @@ jobs:
     permissions:
       contents: write
     env:
-      SCREENSHOT_BRANCH: plasma-distro
+      SCREENSHOT_BRANCH: vylo
     steps:
       - uses: actions/checkout@v7
         with:

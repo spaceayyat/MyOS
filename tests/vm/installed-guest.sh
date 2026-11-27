@@ -22,8 +22,10 @@ online() { wait_for 90 curl -fsS --max-time 20 -o /dev/null https://fedoraprojec
 
 if command -v gnome-shell >/dev/null; then
   edition=gnome shell=gnome-shell dm=gdm.service
-else
+elif command -v plasmashell >/dev/null; then
   edition=plasma shell=plasmashell dm=plasmalogin.service
+else
+  edition=vylo shell=vylo-shell dm=sddm.service
 fi
 
 if [[ -e "${marker}" ]]; then
@@ -63,6 +65,8 @@ check display-manager active "${dm}"
 check network online
 if [[ "${edition}" == gnome ]]; then
   check applications bash -c 'command -v helium nautilus ptyxis gnome-software gnome-tweaks'
+elif [[ "${edition}" == vylo ]]; then
+  check applications bash -c 'command -v helium nautilus gnome-software foot vylo-settings'
 else
   check applications bash -c 'command -v helium firefox dolphin konsole plasma-discover'
 fi

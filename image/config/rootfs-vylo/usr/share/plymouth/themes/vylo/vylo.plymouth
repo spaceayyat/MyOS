@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=VYLO
+Description=VYLO boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/vylo
+ScriptFile=/usr/share/plymouth/themes/vylo/vylo.script

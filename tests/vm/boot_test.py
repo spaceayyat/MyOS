@@ -6,7 +6,7 @@ handed to systemd as an SMBIOS credential (systemd.extra-unit), so the image
 under test is not modified.
 
 Usage: boot_test.py --iso X.iso --mode bios|uefi|secureboot
-       --edition gnome|plasma --out DIR
+       --edition gnome|plasma|vylo --out DIR
 Needs: qemu-system-x86_64, OVMF for the UEFI modes; /dev/kvm strongly advised.
 Exit status 0 only if the guest finished and every check passed.
 """

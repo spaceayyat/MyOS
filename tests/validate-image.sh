@@ -9,7 +9,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 dnf install -y kiwi distribution-gpg-keys python3
 
 echo "== kiwi-ng image info"
-for profile in GNOME Plasma; do
+for profile in GNOME Plasma VYLO; do
   kiwi-ng --profile "${profile}" image info --description "${root}/image/kiwi"
 done
 

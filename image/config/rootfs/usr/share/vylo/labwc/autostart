@@ -1,1 +1,6 @@
+# Make the session visible to D-Bus services such as the desktop portals.
+dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP &
+xdg-user-dirs-update &
+# Asks for a password when an application needs administrator rights.
+lxqt-policykit-agent &
 vylo-shell &

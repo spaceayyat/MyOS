@@ -1,0 +1,10 @@
+[SddmGreeterTheme]
+Name=VYLO
+Description=VYLO login screen
+Type=sddm-theme
+Version=1.0
+MainScript=Main.qml
+ConfigFile=theme.conf
+Theme-Id=vylo
+Theme-API=2.0
+QtVersion=6

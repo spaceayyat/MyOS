@@ -1,0 +1,21 @@
+#!/bin/sh
+# Runs once on each live boot, after livesys has created "liveuser".
+set -eu
+
+cat > /etc/sddm.conf.d/20-vylo-live.conf <<'CONF'
+[Autologin]
+User=liveuser
+Session=vylo.desktop
+CONF
+
+mkdir -p /usr/local/share/applications
+cat > /usr/local/share/applications/vylo-install.desktop <<'ENTRY'
+[Desktop Entry]
+Type=Application
+Name=Install VYLO
+Comment=Install VYLO to this computer
+Exec=liveinst
+Icon=vylo
+Terminal=false
+Categories=System;
+ENTRY

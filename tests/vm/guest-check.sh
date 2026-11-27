@@ -38,8 +38,10 @@ fi
 
 if command -v gnome-shell >/dev/null; then
   edition=gnome compositor=gnome-shell shell=gnome-shell dm=gdm.service
-else
+elif command -v plasmashell >/dev/null; then
   edition=plasma compositor=kwin_wayland shell=plasmashell dm=plasmalogin.service
+else
+  edition=vylo compositor=labwc shell=vylo-shell dm=sddm.service
 fi
 echo "VYLOTEST-FACT edition ${edition}"
 
@@ -118,7 +120,11 @@ have_commands() {
 setting() { as_live dbus-run-session gsettings get "$1" "$2"; }
 
 # Browser: Helium is the default in both editions and must actually start.
-if [[ "${edition}" == gnome ]]; then desktop_name=GNOME; else desktop_name=KDE; fi
+case "${edition}" in
+  gnome) desktop_name=GNOME ;;
+  plasma) desktop_name=KDE ;;
+  *) desktop_name=VYLO ;;
+esac
 export desktop_name
 check default-browser eval '[[ $(as_live env XDG_CURRENT_DESKTOP=${desktop_name} xdg-mime query default x-scheme-handler/https) == helium.desktop ]] && echo helium.desktop'
 check helium-runs eval 'as_live timeout 90 helium --headless --disable-gpu --dump-dom https://fedoraproject.org/static/hotspot.txt | grep -m1 OK'
@@ -127,6 +133,12 @@ if [[ "${edition}" == gnome ]]; then
   check applications have_commands nautilus ptyxis gnome-text-editor gnome-software gnome-control-center gnome-system-monitor loupe papers
   check customization-tools have_commands gnome-tweaks gnome-extensions-app
   check default-theme eval '[[ $(setting org.gnome.desktop.interface color-scheme) == *prefer-dark* && $(setting org.gnome.desktop.background picture-uri-dark) == */VYLO/* ]] && echo "VYLO dark"'
+  check no-firefox eval '! rpm -q firefox'
+elif [[ "${edition}" == vylo ]]; then
+  check applications have_commands nautilus gnome-text-editor gnome-software foot vylo-settings helium
+  check default-theme eval '[[ -s /usr/share/wallpapers/vylo/observatory-isles.jpg ]] && grep -qx Current=vylo /etc/sddm.conf.d/10-vylo.conf && grep -qx Theme=vylo /etc/plymouth/plymouthd.conf && echo "VYLO wallpaper, login and boot themes"'
+  check vylo-session-parts eval 'wait_for 60 pgrep -u liveuser -f lxqt-policykit-agent && [[ $(fc-match Inter family) == Inter* ]] && echo "policy agent and Inter font"'
+  echo "VYLOTEST-FACT shell-log $(tail -n5 /home/liveuser/.local/state/vylo/session.log 2>&1 | tr '\n' ' ')"
   check no-firefox eval '! rpm -q firefox'
 else
   check applications have_commands dolphin konsole kate plasma-discover systemsettings okular gwenview helium firefox

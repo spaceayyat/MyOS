@@ -17,7 +17,8 @@ set -u
 echo "VYLOTEST-BEGIN live installer"
 [[ -d /sys/firmware/efi ]] && echo "VYLOTEST-FACT firmware uefi" || echo "VYLOTEST-FACT firmware bios"
 if command -v gnome-shell >/dev/null; then echo "VYLOTEST-FACT edition gnome"
-else echo "VYLOTEST-FACT edition plasma"; fi
+elif command -v plasmashell >/dev/null; then echo "VYLOTEST-FACT edition plasma"
+else echo "VYLOTEST-FACT edition vylo"; fi
 disk_mode="$(cat "${CREDENTIALS_DIRECTORY}/vylo.disk")"
 check() { local n="$1"; shift; if "$@"; then echo "VYLOTEST-CHECK ${n} PASS"; else echo "VYLOTEST-CHECK ${n} FAIL"; fi; }
 

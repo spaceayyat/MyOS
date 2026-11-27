@@ -1,0 +1,13 @@
+[Unit]
+Description=VYLO live session setup (automatic login and installer shortcut)
+# Only on live media: an installed system always asks for a password.
+ConditionKernelCommandLine=rd.live.image
+After=livesys.service
+Before=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/vylo/live-setup
+
+[Install]
+WantedBy=graphical.target

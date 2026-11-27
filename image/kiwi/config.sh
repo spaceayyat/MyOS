@@ -25,6 +25,13 @@ case "${kiwi_profiles:-}" in
         glib-compile-schemas --strict /usr/share/glib-2.0/schemas
         ;;
     Plasma) display_manager=plasmalogin.service ;;
+    VYLO)
+        display_manager=sddm.service
+        chmod 0755 /usr/libexec/vylo/live-setup
+        # labwc ships its own plain session; only the VYLO one belongs here.
+        rm -f /usr/share/wayland-sessions/labwc.desktop
+        systemctl enable vylo-live.service
+        ;;
     *) echo "unknown profile '${kiwi_profiles:-}'" >&2; exit 1 ;;
 esac
 

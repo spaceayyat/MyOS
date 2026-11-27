@@ -20,7 +20,7 @@ copy() {
 }
 
 status=0
-for edition in gnome plasma; do
+for edition in gnome plasma vylo; do
   copy "boot-${edition}-uefi/desktop.png" "${edition}-live.png" || status=1
   copy "install-${edition}-plain/installed/login-screen.png" "${edition}-login.png" || status=1
   copy "install-${edition}-plain/installed/desktop.png" "${edition}-installed.png" || status=1

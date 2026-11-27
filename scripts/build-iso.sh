@@ -5,7 +5,7 @@
 # already built by scripts/build-desktop.sh. scripts/build-in-container.sh does
 # all of this for you with Docker or Podman.
 #   dnf install -y kiwi kiwi-systemdeps distribution-gpg-keys
-# Usage: sudo [VYLO_EDITION=gnome|plasma] scripts/build-iso.sh   (default gnome)
+# Usage: sudo [VYLO_EDITION=gnome|plasma|vylo] scripts/build-iso.sh   (default gnome)
 # Output: output/iso/*.iso and output/iso/SHA256SUMS
 set -euo pipefail
 # shellcheck source=scripts/lib.sh
@@ -24,7 +24,8 @@ edition="${VYLO_EDITION:-gnome}"
 case "${edition}" in
   gnome) profile=GNOME; suffix="" ;;
   plasma) profile=Plasma; suffix="-plasma" ;;
-  *) die "VYLO_EDITION must be gnome or plasma, not '${edition}'" ;;
+  vylo) profile=VYLO; suffix="-desktop" ;;
+  *) die "VYLO_EDITION must be gnome, plasma or vylo, not '${edition}'" ;;
 esac
 
 description="${VYLO_ROOT}/build/kiwi"

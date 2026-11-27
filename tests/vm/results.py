@@ -24,6 +24,7 @@ COMMON = frozenset({
 EDITIONS = {
     "gnome": COMMON | {"no-firefox", "customization-tools"},
     "plasma": COMMON,
+    "vylo": COMMON | {"no-firefox", "vylo-session-parts"},
 }
 
 # Installation test (tests/vm/install_test.py).

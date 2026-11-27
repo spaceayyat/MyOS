@@ -11,7 +11,7 @@ The master is assets/brand/source/vylo-logo-original.png, drawn on black.
 import pathlib
 
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 OUT = pathlib.Path(__file__).resolve().parents[1] / "assets" / "brand"
 SOURCE = OUT / "source" / "vylo-logo-original.png"
@@ -85,6 +85,20 @@ def main():
     svg("vylo-logo.svg", lockup, mark() + f'<path d="{WORD}" fill="#9a3dff" fill-rule="evenodd"/>')
     svg("vylo-logo-dark.svg", lockup, mark(VOID) + f'<path d="{WORD}" fill="{VOID}" fill-rule="evenodd"/>')
     print("wrote the logo set to", OUT)
+    boot_images()
+
+
+def boot_images():
+    """Logo copies for the login screen and boot splash, from the PNG artwork."""
+    config = OUT.parents[1] / "image/config/rootfs-vylo/usr/share"
+    art = Image.open(OUT / "vylo-logo-stacked.png").convert("RGBA")
+    art = art.crop(art.getbbox())
+    for folder, width in (("sddm/themes/vylo", 360), ("plymouth/themes/vylo", 300)):
+        height = round(art.height * width / art.width)
+        art.resize((width, height), Image.LANCZOS).save(config / folder / "logo.png", optimize=True)
+    dot = Image.new("RGBA", (40, 40), (0, 0, 0, 0))
+    ImageDraw.Draw(dot).ellipse((0, 0, 39, 39), fill=(113, 59, 250, 255))
+    dot.resize((10, 10), Image.LANCZOS).save(config / "plymouth/themes/vylo/dot.png")
 
 
 if __name__ == "__main__":

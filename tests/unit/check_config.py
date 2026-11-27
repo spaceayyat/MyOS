@@ -39,9 +39,10 @@ def main(root: pathlib.Path) -> int:
             problems.append(f"{repo.get('alias')}: no signing key")
 
     names = set()
-    for edition in ("GNOME", "Plasma"):
+    for edition in ("GNOME", "Plasma", "VYLO"):
         listed = [p.get("name") for group in xml.iter("packages")
-                  if group.get("profiles") in (None, edition)
+                  if group.get("profiles") is None
+                  or edition in group.get("profiles").split(",")
                   for p in group.iter("package")]
         names.update(listed)
         for name, count in collections.Counter(listed).items():
@@ -49,8 +50,8 @@ def main(root: pathlib.Path) -> int:
                 problems.append(f"{edition}: package listed {count} times: {name}")
         if "helium-bin" not in listed:
             problems.append(f"{edition}: helium-bin is missing")
-        if edition == "GNOME" and "firefox" in listed:
-            problems.append("GNOME edition must ship Helium, not Firefox")
+        if edition != "Plasma" and "firefox" in listed:
+            problems.append(f"{edition} edition must ship Helium, not Firefox")
 
     # The Helium key shipped to users must be the one the build trusts.
     key = "image/config/rootfs/etc/pki/rpm-gpg/RPM-GPG-KEY-imput-helium"
@@ -63,7 +64,7 @@ def main(root: pathlib.Path) -> int:
     # Every unit enabled in config.sh that this repository ships must exist.
     script = (root / "image/kiwi/config.sh").read_text()
     for unit in re.findall(r"\b(vylo-[\w-]+\.(?:service|timer))\b", script):
-        if not (root / "image/config/rootfs/etc/systemd/system" / unit).is_file():
+        if not list(root.glob(f"image/config/rootfs*/etc/systemd/system/{unit}")):
             problems.append(f"config.sh enables {unit} but the repo does not ship it")
 
     for problem in problems:

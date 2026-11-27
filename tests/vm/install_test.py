@@ -6,7 +6,7 @@ blank disk. Stage 2: boot that disk alone, run installed-guest.sh, type the
 disk passphrase (LUKS) and the login password on the virtual keyboard, reboot
 once and check again.
 
-Usage: install_test.py --iso X.iso --disk plain|luks --edition gnome|plasma
+Usage: install_test.py --iso X.iso --disk plain|luks --edition gnome|plasma|vylo
        --out DIR
 Needs: qemu-system-x86_64, qemu-img, OVMF, and in practice /dev/kvm.
 """
