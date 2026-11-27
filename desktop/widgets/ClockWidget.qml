@@ -20,7 +20,7 @@ Card {
             Text {
                 text: ":" + Qt.formatTime(root.now, "mm")
                 font.family: root.theme.fontHead; font.pixelSize: 62; font.weight: Font.Medium
-                color: root.theme.dark ? "#9b6bff" : root.theme.accent
+                color: root.theme.dark ? Qt.lighter(root.theme.accent, 1.25) : root.theme.accent
             }
         }
         Text {
