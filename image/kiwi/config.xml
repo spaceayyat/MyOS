@@ -203,6 +203,9 @@
     <!-- Storage plugins and filesystem tools the installer needs to partition
          disks; without them every installation fails -->
     <package name="anaconda-install-env-deps"/>
+    <!-- The window the installer's pages are shown in. Without it "Install"
+         starts and then closes without showing anything. -->
+    <package name="slitherer"/>
 
     <!-- The VYLO session (vylo-shell on labwc): default in the VYLO edition,
          optional in the others -->

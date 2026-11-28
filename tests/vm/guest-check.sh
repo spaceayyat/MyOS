@@ -136,7 +136,7 @@ if [[ "${edition}" == gnome ]]; then
   check no-firefox eval '! rpm -q firefox'
 elif [[ "${edition}" == vylo ]]; then
   check applications have_commands nautilus gnome-text-editor gnome-software foot vylo-settings helium
-  check default-theme eval '[[ -s /usr/share/wallpapers/vylo/orbit-hills-indigo.jpg ]] && grep -qx Current=vylo /etc/sddm.conf.d/10-vylo.conf && grep -qx Theme=vylo /etc/plymouth/plymouthd.conf && echo "VYLO wallpaper, login and boot themes"'
+  check default-theme eval '[[ -s /usr/share/wallpapers/vylo/cosmos-indigo.jpg ]] && grep -qx Current=vylo /etc/sddm.conf.d/10-vylo.conf && grep -qx Theme=vylo /etc/plymouth/plymouthd.conf && echo "VYLO wallpaper, login and boot themes"'
   check vylo-session-parts eval 'wait_for 60 pgrep -u liveuser -f lxqt-policykit-agent && [[ $(fc-match Inter family) == Inter* ]] && as_live busctl --user status org.freedesktop.Notifications >/dev/null && echo "policy agent, notification service and Inter font"'
   echo "VYLOTEST-FACT policy-agent-files $(rpm -ql lxqt-policykit | grep -E '/(bin|libexec)/' | tr '\n' ' ')"
   echo "VYLOTEST-FACT shell-log $(tail -n5 /home/liveuser/.local/state/vylo/session.log 2>&1 | tr '\n' ' ')"
@@ -164,6 +164,8 @@ if [[ "${edition}" == vylo ]]; then
   check installer-starts wait_for 180 pgrep -f 'anaconda .*--liveinst'
   sleep 75
   check installer-stays pgrep -f 'anaconda .*--liveinst'
+  echo "VYLOTEST-FACT installer-config $(grep -rhE 'hidden_webui_pages|hidden_spokes|default_browser|web_engine|can_change_root|profile_id' /usr/share/anaconda /etc/anaconda 2>/dev/null | grep -v '^#' | sort | uniq -c | tr '\n' ';' | cut -c1-700)"
+  echo "VYLOTEST-FACT installer-profile $(grep -hiE 'profile' /tmp/anaconda.log 2>/dev/null | tail -n4 | cut -c1-200 | tr '\n' ' ')"
   echo "VYLOTEST-FACT installer-processes $(pgrep -af 'liveinst|anaconda' | cut -c1-150 | tr '\n' ';')"
   echo "VYLOTEST-FACT installer-log $(tail -n6 /tmp/anaconda.log 2>&1 | cut -c1-200 | tr '\n' ' ')"
   echo "VYLOTEST-FACT session-log $(tail -n12 /home/liveuser/.local/state/vylo/session.log 2>&1 | cut -c1-200 | tr '\n' ' ')"
