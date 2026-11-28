@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+"""vylo: look after your VYLO desktop from a terminal."""
+import configparser
+import os
+import pathlib
+import shutil
+import subprocess
+import sys
+
+# The same names and colours as shared/theme/Theme.qml.
+ACCENTS = {"indigo": "#4A47FF", "lilac": "#C278FF", "cyan": "#37D9FF",
+           "rose": "#FF4FA8", "amber": "#FF8A3D"}
+WALLPAPERS = ("cosmos", "orbit-hills", "observatory-isles", "nebula-drift",
+              "deep-void")
+THEMES = ("dark", "light")
+FETCH_CONFIG = "/usr/share/vylo/xdg/fastfetch/config.jsonc"
+
+HELP = f"""vylo: look after your VYLO desktop from a terminal
+
+  vylo info                 about this computer, with the VYLO logo
+  vylo accent [name]        show or change the accent colour
+                            ({", ".join(ACCENTS)})
+  vylo wallpaper [name]     show or change the wallpaper
+                            ({", ".join(WALLPAPERS)})
+  vylo theme [dark|light]   show or change the theme
+  vylo update               update system packages and Flatpak apps
+  vylo version              the name and version of this system
+  vylo help                 this text
+"""
+
+
+def config_path() -> pathlib.Path:
+    base = os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config")
+    return pathlib.Path(base) / "vylo" / "vylo.conf"
+
+
+def load() -> configparser.RawConfigParser:
+    settings = configparser.RawConfigParser(strict=False)
+    settings.optionxform = str  # the desktop's keys are case sensitive
+    try:
+        settings.read(config_path(), encoding="utf-8")
+    except (configparser.Error, UnicodeError) as error:
+        sys.exit(f"vylo: cannot read {config_path()}: {error}")
+    return settings
+
+
+def save(settings: configparser.RawConfigParser) -> None:
+    """Replace the file in one step; the running desktop notices the change."""
+    path = config_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".new")
+    with open(temporary, "w", encoding="utf-8") as handle:
+        settings.write(handle, space_around_delimiters=False)
+    os.replace(temporary, path)
+
+
+def preference(section: str, key: str, default: str, choices, args) -> int:
+    settings = load()
+    if not args:
+        print(settings.get(section, key, fallback=default))
+        return 0
+    value = args[0].lower()
+    if len(args) != 1 or value not in choices:
+        print(f"vylo: choose one of: {', '.join(choices)}", file=sys.stderr)
+        return 2
+    if not settings.has_section(section):
+        settings.add_section(section)
+    settings.set(section, key, value)
+    save(settings)
+    print(f"{key} is now {value}")
+    return 0
+
+
+def ansi(colour: str) -> str:
+    red, green, blue = (int(colour[i:i + 2], 16) for i in (1, 3, 5))
+    return f"38;2;{red};{green};{blue}"
+
+
+def info() -> int:
+    if not shutil.which("fastfetch"):
+        print("vylo: fastfetch is not installed (sudo dnf install fastfetch)",
+              file=sys.stderr)
+        return 1
+    accent = load().get("prefs", "accent", fallback="indigo")
+    main = ansi(ACCENTS.get(accent, ACCENTS["indigo"]))
+    # The logo fades from the accent into lilac, or into starlight for lilac.
+    second = ansi("#C5AEFF" if accent == "lilac" else ACCENTS["lilac"])
+    return subprocess.call([
+        "fastfetch", "--config", FETCH_CONFIG,
+        "--logo-color-1", main, "--logo-color-2", second,
+        "--color-title", main, "--color-keys", second])
+
+
+def update() -> int:
+    status = subprocess.call(["sudo", "dnf", "upgrade", "--refresh"])
+    if status == 0 and shutil.which("flatpak"):
+        status = subprocess.call(["flatpak", "update"])
+    return status
+
+
+def version() -> int:
+    for line in pathlib.Path("/etc/os-release").read_text().splitlines():
+        if line.startswith("PRETTY_NAME="):
+            print(line.split("=", 1)[1].strip('"'))
+            return 0
+    return 1
+
+
+def main(argv) -> int:
+    command, args = (argv[0], argv[1:]) if argv else ("help", [])
+    if command == "accent":
+        return preference("prefs", "accent", "indigo", tuple(ACCENTS), args)
+    if command == "wallpaper":
+        return preference("prefs", "wallpaper", "cosmos", WALLPAPERS, args)
+    if command == "theme":
+        return preference("appearance", "theme", "dark", THEMES, args)
+    simple = {"info": info, "update": update, "version": version}
+    if command in simple and not args:
+        return simple[command]()
+    if command in ("help", "--help", "-h") and not args:
+        print(HELP, end="")
+        return 0
+    print(HELP, end="", file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

@@ -34,7 +34,7 @@ case "${kiwi_profiles:-}" in
             gtk-update-icon-cache --force /usr/share/icons/hicolor
         fi
         chmod 0755 /usr/libexec/vylo/live-setup /usr/libexec/vylo/installer-theme \
-            /usr/libexec/vylo/os-name
+            /usr/libexec/vylo/os-name /usr/bin/vylo
         # The installer and the system carry VYLO's name and look.
         /usr/libexec/vylo/os-name
         /usr/libexec/vylo/installer-theme

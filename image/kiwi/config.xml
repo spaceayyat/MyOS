@@ -272,6 +272,10 @@
     <package name="blueman"/>
     <package name="adwaita-icon-theme"/>
     <package name="adwaita-cursor-theme"/>
+    <!-- `vylo info`: the system summary with the VYLO logo -->
+    <package name="fastfetch"/>
+    <!-- The `vylo` command -->
+    <package name="python3"/>
     <!-- Better pointer and display handling inside virtual machines -->
     <package name="virtualbox-guest-additions"/>
     <package name="spice-vdagent"/>

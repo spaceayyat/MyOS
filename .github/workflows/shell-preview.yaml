@@ -14,6 +14,8 @@ on:
       - "image/config/rootfs/usr/share/wallpapers/vylo/**"
       - "image/config/rootfs/usr/share/vylo/**"
       - "image/config/rootfs-vylo/usr/share/sddm/**"
+      - "image/config/rootfs-vylo/usr/share/vylo/**"
+      - "image/config/rootfs-vylo/usr/bin/vylo"
       - "scripts/preview-shell.sh"
       - ".github/workflows/shell-preview.yaml"
 

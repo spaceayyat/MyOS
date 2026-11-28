@@ -10,13 +10,21 @@ out="$(mkdir -p "$1" && cd "$1" && pwd)"
 
 dnf install -y labwc xorg-x11-server-Xwayland grim wlr-randr dbus-daemon qt6-qtwayland qt6-qtsvg layer-shell-qt \
   rsms-inter-fonts jetbrains-mono-fonts google-noto-sans-fonts papirus-icon-theme \
-  foot nautilus gnome-text-editor gnome-software lxqt-policykit libnotify sddm
+  foot nautilus gnome-text-editor gnome-software lxqt-policykit libnotify sddm fastfetch python3
 echo "== policy agent files"
 rpm -ql lxqt-policykit | grep -E '/(bin|libexec)/' | tee "${out}/policy-agent.log"
 VYLO_NATIVE=1 "${VYLO_ROOT}/scripts/build-desktop.sh"
 cp -a "${VYLO_ROOT}/build/stage/usr/." /usr/
 # The login screen reads its wallpaper from the installed location.
 cp -r "${VYLO_ROOT}/image/config/rootfs/usr/share/wallpapers/vylo" /usr/share/wallpapers/
+
+# The `vylo` command, the terminal's look and the system name, as installed.
+vylo_root="${VYLO_ROOT}/image/config/rootfs-vylo"
+mkdir -p /usr/share/vylo
+cp -r "${vylo_root}/usr/share/vylo/fastfetch" "${vylo_root}/usr/share/vylo/xdg" /usr/share/vylo/
+install -m 0755 "${vylo_root}/usr/bin/vylo" /usr/bin/vylo
+sh "${vylo_root}/usr/libexec/vylo/os-name"
+foot --check-config -c /usr/share/vylo/xdg/foot/foot.ini 2>&1 | tee "${out}/foot-config.log"
 
 work="$(mktemp -d)"
 mkdir -p "${work}/run" "${work}/labwc" "${work}/home"
@@ -83,13 +91,21 @@ for colour in cyan rose amber; do
   shot "${colour}" vylo-shell
 done
 rm "${HOME}/.config/vylo/vylo.conf"
+# The themed terminal showing `vylo info`.
+printf '[prefs]\nwelcomeDone=true\n' >"${HOME}/.config/vylo/vylo.conf"
+vylo-shell >"${OUT}/terminal-behind.log" 2>&1 &
+behind=$!
+sleep 4
+shot terminal foot -c /usr/share/vylo/xdg/foot/foot.ini -W 108x28 sh -c 'vylo info; sleep 60'
+kill "${behind}"; wait "${behind}" 2>/dev/null
+rm "${HOME}/.config/vylo/vylo.conf"
 shot login sddm-greeter-qt6 --test-mode --theme "${VYLO_ROOT}/image/config/rootfs-vylo/usr/share/sddm/themes/vylo"
 SHOTS
 chmod +x "${work}/shots.sh"
 timeout 300 dbus-run-session labwc -C "${work}/labwc" -S "${work}/shots.sh" >"${out}/labwc.log" 2>&1 || true
 
 status=0
-for name in welcome-live welcome desktop launcher quick-panel settings windows shortcut lilac cyan rose amber login; do
+for name in welcome-live welcome desktop launcher quick-panel settings windows shortcut lilac cyan rose amber terminal login; do
   [[ -s "${out}/${name}.png" ]] || { echo "missing screenshot: ${name}"; status=1; }
 done
 [[ ! -s "${out}/errors" ]] || { cat "${out}/errors"; status=1; }

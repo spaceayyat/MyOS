@@ -58,6 +58,19 @@ The installer carries the VYLO name, mark and colours.
 Each accent colour has its own space wallpaper. See
 [assets/wallpapers](assets/wallpapers/README.md) about their licence.
 
+## Terminal
+
+The VYLO terminal has its own colours and prompt, and `fastfetch` shows the VYLO
+logo. The `vylo` command changes the look without opening Settings:
+
+```bash
+vylo info                # about this computer
+vylo accent rose         # indigo, lilac, cyan, rose or amber
+vylo wallpaper deep-void
+vylo theme light
+vylo update              # system packages and Flatpak apps
+```
+
 ## PIP (optional)
 
 ![PIP helping](docs/screenshots/vylo-pip.png)

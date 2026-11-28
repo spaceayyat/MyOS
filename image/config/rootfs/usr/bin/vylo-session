@@ -3,6 +3,8 @@
 # live in /usr/share/vylo so they do not affect any other labwc setup.
 export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP=VYLO
+# VYLO's own defaults for programs such as the terminal. Files in ~/.config win.
+export XDG_CONFIG_DIRS="/usr/share/vylo/xdg:${XDG_CONFIG_DIRS:-/etc/xdg}"
 # Lets the compositor start in virtual machines without 3D acceleration.
 export WLR_RENDERER_ALLOW_SOFTWARE=1
 

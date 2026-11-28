@@ -159,6 +159,7 @@ if [[ "${edition}" == vylo ]]; then
   labwc_pid="$(pgrep -u liveuser -x labwc | head -1)"
   echo "VYLOTEST-FACT graphics $(lspci 2>/dev/null | grep -iE 'vga|display' | head -1) | $(tr '\0' '\n' </proc/"${labwc_pid}"/environ | grep -E '^(WLR_|QT_QUICK)' | tr '\n' ' ')"
   check pointer-drawn-by-desktop bash -c "tr '\0' '\n' </proc/${labwc_pid}/environ | grep -x WLR_NO_HARDWARE_CURSORS=1"
+  check terminal-extras eval 'as_live vylo info | grep -q "VYLO OS" && as_live foot --check-config -c /usr/share/vylo/xdg/foot/foot.ini && [[ $(as_live env XDG_CURRENT_DESKTOP=VYLO bash -ic "echo \"\$PS1\"" 2>/dev/null) == *"1;34m"* ]] && tr "\0" "\n" </proc/${labwc_pid}/environ | grep -q "^XDG_CONFIG_DIRS=/usr/share/vylo/xdg:" && echo "vylo info, terminal theme and prompt"'
   check vylo-name eval '. /etc/os-release; [[ ${NAME} == "VYLO OS" && ${ID} == fedora && ${VERSION_ID} == 44 ]] && echo "${PRETTY_NAME}"'
   # The host now clicks "Install VYLO" in the welcome window with the mouse.
   echo "VYLOTEST-REQUEST install"
