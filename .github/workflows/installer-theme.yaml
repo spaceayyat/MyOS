@@ -33,7 +33,7 @@ jobs:
       - name: Ask the installer's web server which style sheet it serves
         run: |
           docker run --rm -v "$PWD:/work:ro" -w /work registry.fedoraproject.org/fedora:44 bash -c '
-            dnf install -y anaconda-webui fedora-release-identity-basic fedora-logos strace >/dev/null
+            dnf install -y --allowerasing anaconda-webui fedora-release fedora-release-identity-basic fedora-logos strace python3 curl >/dev/null
             rpm -q anaconda-webui cockpit-ws cockpit-bridge fedora-logos
             cp -L /usr/lib/os-release /tmp/os-release && rm -f /etc/os-release && cp /tmp/os-release /etc/os-release
             grep -E "^(ID|VERSION_ID|VARIANT_ID)=" /etc/os-release
