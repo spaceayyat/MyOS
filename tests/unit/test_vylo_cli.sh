@@ -13,6 +13,7 @@ fails=0
 check() { # check <description> <command...>
   if "${@:2}" >/dev/null 2>&1; then echo "  PASS  $1"; else echo "  FAIL  $1"; fails=1; fi
 }
+# shellcheck disable=SC2317  # called through check
 refuses() { ! "$@"; }
 
 check "help is printed" bash -c "${vylo} help | grep -q 'vylo accent'"
