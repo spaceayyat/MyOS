@@ -193,8 +193,12 @@ jobs:
           git add docs/screenshots/vm
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Update VM screenshots from the test run"
-          git pull --rebase origin vylo
-          git push origin HEAD:vylo
+          for attempt in 1 2 3 4 5; do
+            git pull --rebase origin vylo
+            git push origin HEAD:vylo && exit 0
+            sleep 10
+          done
+          exit 1
 
   # Marked as a pre-release: a complete graphical installation is not tested.
   release:
