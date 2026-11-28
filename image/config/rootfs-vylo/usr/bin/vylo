@@ -85,7 +85,8 @@ def info() -> int:
     main = ansi(ACCENTS.get(accent, ACCENTS["indigo"]))
     # The logo fades from the accent into lilac, or into starlight for lilac.
     second = ansi("#C5AEFF" if accent == "lilac" else ACCENTS["lilac"])
-    return subprocess.call([
+    # Become fastfetch, so that it reports your shell and not this script.
+    os.execvp("fastfetch", [
         "fastfetch", "--config", FETCH_CONFIG,
         "--logo-color-1", main, "--logo-color-2", second,
         "--color-title", main, "--color-keys", second])

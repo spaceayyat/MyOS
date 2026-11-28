@@ -33,6 +33,7 @@ cp "${VYLO_ROOT}"/image/config/rootfs/usr/share/vylo/labwc/{rc.xml,themerc-overr
 export XDG_RUNTIME_DIR="${work}/run" HOME="${work}/home" USER=traveller
 export VYLO_DATA_DIR="${VYLO_ROOT}/image/config/rootfs/usr/share"
 export WLR_BACKENDS=headless WLR_LIBINPUT_NO_DEVICES=1 WLR_RENDERER=pixman
+export LANG=C.UTF-8
 export QT_QPA_PLATFORM=wayland QT_QUICK_BACKEND=software XDG_CURRENT_DESKTOP=VYLO
 export OUT="${out}"
 
