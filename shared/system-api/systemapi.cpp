@@ -315,6 +315,9 @@ QVariantMap SystemApi::defaultPrefs()
             {QStringLiteral("greeting"), QStringLiteral("Make Space Yours.")},
             {QStringLiteral("pins"), defaultPins().join(QLatin1Char(';'))},
             {QStringLiteral("reducedMotion"), false},
+            {QStringLiteral("pipEnabled"), false},
+            {QStringLiteral("welcomeDone"), false},
+            {QStringLiteral("pipMode"), QStringLiteral("cheerful")},
             {QStringLiteral("showClock"), true},
             {QStringLiteral("showCalendar"), true},
             {QStringLiteral("showWeather"), false},
@@ -341,7 +344,13 @@ QVariant SystemApi::normalizePref(const QString &key, const QVariant &value)
         const QString v = value.toStringList().join(QLatin1Char(';'));
         return valid.match(v).hasMatch() ? QVariant(v) : QVariant();
     }
-    if (key == QLatin1String("reducedMotion")
+    if (key == QLatin1String("pipMode")) {
+        static const QStringList modes{QStringLiteral("cheerful"), QStringLiteral("quiet"),
+                                       QStringLiteral("sleepy"), QStringLiteral("explorer")};
+        return modes.contains(value.toString()) ? QVariant(value.toString()) : QVariant();
+    }
+    if (key == QLatin1String("reducedMotion") || key == QLatin1String("pipEnabled")
+        || key == QLatin1String("welcomeDone")
         || (key.startsWith(QLatin1String("show")) && defaultPrefs().contains(key))) {
         if (value.typeId() == QMetaType::Bool)
             return value;
@@ -457,6 +466,24 @@ QString SystemApi::wallpaperUrl(const QString &name, const QString &accent) cons
     const QString base = qEnvironmentVariable("VYLO_DATA_DIR", QStringLiteral("/usr/share"));
     return QUrl::fromLocalFile(base + QStringLiteral("/wallpapers/vylo/") + file
                                + QStringLiteral(".jpg")).toString();
+}
+
+bool SystemApi::pipInstalled() const
+{
+    return !QStandardPaths::findExecutable(QStringLiteral("vylo-pip")).isEmpty();
+}
+
+bool SystemApi::pipEnabledOnDisk()
+{
+    return readPrefsFromDisk().value(QStringLiteral("pipEnabled")).toBool();
+}
+
+bool SystemApi::live() const
+{
+    if (qEnvironmentVariableIsSet("VYLO_LIVE"))
+        return true;
+    QFile cmdline(QStringLiteral("/proc/cmdline"));
+    return cmdline.open(QIODevice::ReadOnly) && cmdline.readAll().contains("rd.live.image");
 }
 
 QString SystemApi::userName() const

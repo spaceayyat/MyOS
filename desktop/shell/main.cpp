@@ -119,7 +119,8 @@ int main(int argc, char *argv[])
     const QStringList files = {QStringLiteral("Wallpaper"), QStringLiteral("Widgets"),
                                QStringLiteral("Panel"), QStringLiteral("Dock"),
                                QStringLiteral("Launcher"), QStringLiteral("Flyout"),
-                               QStringLiteral("Toasts")};
+                               QStringLiteral("Toasts"),
+                               QStringLiteral("Welcome")};
     for (const QString &file : files)
         engine.load(QUrl(QStringLiteral("qrc:/vylo/shell/%1.qml").arg(file)));
 
@@ -168,6 +169,11 @@ int main(int argc, char *argv[])
             configureLayer(window, LayerWindow::LayerTop, L(A::AnchorTop) | A::AnchorLeft, 0,
                            QStringLiteral("vylo-launcher"), KI::KeyboardInteractivityExclusive,
                            QMargins(10, 8, 0, 0));
+        } else if (name == QLatin1String("welcome")) {
+            // No anchors: centred on the screen. It takes the keyboard so
+            // Enter works straight away, and closes before anything else opens.
+            configureLayer(window, LayerWindow::LayerTop, L(), -1,
+                           QStringLiteral("vylo-welcome"), KI::KeyboardInteractivityExclusive);
         } else if (name == QLatin1String("toasts")) {
             configureLayer(window, LayerWindow::LayerOverlay, L(A::AnchorTop) | A::AnchorRight, 0,
                            QStringLiteral("vylo-toasts"), KI::KeyboardInteractivityNone,
@@ -185,6 +191,11 @@ int main(int argc, char *argv[])
         state.setLauncherOpen(true);
     else if (preview == QLatin1String("flyout"))
         state.setFlyoutOpen(true);
+
+    // The welcome window: always on the live image, once on an installed one.
+    const bool firstStart = system.live() || !system.prefs().value(QStringLiteral("welcomeDone")).toBool();
+    if (preview == QLatin1String("welcome") || (preview.isEmpty() && firstStart))
+        state.setWelcomeOpen(true);
 
     return app.exec();
 }

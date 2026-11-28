@@ -43,6 +43,8 @@ class SystemApi : public QObject
     Q_PROPERTY(double temperature READ temperature NOTIFY statsChanged) // Celsius, -1: no sensor
     Q_PROPERTY(int volume READ volume NOTIFY volumeChanged) // percent, -1: no audio service
     Q_PROPERTY(bool muted READ muted NOTIFY volumeChanged)
+    // Running from the installation media.
+    Q_PROPERTY(bool live READ live CONSTANT)
     Q_PROPERTY(QString userName READ userName CONSTANT)
     // "unconfigured" until a weather provider exists.
     Q_PROPERTY(QString weatherState READ weatherState CONSTANT) // "unconfigured"
@@ -72,6 +74,7 @@ public:
     int volume() const { return m_volume; }
     bool muted() const { return m_muted; }
     QString userName() const;
+    bool live() const;
 
     Q_INVOKABLE void setVolume(int percent);
     Q_INVOKABLE void toggleMute();
@@ -79,6 +82,10 @@ public:
     // action: poweroff, reboot, suspend or logout. Anything else is refused.
     Q_INVOKABLE bool power(const QString &action);
     Q_INVOKABLE bool isPinned(const QString &id) const;
+    // Whether the optional PIP helper package is installed.
+    Q_INVOKABLE bool pipInstalled() const;
+    // Read without a running application, for PIP's sign-in check.
+    static bool pipEnabledOnDisk();
     Q_INVOKABLE void togglePin(const QString &id);
     Q_INVOKABLE QString wallpaperUrl(const QString &name, const QString &accent) const;
 

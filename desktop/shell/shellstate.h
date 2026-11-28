@@ -8,6 +8,7 @@ class ShellState : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(bool launcherOpen READ launcherOpen WRITE setLauncherOpen NOTIFY launcherOpenChanged)
+    Q_PROPERTY(bool welcomeOpen READ welcomeOpen WRITE setWelcomeOpen NOTIFY welcomeOpenChanged)
     Q_PROPERTY(bool flyoutOpen READ flyoutOpen WRITE setFlyoutOpen NOTIFY flyoutOpenChanged)
 
 public:
@@ -15,6 +16,14 @@ public:
 
     bool launcherOpen() const { return m_launcher; }
     bool flyoutOpen() const { return m_flyout; }
+    bool welcomeOpen() const { return m_welcome; }
+    void setWelcomeOpen(bool open)
+    {
+        if (open == m_welcome)
+            return;
+        m_welcome = open;
+        emit welcomeOpenChanged();
+    }
 
     void setLauncherOpen(bool open)
     {
@@ -42,9 +51,11 @@ public:
 
 signals:
     void launcherOpenChanged();
+    void welcomeOpenChanged();
     void flyoutOpenChanged();
 
 private:
     bool m_launcher = false;
     bool m_flyout = false;
+    bool m_welcome = false;
 };

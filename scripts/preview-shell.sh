@@ -40,6 +40,11 @@ shot() {
   if kill -0 "${pid}" 2>/dev/null; then grim "${OUT}/${name}.png"; else echo "${name}: exited early" >>"${OUT}/errors"; fi
   kill "${pid}" 2>/dev/null; wait "${pid}" 2>/dev/null
 }
+mkdir -p "${HOME}/.config/vylo"
+# The installation-media and first-start welcome windows.
+shot welcome-live env VYLO_LIVE=1 vylo-shell
+shot welcome vylo-shell
+printf '[prefs]\nwelcomeDone=true\n' >"${HOME}/.config/vylo/vylo.conf"
 shot desktop vylo-shell
 shot launcher env VYLO_PREVIEW=launcher vylo-shell
 shot quick-panel env VYLO_PREVIEW=flyout vylo-shell
@@ -68,15 +73,15 @@ kill "${terminal}" "${settings}" "${behind}"
 wait
 # The same desktop after choosing another accent colour.
 mkdir -p "${HOME}/.config/vylo"
-printf '[prefs]\naccent=lilac\n' >"${HOME}/.config/vylo/vylo.conf"
+printf '[prefs]\naccent=lilac\nwelcomeDone=true\n' >"${HOME}/.config/vylo/vylo.conf"
 shot lilac vylo-shell
 rm "${HOME}/.config/vylo/vylo.conf"
 SHOTS
 chmod +x "${work}/shots.sh"
-timeout 180 dbus-run-session labwc -C "${work}/labwc" -S "${work}/shots.sh" >"${out}/labwc.log" 2>&1 || true
+timeout 240 dbus-run-session labwc -C "${work}/labwc" -S "${work}/shots.sh" >"${out}/labwc.log" 2>&1 || true
 
 status=0
-for name in desktop launcher quick-panel settings windows shortcut lilac; do
+for name in welcome-live welcome desktop launcher quick-panel settings windows shortcut lilac; do
   [[ -s "${out}/${name}.png" ]] || { echo "missing screenshot: ${name}"; status=1; }
 done
 [[ ! -s "${out}/errors" ]] || { cat "${out}/errors"; status=1; }
@@ -84,7 +89,7 @@ echo "== program output"
 tail -n +1 "${out}"/*.log
 # Any QML complaint is a failure.
 if grep -nE 'qrc:/|TypeError|ReferenceError|is not installed|Binding loop' \
-     "${out}"/{desktop,launcher,quick-panel,settings,windows,lilac,shell-behind}.log; then
+     "${out}"/{welcome-live,welcome,desktop,launcher,quick-panel,settings,windows,lilac,shell-behind}.log; then
   echo "QML problems found"; status=1
 fi
 exit "${status}"

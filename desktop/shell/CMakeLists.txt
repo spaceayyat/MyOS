@@ -49,6 +49,7 @@ qt_add_resources(vylo-shell shell_qml
         Dock.qml
         Flyout.qml
         Toasts.qml
+        Welcome.qml
         ${VYLO_SHARED_QML}
         ${VYLO_ICONS}
 )
