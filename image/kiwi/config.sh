@@ -27,6 +27,12 @@ case "${kiwi_profiles:-}" in
     Plasma) display_manager=plasmalogin.service ;;
     VYLO)
         display_manager=sddm.service
+        # Our icons are added after the packages. A cache made before that would
+        # hide them, and the dock would show letters instead.
+        rm -f /usr/share/icons/hicolor/icon-theme.cache
+        if command -v gtk-update-icon-cache >/dev/null; then
+            gtk-update-icon-cache --force /usr/share/icons/hicolor
+        fi
         chmod 0755 /usr/libexec/vylo/live-setup
         # labwc ships its own plain session; only the VYLO one belongs here.
         rm -f /usr/share/wayland-sessions/labwc.desktop
