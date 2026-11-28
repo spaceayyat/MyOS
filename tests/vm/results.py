@@ -26,7 +26,8 @@ EDITIONS = {
     "plasma": COMMON,
     "vylo": COMMON | {"no-firefox", "vylo-session-parts",
                       "pointer-drawn-by-desktop", "installer-starts",
-                      "installer-stays"},
+                      "installer-stays", "vylo-name",
+                      "installer-theme"},
 }
 
 # Installation test (tests/vm/install_test.py).

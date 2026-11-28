@@ -33,7 +33,12 @@ case "${kiwi_profiles:-}" in
         if command -v gtk-update-icon-cache >/dev/null; then
             gtk-update-icon-cache --force /usr/share/icons/hicolor
         fi
-        chmod 0755 /usr/libexec/vylo/live-setup
+        chmod 0755 /usr/libexec/vylo/live-setup /usr/libexec/vylo/installer-theme \
+            /usr/libexec/vylo/os-name
+        # The installer and the system carry VYLO's name and look.
+        /usr/libexec/vylo/os-name
+        /usr/libexec/vylo/installer-theme
+        systemctl enable vylo-os-name.service
         # labwc ships its own plain session; only the VYLO one belongs here.
         rm -f /usr/share/wayland-sessions/labwc.desktop
         systemctl enable vylo-live.service

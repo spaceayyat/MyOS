@@ -1,0 +1,10 @@
+[Unit]
+Description=Keep the VYLO name in /etc/os-release
+Before=display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/vylo/os-name
+
+[Install]
+WantedBy=multi-user.target

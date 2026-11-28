@@ -24,7 +24,7 @@ grep -q 'set(VYLO_DISPLAY_NAME "VYLO OS"' "${root}/CMakeLists.txt" \
 
 # Technical identifiers must never contain a space.
 if grep -rn 'VYLO OS' "${root}/CMakeLists.txt" "${root}/image/config" "${root}/image/kiwi/config.sh" \
-     | grep -vE '^[^:]*:[0-9]+:\s*(#|//)|VYLO_DISPLAY_NAME' | grep -q .; then
+     | grep -vE '^[^:]*:[0-9]+:\s*(#|//|/\*)|VYLO_DISPLAY_NAME|(PRETTY_)?NAME="VYLO OS' | grep -q .; then
   bad "'VYLO OS' (with a space) used inside a technical identifier"
 else
   ok "no spaced name in CMake/session/config identifiers"

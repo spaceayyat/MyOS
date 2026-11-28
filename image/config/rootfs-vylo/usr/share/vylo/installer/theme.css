@@ -1,0 +1,72 @@
+/* The VYLO look for the web installer. Appended, at image build time, to the
+   installer's own dark colour set by /usr/libexec/vylo/installer-theme. */
+
+:root:root {
+  color-scheme: dark;
+  --pf-t--global--color--brand--default: #4a47ff;
+  --pf-t--global--color--brand--hover: #6c69ff;
+  --pf-t--global--color--brand--clicked: #6c69ff;
+  --pf-t--global--text--color--brand--default: #a9a7ff;
+  --pf-t--global--icon--color--brand--default: #a9a7ff;
+  --pf-t--global--border--color--brand--default: #6c69ff;
+  --pf-t--global--background--color--primary--default: #0e0a20;
+  --pf-t--global--background--color--secondary--default: #161033;
+  --pf-t--global--background--color--floating--default: #1b1440;
+  --pf-t--global--background--color--control--default: #1d1545;
+  --pf-t--global--text--color--regular: #f4f2ff;
+  --pf-t--global--text--color--subtle: #b3a9dc;
+  --pf-t--global--border--color--default: #3a2d73;
+  --pf-t--global--font--family--body: "Inter", sans-serif;
+  --pf-t--global--font--family--heading: "Inter", sans-serif;
+}
+
+/* Space behind everything. */
+html, body { background: #05030c; }
+body.anaconda .pf-v6-c-page {
+  background: linear-gradient(90deg, rgba(5, 3, 12, 0.72), rgba(5, 3, 12, 0.25)),
+              url("background.jpg") center / cover no-repeat fixed;
+}
+body.anaconda #app .pf-v6-c-page__main-container,
+body.anaconda .pf-v6-c-page__main,
+body.anaconda .pf-v6-c-page__main-group,
+body.anaconda .pf-v6-c-page__main-section,
+body.anaconda .pf-v6-c-page__main-wizard,
+body.anaconda .pf-v6-c-wizard,
+body.anaconda .pf-v6-c-wizard__outer-wrap,
+body.anaconda .pf-v6-c-wizard__inner-wrap { background: transparent; }
+
+/* Header: the VYLO mark and name. */
+body.anaconda #anaconda-header-bar {
+  background: rgba(8, 5, 20, 0.82);
+  border-bottom: 1px solid rgba(108, 105, 255, 0.45);
+}
+body.anaconda #anaconda-header-bar h1 { font-weight: 600; letter-spacing: 0.02em; color: #ffffff; }
+body.anaconda .logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  background: url("logo.png") center / contain no-repeat;
+  filter: none;
+  mix-blend-mode: normal;
+}
+
+/* Steps, page and buttons float as dark glass panels. */
+body.anaconda .pf-v6-c-wizard__nav {
+  background: rgba(10, 7, 24, 0.78);
+  border-inline-end: 1px solid rgba(108, 105, 255, 0.25);
+}
+body.anaconda .pf-v6-c-wizard__main {
+  background: rgba(12, 8, 28, 0.9);
+  border: 1px solid rgba(108, 105, 255, 0.35);
+  border-radius: 20px;
+  margin: 16px 16px 0;
+}
+body.anaconda .pf-v6-c-wizard__footer {
+  background: rgba(12, 8, 28, 0.9);
+  border: 1px solid rgba(108, 105, 255, 0.35);
+  border-radius: 20px;
+  margin: 12px 16px 16px;
+  box-shadow: none;
+}
+body.anaconda .pf-v6-c-button.pf-m-primary,
+body.anaconda .pf-v6-c-button.pf-m-secondary { border-radius: 999px; }
+body.anaconda .pf-v6-c-button.pf-m-primary:not(:disabled) { color: #ffffff; }

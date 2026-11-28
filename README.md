@@ -48,6 +48,8 @@ a black screen, draws everything in software. To force that anywhere, add
 
 ## Installing
 
+The installer carries the VYLO name, mark and colours.
+
 1. Start the live image and choose **Install VYLO** in the welcome window.
 2. Follow the installer: language, disk (with optional encryption) and your
    user account.

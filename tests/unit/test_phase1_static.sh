@@ -87,6 +87,7 @@ grep -q '{QStringLiteral("pipEnabled"), false}' "${root}/shared/system-api/syste
 ! grep -rqE '"(sh|bash)"|std::system|(^|[^?:a-z_])system\([^?]|\bpopen\(' "${root}/desktop/pip" && ok "PIP never calls a shell" || bad "PIP calls a shell"
 [[ -s "${root}/desktop/shell/Welcome.qml" ]] && grep -q 'Sys.launch("liveinst")' "${root}/desktop/shell/Welcome.qml" && ok "welcome window offers installation" || bad "welcome window missing"
 grep -q 'WLR_NO_HARDWARE_CURSORS=1' "${root}/image/config/rootfs/usr/bin/vylo-session" && ok "VM pointer fix present" || bad "VM pointer fix missing"
+grep -q '/usr/libexec/vylo/installer-theme$' "${root}/image/kiwi/config.sh" && ok "installer is themed at build time" || bad "installer theme is not applied"
 check "QML cross-references resolve (Sys/Shell/Theme/CMake)" python3 "${root}/tests/unit/check_qml_refs.py"
 check "/proc parser unit tests pass" bash "${root}/tests/unit/test_procparse.sh"
 grep -q 'Sys.prefs.wallpaper' "${root}/desktop/shell/Wallpaper.qml" && ok "wallpaper follows the user's choice" || bad "wallpaper ignores the user's choice"

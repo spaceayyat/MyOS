@@ -7,24 +7,26 @@ on:
     branches: [vylo]
     paths:
       - ".github/workflows/installer-theme.yaml"
+      - "image/config/rootfs-vylo/usr/share/vylo/installer/**"
+      - "image/config/rootfs-vylo/usr/libexec/vylo/installer-theme"
 
 permissions:
   contents: read
 
 jobs:
   probe:
-    name: Read the installer's styles
+    name: Apply the VYLO theme
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - name: Print the web installer's files
+      - uses: actions/checkout@v7
+      - name: Apply the theme to the real installer in Fedora 44
         run: |
-          docker run --rm registry.fedoraproject.org/fedora:44 bash -c '
+          docker run --rm -v "$PWD:/work:ro" -w /work registry.fedoraproject.org/fedora:44 bash -c '
             set -e
-            dnf install -y anaconda-webui fedora-logos >/dev/null 2>&1
-            rpm -q anaconda-webui cockpit-ws fedora-logos slitherer || true
-            ls -l /usr/share/cockpit/anaconda-webui /usr/share/cockpit/branding/fedora
-            f=$(ls /usr/share/cockpit/anaconda-webui/index.css* | head -1)
-            echo "STYLES-BEGIN $f"
-            case $f in *.gz) cat "$f" ;; *) gzip -9c "$f" ;; esac | base64 -w 200
-            echo STYLES-END'
+            dnf install -y anaconda-webui >/dev/null
+            python3 image/config/rootfs-vylo/usr/libexec/vylo/installer-theme \
+              --source image/config/rootfs-vylo/usr/share/vylo/installer \
+              --background image/config/rootfs/usr/share/wallpapers/vylo/cosmos-indigo.jpg \
+              --out /tmp/branding
+            ls -l /tmp/branding'

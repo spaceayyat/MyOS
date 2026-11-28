@@ -1,0 +1,24 @@
+#!/bin/sh
+# Calls the system by its own name in /etc/os-release, which the installer, the
+# boot menu and system information read. Everything else, including ID and
+# VERSION_ID (used for updates), is taken unchanged from the Fedora file, so
+# this is repeated at each start in case an update replaced it.
+# Usage: os-name [ROOT]
+set -eu
+root="${1:-}"
+src="${root}/usr/lib/os-release"
+dst="${root}/etc/os-release"
+tmp="${dst}.vylo"
+{
+    grep -vE '^(NAME|PRETTY_NAME|ANSI_COLOR|LOGO)=' "$src"
+    echo 'NAME="VYLO OS"'
+    echo 'PRETTY_NAME="VYLO OS 0.4 (preview)"'
+    echo 'ANSI_COLOR="38;2;74;71;255"'
+    echo 'LOGO=vylo'
+} >"$tmp"
+chmod 0644 "$tmp"
+if cmp -s "$tmp" "$dst" && [ ! -L "$dst" ]; then
+    rm -f "$tmp"
+else
+    mv -f "$tmp" "$dst"
+fi
