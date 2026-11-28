@@ -3,9 +3,9 @@
 
 The installer draws itself dark only when the browser asks for it, so this
 copies the installer's own dark colour set into its branding style sheet and
-adds the VYLO colours on top. usr/lib/tmpfiles.d/vylo-installer.conf puts the
-result where the installer's web server looks first. Stops with an error if the installer no longer
-looks the way this expects.
+adds the VYLO colours on top. The result goes in /etc/cockpit/branding, which
+the installer's web server reads before any packaged branding. Stops with an
+error if the installer no longer looks the way this expects.
 """
 import argparse
 import gzip
@@ -37,7 +37,7 @@ def main() -> None:
     parser.add_argument("--installer", default="/usr/share/cockpit/anaconda-webui")
     parser.add_argument("--source", default="/usr/share/vylo/installer")
     parser.add_argument("--background", default="/usr/share/wallpapers/vylo/cosmos-indigo.jpg")
-    parser.add_argument("--out", default="/usr/share/vylo/installer/branding")
+    parser.add_argument("--out", default="/etc/cockpit/branding")
     args = parser.parse_args()
     installer, source, out = map(pathlib.Path, (args.installer, args.source, args.out))
 

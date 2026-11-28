@@ -9,7 +9,6 @@ on:
       - ".github/workflows/installer-theme.yaml"
       - "image/config/rootfs-vylo/usr/share/vylo/installer/**"
       - "image/config/rootfs-vylo/usr/libexec/vylo/installer-theme"
-      - "image/config/rootfs-vylo/usr/lib/tmpfiles.d/vylo-installer.conf"
 
 permissions:
   contents: read
@@ -26,25 +25,19 @@ jobs:
           cat > "$RUNNER_TEMP/probe.sh" <<'PROBE'
           set -euo pipefail
           dnf install -y --allowerasing anaconda-webui fedora-release fedora-release-identity-basic \
-            fedora-logos python3 curl systemd >/dev/null
+            fedora-logos python3 curl >/dev/null
           cp --remove-destination /usr/lib/os-release /etc/os-release
           cp -a image/config/rootfs-vylo/usr/share/vylo /usr/share/
           python3 image/config/rootfs-vylo/usr/libexec/vylo/installer-theme \
             --background image/config/rootfs/usr/share/wallpapers/vylo/cosmos-indigo.jpg
-          systemd-tmpfiles --create "$PWD/image/config/rootfs-vylo/usr/lib/tmpfiles.d/vylo-installer.conf"
-          unit=$(rpm -ql anaconda-webui | grep '/webui-cockpit-ws.service$')
-          cat "$unit"
-          export XDG_CONFIG_DIRS=$(sed -n 's/.*XDG_CONFIG_DIRS=\([^"]*\).*/\1/p' "$unit")
-          test -n "$XDG_CONFIG_DIRS"
-          coproc BRIDGE { cockpit-bridge; }
-          exec 3<&"${BRIDGE[0]}" 4>&"${BRIDGE[1]}"
-          /usr/libexec/cockpit-ws --local-session=- -p 80 -a 127.0.0.1 <&3 >&4 &
+          # Start the web server exactly the way the installer does.
+          /usr/libexec/anaconda/cockpit-coproc-wrapper.sh 127.0.0.1 &
           sleep 5
           curl -fsS --compressed -o /tmp/served.css http://127.0.0.1/cockpit/static/branding.css
-          cmp /tmp/served.css /usr/share/vylo/installer/branding/branding.css
+          cmp /tmp/served.css /etc/cockpit/branding/branding.css
           for f in logo.png background.jpg; do
             curl -fsS -o "/tmp/$f" "http://127.0.0.1/cockpit/static/$f"
-            cmp "/tmp/$f" "/usr/share/vylo/installer/branding/$f"
+            cmp "/tmp/$f" "/etc/cockpit/branding/$f"
           done
           echo "PASS: the installer serves the VYLO style sheet, logo and background"
           PROBE
