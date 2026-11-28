@@ -1,0 +1,48 @@
+# The optional PIP helper: build its package, test, install, run, measure and
+# remove it on Fedora 44.
+name: PIP package
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, vylo]
+    paths:
+      - "desktop/pip/**"
+      - "desktop/settings/**"
+      - "shared/**"
+      - "tests/pip/**"
+      - "packaging/**"
+      - "CMakeLists.txt"
+      - "scripts/test-pip.sh"
+      - ".github/workflows/pip.yaml"
+
+permissions:
+  contents: write
+
+jobs:
+  pip:
+    name: Build and test vylo-pip
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build, test, run and remove in Fedora 44
+        run: |
+          docker run --rm -v "$PWD:/work" -w /work \
+            registry.fedoraproject.org/fedora:44 scripts/test-pip.sh /work/output/pip
+      - uses: actions/upload-artifact@v7
+        with:
+          name: vylo-pip-rpm
+          path: output/pip/*.rpm
+          if-no-files-found: error
+      - name: Save screenshots to the branch
+        run: |
+          mkdir -p docs/screenshots
+          for f in output/pip/*.png; do cp "$f" docs/screenshots/vylo-"$(basename "$f")"; done
+          git config user.name spaceayyat
+          git config user.email azsr2710@gmail.com
+          git add docs/screenshots
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Update PIP screenshots from the test run"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

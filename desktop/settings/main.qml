@@ -14,8 +14,11 @@ ApplicationWindow {
     visible: true
     color: th.dark ? th.voidBlack : th.cosmicWhite
 
-    property int page: 0
-    readonly property var pages: ["Appearance", "Wallpaper", "Widgets", "About"]
+    // "vylo-settings --pip" opens the PIP page.
+    property int page: Qt.application.arguments.indexOf("--pip") >= 0 ? 3 : 0
+    readonly property var pages: ["Appearance", "Wallpaper", "Widgets", "PIP", "About"]
+    property bool pipHere: Sys.pipInstalled()
+    onActiveChanged: if (active) pipHere = Sys.pipInstalled()
 
     Theme { id: th; dark: Sys.theme === "dark"; accentName: Sys.prefs.accent; reducedMotion: Sys.prefs.reducedMotion === true }
 
@@ -179,6 +182,74 @@ ApplicationWindow {
                     label: modelData.label
                     checked: Sys.prefs[modelData.key] === true
                     onToggled: function (value) { Sys.setPref(modelData.key, value) }
+                }
+            }
+            Item { Layout.fillHeight: true }
+        }
+
+        // ---- PIP ----------------------------------------------------------
+        ColumnLayout {
+            spacing: 16
+            Text { text: "PIP"; font.family: th.fontHead; font.pixelSize: 24; font.weight: Font.DemiBold; color: th.text }
+            Text {
+                Layout.fillWidth: true; wrapMode: Text.WordWrap
+                text: "An optional little helper. He opens apps and links, downloads files after asking, sets reminders and changes settings. He never runs terminal commands."
+                font.family: th.fontUi; font.pixelSize: th.textBody; color: th.textMuted
+            }
+            ColumnLayout {
+                visible: !win.pipHere
+                Layout.fillWidth: true
+                spacing: 8
+                Heading { text: "Not installed" }
+                Text {
+                    Layout.fillWidth: true; wrapMode: Text.WordWrap
+                    text: "Download the vylo-pip package (see the install guide), then run this in a terminal from your Downloads folder:"
+                    font.family: th.fontUi; font.pixelSize: th.textBody; color: th.text
+                }
+                TextEdit {
+                    readOnly: true; selectByMouse: true
+                    text: "sudo dnf install ./vylo-pip-*.rpm"
+                    font.family: th.fontMono; font.pixelSize: th.textBody; color: th.text
+                }
+            }
+            ColumnLayout {
+                visible: win.pipHere
+                Layout.fillWidth: true
+                spacing: 16
+                Option {
+                    label: "Use PIP"
+                    hint: "Starts him now and each time you sign in"
+                    checked: Sys.prefs.pipEnabled === true
+                    onToggled: function (value) {
+                        Sys.setPref("pipEnabled", value)
+                        if (value) Sys.launch("vylo-pip")
+                    }
+                }
+                Heading { text: "Mood" }
+                Row {
+                    spacing: 8
+                    Repeater {
+                        model: ["cheerful", "quiet", "sleepy", "explorer"]
+                        delegate: Rectangle {
+                            id: mood
+                            required property string modelData
+                            readonly property bool current: Sys.prefs.pipMode === modelData
+                            width: 96; height: 32; radius: 16
+                            color: current ? th.accent : th.cardAlt
+                            border.width: 1; border.color: th.border
+                            Text {
+                                anchors.centerIn: parent
+                                text: mood.modelData.charAt(0).toUpperCase() + mood.modelData.slice(1)
+                                font.family: th.fontUi; font.pixelSize: 12
+                                color: mood.current ? th.accentText : th.text
+                            }
+                            MouseArea { anchors.fill: parent; onClicked: Sys.setPref("pipMode", mood.modelData) }
+                        }
+                    }
+                }
+                Text {
+                    text: "To remove him completely:  sudo dnf remove vylo-pip"
+                    font.family: th.fontUi; font.pixelSize: th.textSmall; color: th.textMuted
                 }
             }
             Item { Layout.fillHeight: true }

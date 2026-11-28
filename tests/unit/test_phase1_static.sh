@@ -78,6 +78,15 @@ for w in 'Search applications' 'All apps' 'Sys.launch' 'Sys.power' 'Sys.togglePi
 grep -q 'Sys.pinnedApps' "${root}/desktop/shell/Dock.qml" && ok "dock shows the pinned applications" || bad "dock does not show pinned applications"
 grep -q 'Windows.activate' "${root}/desktop/shell/Dock.qml" && ok "dock switches between open windows" || bad "dock cannot switch windows"
 grep -q 'Text.PlainText' "${root}/shared/ui/NoticeCard.qml" && ok "notification text is shown as plain text" || bad "notification text may be interpreted"
+for f in desktop/pip/{CMakeLists.txt,main.cpp,controller.cpp,pipbrain.cpp,downloader.cpp,Buddy.qml,Chat.qml,vylo-pip.desktop} packaging/vylo-pip.spec; do
+  [[ -s "${root}/${f}" ]] && ok "PIP file present: ${f}" || bad "PIP file missing: ${f}"
+done
+grep -q 'VYLO_BUILD_PIP "Build the optional PIP helper" OFF' "${root}/CMakeLists.txt" && ok "PIP is not part of the desktop build" || bad "PIP is built by default"
+grep -q '{QStringLiteral("pipEnabled"), false}' "${root}/shared/system-api/systemapi.cpp" && ok "PIP is off by default" || bad "PIP is on by default"
+! grep -qE '<package name="vylo-pip"' "${root}/image/kiwi/config.xml" && ok "the ISO does not include PIP" || bad "the ISO includes PIP"
+! grep -rqE '"(sh|bash)"|std::system|(^|[^?:a-z_])system\([^?]|\bpopen\(' "${root}/desktop/pip" && ok "PIP never calls a shell" || bad "PIP calls a shell"
+[[ -s "${root}/desktop/shell/Welcome.qml" ]] && grep -q 'Sys.launch("liveinst")' "${root}/desktop/shell/Welcome.qml" && ok "welcome window offers installation" || bad "welcome window missing"
+grep -q 'WLR_NO_HARDWARE_CURSORS=1' "${root}/image/config/rootfs/usr/bin/vylo-session" && ok "VM pointer fix present" || bad "VM pointer fix missing"
 check "QML cross-references resolve (Sys/Shell/Theme/CMake)" python3 "${root}/tests/unit/check_qml_refs.py"
 check "/proc parser unit tests pass" bash "${root}/tests/unit/test_procparse.sh"
 grep -q 'Sys.prefs.wallpaper' "${root}/desktop/shell/Wallpaper.qml" && ok "wallpaper follows the user's choice" || bad "wallpaper ignores the user's choice"

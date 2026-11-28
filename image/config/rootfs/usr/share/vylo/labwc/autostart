@@ -6,3 +6,5 @@ xdg-user-dirs-update &
 agent="$(rpm -ql lxqt-policykit 2>/dev/null | grep -m1 -E '^/usr/(bin|libexec)/.*policykit.*agent$')"
 [ -n "$agent" ] && "$agent" &
 vylo-shell &
+# PIP is optional. If installed, it leaves again unless switched on.
+command -v vylo-pip >/dev/null && vylo-pip --autostart &

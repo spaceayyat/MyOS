@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=PIP
+Comment=A small optional helper that opens apps and links and sets reminders
+Exec=vylo-pip
+Icon=vylo-pip
+Terminal=false
+Categories=Utility;
