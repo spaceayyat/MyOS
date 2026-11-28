@@ -36,7 +36,7 @@ Window {
         id: panel
         anchors.fill: parent
         radius: 24
-        color: th.dark ? "#f20a0716" : "#fbf9ff"
+        color: th.dark ? "#0b0719" : "#fbf9ff"
         border.width: 1; border.color: Qt.alpha(th.accent, 0.55)
 
         // A wash of the accent colour behind the header.
