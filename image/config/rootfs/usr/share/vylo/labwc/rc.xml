@@ -14,4 +14,7 @@
     <keybind key="XF86AudioMute"><action name="Execute" command="wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"/></keybind>
   </keyboard>
   <mouse><default/></mouse>
+  <libinput>
+    <device category="touchpad"><tap>yes</tap></device>
+  </libinput>
 </labwc_config>

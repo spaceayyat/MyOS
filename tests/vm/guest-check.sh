@@ -154,5 +154,21 @@ echo "VYLOTEST-FACT failed-units $(systemctl --failed --plain --no-legend | awk 
 sleep 30          # let the desktop finish drawing
 echo "VYLOTEST-SHOT"
 sleep 15
+
+if [[ "${edition}" == vylo ]]; then
+  labwc_pid="$(pgrep -u liveuser -x labwc | head -1)"
+  echo "VYLOTEST-FACT graphics $(lspci 2>/dev/null | grep -iE 'vga|display' | head -1) | $(tr '\0' '\n' </proc/"${labwc_pid}"/environ | grep -E '^(WLR_|QT_QUICK)' | tr '\n' ' ')"
+  check pointer-drawn-by-desktop bash -c "tr '\0' '\n' </proc/${labwc_pid}/environ | grep -x WLR_NO_HARDWARE_CURSORS=1"
+  # The host now clicks "Install VYLO" in the welcome window with the mouse.
+  echo "VYLOTEST-REQUEST install"
+  check installer-starts wait_for 180 pgrep -f 'anaconda .*--liveinst'
+  sleep 75
+  check installer-stays pgrep -f 'anaconda .*--liveinst'
+  echo "VYLOTEST-FACT installer-processes $(pgrep -af 'liveinst|anaconda' | cut -c1-150 | tr '\n' ';')"
+  echo "VYLOTEST-FACT installer-log $(tail -n6 /tmp/anaconda.log 2>&1 | cut -c1-200 | tr '\n' ' ')"
+  echo "VYLOTEST-FACT session-log $(tail -n12 /home/liveuser/.local/state/vylo/session.log 2>&1 | cut -c1-200 | tr '\n' ' ')"
+  echo "VYLOTEST-INSTALLERSHOT"
+  sleep 15
+fi
 echo "VYLOTEST-DONE"
 systemctl poweroff

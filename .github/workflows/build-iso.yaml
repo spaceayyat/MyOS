@@ -159,7 +159,44 @@ jobs:
             vm-out/*/serial.log
           if-no-files-found: ignore
 
-  # Marked as a pre-release: the graphical installer is not tested.
+  # While work is on the vylo branch, keep the VM screenshots where they can be
+  # looked at, including those of a failed run.
+  vm-screenshots:
+    name: Save VM screenshots to the vylo branch
+    if: ${{ !cancelled() && github.ref == 'refs/heads/vylo' }}
+    needs: [boot, install]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: vylo
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: boot-vylo-*
+          path: shots
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: install-vylo-plain
+          path: shots
+      - name: Collect and commit
+        run: |
+          mkdir -p docs/screenshots/vm
+          cd shots
+          find . -name '*.png' | while read -r f; do
+            cp "$f" "../docs/screenshots/vm/$(echo "${f#./}" | tr / -)"
+          done
+          cd ..
+          git config user.name spaceayyat
+          git config user.email azsr2710@gmail.com
+          git add docs/screenshots/vm
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Update VM screenshots from the test run"
+          git pull --rebase origin vylo
+          git push origin HEAD:vylo
+
+  # Marked as a pre-release: a complete graphical installation is not tested.
   release:
     name: Publish pre-release
     if: startsWith(github.ref, 'refs/tags/v')

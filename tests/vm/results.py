@@ -24,7 +24,9 @@ COMMON = frozenset({
 EDITIONS = {
     "gnome": COMMON | {"no-firefox", "customization-tools"},
     "plasma": COMMON,
-    "vylo": COMMON | {"no-firefox", "vylo-session-parts"},
+    "vylo": COMMON | {"no-firefox", "vylo-session-parts",
+                      "pointer-drawn-by-desktop", "installer-starts",
+                      "installer-stays"},
 }
 
 # Installation test (tests/vm/install_test.py).
@@ -90,6 +92,9 @@ def evaluate(serial: str, mode: str, edition: str,
             checks[name] = status
             if status == "FAIL":
                 problems.append(f"check failed: {name} {detail or ''}".rstrip())
+        elif edition == "vylo" and stage == "live" and line in (
+                "VYLOTEST-REQUEST install", "VYLOTEST-INSTALLERSHOT"):
+            continue
         elif stage == "installed" and line in ("VYLOTEST-REQUEST login",
                                               "VYLOTEST-REBOOT"):
             continue

@@ -268,6 +268,12 @@
     <package name="nm-connection-editor"/>
     <package name="blueman"/>
     <package name="adwaita-icon-theme"/>
+    <package name="adwaita-cursor-theme"/>
+    <!-- Better pointer and display handling inside virtual machines -->
+    <package name="virtualbox-guest-additions"/>
+    <package name="spice-vdagent"/>
+    <package name="qemu-guest-agent"/>
+    <package name="open-vm-tools"/>
   </packages>
 
   <packages type="image" profiles="Plasma">

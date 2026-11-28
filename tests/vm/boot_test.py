@@ -62,10 +62,13 @@ def qmp(path: str, command: str, **arguments) -> None:
 
 
 def qemu_command(mode: str, out: pathlib.Path, script: pathlib.Path,
-                 iso: str = None, reboot: bool = False) -> list:
+                 iso: str = None, reboot: bool = False,
+                 video: str = "virtio") -> list:
     command = [
         "qemu-system-x86_64", "-m", "6144", "-smp", str(min(4, os.cpu_count() or 2)),
-        "-display", "none", "-vga", "none", "-device", "virtio-vga",
+        "-display", "none",
+        # A tablet is an absolute pointer, as VirtualBox and virt-manager use.
+        "-device", "virtio-tablet-pci",
         "-netdev", "user,id=n0", "-device", "virtio-net-pci,netdev=n0",
         "-audiodev", "none,id=a0", "-device", "intel-hda",
         "-device", "hda-duplex,audiodev=a0",
@@ -73,6 +76,9 @@ def qemu_command(mode: str, out: pathlib.Path, script: pathlib.Path,
         "-serial", f"file:{out / 'serial.log'}",
         "-qmp", f"unix:{out / 'qmp.sock'},server=on,wait=off",
     ]
+    # "std" is a plain adapter without GPU rendering.
+    command += (["-vga", "std"] if video == "std"
+                else ["-vga", "none", "-device", "virtio-vga"])
     if iso:
         command += ["-cdrom", iso, "-boot", "d"]
     if not reboot:
@@ -104,6 +110,28 @@ def qemu_command(mode: str, out: pathlib.Path, script: pathlib.Path,
     return command
 
 
+def screen(sock: str, path: pathlib.Path):
+    """Screenshot as PPM. Returns (width, height, number of colours)."""
+    qmp(sock, "screendump", filename=str(path), format="ppm")
+    data = path.read_bytes()
+    header = data.split(b"\n", 3)
+    width, height = map(int, header[1].split())
+    pixels = header[3]
+    return width, height, len({pixels[i:i + 3] for i in range(0, len(pixels), 3)})
+
+
+def click(sock: str, x: int, y: int, width: int, height: int) -> None:
+    """Move the pointer to a screen position and press the left button."""
+    qmp(sock, "input-send-event", events=[
+        {"type": "abs", "data": {"axis": "x", "value": x * 32767 // width}},
+        {"type": "abs", "data": {"axis": "y", "value": y * 32767 // height}}])
+    time.sleep(1)
+    for down in (True, False):
+        qmp(sock, "input-send-event", events=[
+            {"type": "btn", "data": {"button": "left", "down": down}}])
+        time.sleep(0.2)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--iso", required=True)
@@ -119,12 +147,17 @@ def main() -> int:
     serial.write_text("")
 
     (out / "vars.fd").unlink(missing_ok=True)
-    command = qemu_command(args.mode, out, HERE / "guest-check.sh", iso=args.iso)
+    # One VYLO run uses a plain adapter, to cover machines without a usable GPU.
+    video = "std" if (args.edition, args.mode) == ("vylo", "bios") else "virtio"
+    command = qemu_command(args.mode, out, HERE / "guest-check.sh",
+                           iso=args.iso, video=video)
     print(" ".join(c if len(c) < 200 else c[:80] + "..." for c in command), flush=True)
     process = subprocess.Popen(command)
     start = time.time()
     seen = 0
-    shot = done = False
+    shot = done = clicked = installer_shot = False
+    screen_problems = []
+    sock = str(out / "qmp.sock")
     try:
         while time.time() - start < args.timeout:
             lines = serial.read_text(errors="replace").splitlines()
@@ -138,6 +171,21 @@ def main() -> int:
                 qmp(str(out / "qmp.sock"), "screendump",
                     filename=str(out / "desktop.png"), format="png")
                 shot = True
+                if args.edition == "vylo":
+                    colours = screen(sock, out / "desktop.ppm")[2]
+                    print(f"desktop screenshot: {colours} colours", flush=True)
+                    if colours <= 64:
+                        screen_problems.append(f"the screen is blank ({colours} colours)")
+            if not clicked and any(l.strip() == "VYLOTEST-REQUEST install" for l in lines):
+                # The welcome window is 520x400 and centred; its first button
+                # is 220x44 at (40, 318).
+                width, height, _ = screen(sock, out / "welcome.ppm")
+                qmp(sock, "screendump", filename=str(out / "welcome.png"), format="png")
+                click(sock, width // 2 - 260 + 150, height // 2 - 200 + 340, width, height)
+                clicked = True
+            if not installer_shot and any(l.strip() == "VYLOTEST-INSTALLERSHOT" for l in lines):
+                qmp(sock, "screendump", filename=str(out / "installer.png"), format="png")
+                installer_shot = True
             if any(l.strip() == "VYLOTEST-DONE" for l in lines):
                 done = True
                 break
@@ -154,7 +202,9 @@ def main() -> int:
             process.kill()
 
     log = serial.read_text(errors="replace")
-    problems = results.evaluate(log, args.mode, args.edition)
+    problems = results.evaluate(log, args.mode, args.edition) + screen_problems
+    for ppm in out.glob("*.ppm"):
+        ppm.unlink()
     if process.returncode not in (0, None):
         problems.append(f"QEMU exited with status {process.returncode}")
     for problem in problems:

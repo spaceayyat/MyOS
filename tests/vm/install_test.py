@@ -31,7 +31,8 @@ def type_line(sock: str, text: str) -> None:
         time.sleep(0.15)
 
 
-def run_stage(command, out: pathlib.Path, luks: bool, timeout: int) -> str:
+def run_stage(command, out: pathlib.Path, luks: bool, timeout: int,
+              blank: list) -> str:
     """Run one QEMU session to completion and return its serial log."""
     serial, sock = out / "serial.log", str(out / "qmp.sock")
     serial.write_text("")
@@ -63,6 +64,11 @@ def run_stage(command, out: pathlib.Path, luks: bool, timeout: int) -> str:
                 elif record == "VYLOTEST-SHOT":
                     boot_test.qmp(sock, "screendump", format="png",
                                   filename=str(out / "desktop.png"))
+                    colours = boot_test.screen(sock, out / "desktop.ppm")[2]
+                    (out / "desktop.ppm").unlink()
+                    print(f"desktop screenshot: {colours} colours", flush=True)
+                    if colours <= 64:
+                        blank.append(f"the screen is blank after login ({colours} colours)")
                 elif record == "VYLOTEST-REBOOT" and luks:
                     waiting_for_unlock = True
                     last_typed = time.time() + 15
@@ -105,6 +111,7 @@ def main() -> int:
     stages = [("install", "install-guest.sh", args.iso, 2100),
               ("installed", "installed-guest.sh", None, 2100)]
     for stage, script, iso, timeout in stages:
+        blank = []
         print(f"===== stage: {stage} =====", flush=True)
         command = boot_test.qemu_command(
             "uefi", out / stage, HERE / script, iso=iso,
@@ -115,8 +122,8 @@ def main() -> int:
                 (out / "install" / "vars.fd").read_bytes())
         log = run_stage(command + drive + extra, out / stage,
                         luks=(stage == "installed" and args.disk == "luks"),
-                        timeout=timeout)
-        found = results.evaluate(log, "uefi", args.edition, stage)
+                        timeout=timeout, blank=blank)
+        found = results.evaluate(log, "uefi", args.edition, stage) + blank
         problems += [f"{stage}: {p}" for p in found]
         print(f"{stage}: {results.passed_checks(log)}/"
               f"{len(results.required(args.edition, stage))} checks passed, "

@@ -8,5 +8,38 @@ export WLR_RENDERER_ALLOW_SOFTWARE=1
 
 log_dir="${XDG_STATE_HOME:-$HOME/.local/state}/vylo"
 mkdir -p "$log_dir"
+log="$log_dir/session.log"
 
-exec labwc -C /usr/share/vylo/labwc >"$log_dir/session.log" 2>&1
+virt="$(systemd-detect-virt --vm 2>/dev/null)"
+# Virtual graphics often draw the hardware pointer in the wrong place or not
+# at all, so let the compositor draw it.
+[ -n "$virt" ] && [ "$virt" != none ] && export WLR_NO_HARDWARE_CURSORS=1
+
+# Draw everything in software. Slower, but works on any display adapter.
+safe_graphics() {
+    export WLR_RENDERER=pixman QT_QUICK_BACKEND=software LIBGL_ALWAYS_SOFTWARE=1
+    export WLR_NO_HARDWARE_CURSORS=1
+}
+
+need_safe=
+# Asked for on the kernel command line.
+grep -qw vylo.safegraphics /proc/cmdline && need_safe=1
+# No GPU that can render.
+ls /dev/dri/renderD* >/dev/null 2>&1 || need_safe=1
+# Virtual adapters known to show a black screen with GPU rendering.
+case "$virt" in oracle|vmware|microsoft) need_safe=1 ;; esac
+
+: >"$log"
+if [ -z "$need_safe" ]; then
+    started="$(date +%s)"
+    labwc -C /usr/share/vylo/labwc >>"$log" 2>&1
+    status=$?
+    # A clean exit, or a crash after real use, ends the session as usual.
+    if [ "$status" -eq 0 ] || [ $(($(date +%s) - started)) -ge 30 ]; then
+        exit "$status"
+    fi
+    echo "vylo-session: the compositor failed to start; trying safe graphics" >>"$log"
+fi
+safe_graphics
+echo "vylo-session: safe graphics (virtual machine: ${virt:-unknown})" >>"$log"
+exec labwc -C /usr/share/vylo/labwc >>"$log" 2>&1
