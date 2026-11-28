@@ -163,7 +163,7 @@ jobs:
   # looked at, including those of a failed run.
   vm-screenshots:
     name: Save VM screenshots to the vylo branch
-    if: ${{ !cancelled() && github.ref == 'refs/heads/vylo' }}
+    if: ${{ !cancelled() && github.ref == 'refs/heads/vylo' && needs.boot.result != 'skipped' }}
     needs: [boot, install]
     runs-on: ubuntu-24.04
     permissions:

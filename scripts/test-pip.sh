@@ -37,7 +37,7 @@ mkdir -p "${work}/run" "${work}/home" "${work}/labwc"
 chmod 700 "${work}/run"
 export XDG_RUNTIME_DIR="${work}/run" HOME="${work}/home" USER=traveller OUT="${out}"
 timeout 5 vylo-pip --autostart   # exit status 0, and no display is needed
-! pgrep -x vylo-pip
+if pgrep -x vylo-pip; then die "PIP stayed running although it is switched off"; fi
 
 info "Running"
 cp "${VYLO_ROOT}"/image/config/rootfs/usr/share/vylo/labwc/{rc.xml,themerc-override} "${work}/labwc/"
