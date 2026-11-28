@@ -90,7 +90,7 @@ grep -q 'WLR_NO_HARDWARE_CURSORS=1' "${root}/image/config/rootfs/usr/bin/vylo-se
 check "QML cross-references resolve (Sys/Shell/Theme/CMake)" python3 "${root}/tests/unit/check_qml_refs.py"
 check "/proc parser unit tests pass" bash "${root}/tests/unit/test_procparse.sh"
 grep -q 'Sys.prefs.wallpaper' "${root}/desktop/shell/Wallpaper.qml" && ok "wallpaper follows the user's choice" || bad "wallpaper ignores the user's choice"
-for w in orbit-hills-{indigo,lilac,cyan,rose,amber} observatory-isles nebula-drift deep-void; do
+for w in cosmos-{indigo,lilac,cyan,rose,amber} orbit-hills-{indigo,lilac,cyan,rose,amber} observatory-isles nebula-drift deep-void; do
   [[ -s "${root}/image/config/rootfs/usr/share/wallpapers/vylo/${w}.jpg" ]] && ok "wallpaper shipped: ${w}" || bad "wallpaper missing: ${w}"
 done
 grep -q 'Toggle {' "${root}/desktop/settings/main.qml" && ok "settings has a theme switch" || bad "settings has no theme switch"

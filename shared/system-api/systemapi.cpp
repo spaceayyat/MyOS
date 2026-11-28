@@ -296,7 +296,7 @@ QStringList SystemApi::accentNames()
 
 QStringList SystemApi::wallpaperNames()
 {
-    return {QStringLiteral("orbit-hills"), QStringLiteral("observatory-isles"),
+    return {QStringLiteral("cosmos"), QStringLiteral("orbit-hills"), QStringLiteral("observatory-isles"),
             QStringLiteral("nebula-drift"), QStringLiteral("deep-void")};
 }
 
@@ -311,7 +311,7 @@ QStringList SystemApi::defaultPins()
 QVariantMap SystemApi::defaultPrefs()
 {
     return {{QStringLiteral("accent"), QStringLiteral("indigo")},
-            {QStringLiteral("wallpaper"), QStringLiteral("orbit-hills")},
+            {QStringLiteral("wallpaper"), QStringLiteral("cosmos")},
             {QStringLiteral("greeting"), QStringLiteral("Make Space Yours.")},
             {QStringLiteral("pins"), defaultPins().join(QLatin1Char(';'))},
             {QStringLiteral("reducedMotion"), false},
@@ -459,8 +459,8 @@ void SystemApi::togglePin(const QString &id)
 QString SystemApi::wallpaperUrl(const QString &name, const QString &accent) const
 {
     QString file = wallpaperNames().contains(name) ? name : wallpaperNames().first();
-    // "orbit-hills" is painted once per accent colour.
-    if (file == QLatin1String("orbit-hills"))
+    // "cosmos" and "orbit-hills" have one picture per accent colour.
+    if (file == QLatin1String("cosmos") || file == QLatin1String("orbit-hills"))
         file += QLatin1Char('-') + (accentNames().contains(accent) ? accent : accentNames().first());
     // VYLO_DATA_DIR lets the preview run from a source tree.
     const QString base = qEnvironmentVariable("VYLO_DATA_DIR", QStringLiteral("/usr/share"));

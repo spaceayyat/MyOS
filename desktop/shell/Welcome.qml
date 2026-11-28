@@ -92,8 +92,8 @@ Window {
                     spacing: 12
                     Repeater {
                         model: [{ name: "indigo", colour: "#4A47FF" }, { name: "lilac", colour: "#C278FF" },
-                                { name: "cyan", colour: "#37D9FF" }, { name: "rose", colour: "#FF6FA5" },
-                                { name: "amber", colour: "#FFB347" }]
+                                { name: "cyan", colour: "#37D9FF" }, { name: "rose", colour: "#FF4FA8" },
+                                { name: "amber", colour: "#FF8A3D" }]
                         delegate: Rectangle {
                             id: dot
                             required property var modelData

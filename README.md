@@ -46,6 +46,16 @@ In virtual machines VYLO draws the pointer itself and, on adapters known to show
 a black screen, draws everything in software. To force that anywhere, add
 `vylo.safegraphics` to the kernel command line.
 
+## Installing
+
+1. Start the live image and choose **Install VYLO** in the welcome window.
+2. Follow the installer: language, disk (with optional encryption) and your
+   user account.
+3. Restart, remove the installation media and sign in.
+
+Each accent colour has its own space wallpaper. See
+[assets/wallpapers](assets/wallpapers/README.md) about their licence.
+
 ## PIP (optional)
 
 ![PIP helping](docs/screenshots/vylo-pip.png)
@@ -124,5 +134,6 @@ the live ISO. See [security](docs/security.md).
 
 ## License
 
-[MIT](LICENSE) for the files in this repository. Software inside the ISOs keeps
+[MIT](LICENSE) for the files in this repository, except the
+[cosmos wallpapers](assets/wallpapers/README.md).  Software inside the ISOs keeps
 its own licences. VYLO is not affiliated with or endorsed by the Fedora Project.

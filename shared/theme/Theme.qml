@@ -22,8 +22,8 @@ QtObject {
         indigo:    { d: "#4A47FF", l: "#3a36e0" },
         lilac:     { d: "#C278FF", l: "#8e3ed6" },
         cyan:      { d: "#37D9FF", l: "#0889ad" },
-        rose:      { d: "#ff6fa8", l: "#c9246a" },
-        amber:     { d: "#ffb84d", l: "#a96500" }
+        rose:      { d: "#ff4fa8", l: "#c4177a" },
+        amber:     { d: "#ff8a3d", l: "#b54a00" }
     })
     readonly property color accent: (accents[accentName] || accents.indigo)[dark ? "d" : "l"]
     readonly property color accentSoft: Qt.alpha(accent, dark ? 0.24 : 0.14)

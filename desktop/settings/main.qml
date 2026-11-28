@@ -133,9 +133,10 @@ ApplicationWindow {
             Text { text: "Wallpaper"; font.family: th.fontHead; font.pixelSize: 24; font.weight: Font.DemiBold; color: th.text }
             GridLayout {
                 columns: 2
-                columnSpacing: 14; rowSpacing: 14
+                columnSpacing: 14; rowSpacing: 10
                 Repeater {
                     model: [
+                        { key: "cosmos", label: "Cosmos (follows the accent)" },
                         { key: "orbit-hills", label: "Orbit hills (follows the accent)" },
                         { key: "observatory-isles", label: "Observatory isles" },
                         { key: "nebula-drift", label: "Nebula drift" },
@@ -146,7 +147,7 @@ ApplicationWindow {
                         required property var modelData
                         spacing: 6
                         Rectangle {
-                            width: 230; height: 118; radius: th.radiusSmall
+                            width: 230; height: 108; radius: th.radiusSmall
                             color: "transparent"
                             border.width: Sys.prefs.wallpaper === choice.modelData.key ? 3 : 1
                             border.color: Sys.prefs.wallpaper === choice.modelData.key ? th.accent : th.border
