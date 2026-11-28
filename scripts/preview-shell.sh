@@ -97,7 +97,7 @@ printf '[prefs]\nwelcomeDone=true\n' >"${HOME}/.config/vylo/vylo.conf"
 vylo-shell >"${OUT}/terminal-behind.log" 2>&1 &
 behind=$!
 sleep 4
-shot terminal foot -c /usr/share/vylo/xdg/foot/foot.ini -W 108x28 sh -c 'vylo info; sleep 60'
+shot terminal foot -c /usr/share/vylo/xdg/foot/foot.ini -W 108x28 bash -c 'vylo info; sleep 60'
 kill "${behind}"; wait "${behind}" 2>/dev/null
 rm "${HOME}/.config/vylo/vylo.conf"
 shot login sddm-greeter-qt6 --test-mode --theme "${VYLO_ROOT}/image/config/rootfs-vylo/usr/share/sddm/themes/vylo"
