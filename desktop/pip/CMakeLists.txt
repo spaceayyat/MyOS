@@ -17,6 +17,7 @@ qt_add_resources(vylo-pip pip_qml
     FILES
         Buddy.qml
         Chat.qml
+        PipFace.qml
         ${VYLO_PIP_SHARED}
 )
 

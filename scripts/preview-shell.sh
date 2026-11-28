@@ -10,11 +10,13 @@ out="$(mkdir -p "$1" && cd "$1" && pwd)"
 
 dnf install -y labwc xorg-x11-server-Xwayland grim wlr-randr dbus-daemon qt6-qtwayland qt6-qtsvg layer-shell-qt \
   rsms-inter-fonts jetbrains-mono-fonts google-noto-sans-fonts papirus-icon-theme \
-  foot nautilus gnome-text-editor gnome-software lxqt-policykit libnotify
+  foot nautilus gnome-text-editor gnome-software lxqt-policykit libnotify sddm
 echo "== policy agent files"
 rpm -ql lxqt-policykit | grep -E '/(bin|libexec)/' | tee "${out}/policy-agent.log"
 VYLO_NATIVE=1 "${VYLO_ROOT}/scripts/build-desktop.sh"
 cp -a "${VYLO_ROOT}/build/stage/usr/." /usr/
+# The login screen reads its wallpaper from the installed location.
+cp -r "${VYLO_ROOT}/image/config/rootfs/usr/share/wallpapers/vylo" /usr/share/wallpapers/
 
 work="$(mktemp -d)"
 mkdir -p "${work}/run" "${work}/labwc" "${work}/home"
@@ -75,13 +77,19 @@ wait
 mkdir -p "${HOME}/.config/vylo"
 printf '[prefs]\naccent=lilac\nwelcomeDone=true\n' >"${HOME}/.config/vylo/vylo.conf"
 shot lilac vylo-shell
+# Every colour has its own wallpaper.
+for colour in cyan rose amber; do
+  printf '[prefs]\naccent=%s\nwelcomeDone=true\n' "${colour}" >"${HOME}/.config/vylo/vylo.conf"
+  shot "${colour}" vylo-shell
+done
 rm "${HOME}/.config/vylo/vylo.conf"
+shot login sddm-greeter-qt6 --test-mode --theme "${VYLO_ROOT}/image/config/rootfs-vylo/usr/share/sddm/themes/vylo"
 SHOTS
 chmod +x "${work}/shots.sh"
-timeout 240 dbus-run-session labwc -C "${work}/labwc" -S "${work}/shots.sh" >"${out}/labwc.log" 2>&1 || true
+timeout 300 dbus-run-session labwc -C "${work}/labwc" -S "${work}/shots.sh" >"${out}/labwc.log" 2>&1 || true
 
 status=0
-for name in welcome-live welcome desktop launcher quick-panel settings windows shortcut lilac; do
+for name in welcome-live welcome desktop launcher quick-panel settings windows shortcut lilac cyan rose amber login; do
   [[ -s "${out}/${name}.png" ]] || { echo "missing screenshot: ${name}"; status=1; }
 done
 [[ ! -s "${out}/errors" ]] || { cat "${out}/errors"; status=1; }
@@ -89,7 +97,8 @@ echo "== program output"
 tail -n +1 "${out}"/*.log
 # Any QML complaint is a failure.
 if grep -nE 'qrc:/|TypeError|ReferenceError|is not installed|Binding loop' \
-     "${out}"/{welcome-live,welcome,desktop,launcher,quick-panel,settings,windows,lilac,shell-behind}.log; then
+     "${out}"/{welcome-live,welcome,desktop,launcher,quick-panel,settings,windows,lilac,cyan,rose,amber,shell-behind}.log \
+   || grep -nE 'Main\.qml:[0-9]+' "${out}/login.log"; then
   echo "QML problems found"; status=1
 fi
 exit "${status}"

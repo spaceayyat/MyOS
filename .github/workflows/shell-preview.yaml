@@ -5,7 +5,7 @@ name: Desktop preview
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, vylo]
     paths:
       - "desktop/**"
       - "shared/**"
@@ -13,6 +13,7 @@ on:
       - "CMakeLists.txt"
       - "image/config/rootfs/usr/share/wallpapers/vylo/**"
       - "image/config/rootfs/usr/share/vylo/**"
+      - "image/config/rootfs-vylo/usr/share/sddm/**"
       - "scripts/preview-shell.sh"
       - ".github/workflows/shell-preview.yaml"
 
@@ -37,7 +38,7 @@ jobs:
           path: output/preview/
           if-no-files-found: ignore
       - name: Save screenshots to the branch
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/vylo'
         run: |
           mkdir -p docs/screenshots
           for f in output/preview/*.png; do cp "$f" docs/screenshots/vylo-"$(basename "$f")"; done
@@ -46,5 +47,5 @@ jobs:
           git add docs/screenshots
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Update desktop screenshots from the preview run"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
