@@ -6,6 +6,10 @@
   --pf-t--global--color--brand--default: #4a47ff;
   --pf-t--global--color--brand--hover: #6c69ff;
   --pf-t--global--color--brand--clicked: #6c69ff;
+  /* White on the brand colour, such as the current step's number. */
+  --pf-t--global--text--color--on-brand--default: #ffffff;
+  --pf-t--global--text--color--on-brand--hover: #ffffff;
+  --pf-t--global--text--color--on-brand--clicked: #ffffff;
   --pf-t--global--text--color--brand--default: #a9a7ff;
   --pf-t--global--icon--color--brand--default: #a9a7ff;
   --pf-t--global--border--color--brand--default: #6c69ff;
