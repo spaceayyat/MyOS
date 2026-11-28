@@ -160,12 +160,13 @@ if [[ "${edition}" == vylo ]]; then
   echo "VYLOTEST-FACT graphics $(lspci 2>/dev/null | grep -iE 'vga|display' | head -1) | $(tr '\0' '\n' </proc/"${labwc_pid}"/environ | grep -E '^(WLR_|QT_QUICK)' | tr '\n' ' ')"
   check pointer-drawn-by-desktop bash -c "tr '\0' '\n' </proc/${labwc_pid}/environ | grep -x WLR_NO_HARDWARE_CURSORS=1"
   check vylo-name eval '. /etc/os-release; [[ ${NAME} == "VYLO OS" && ${ID} == fedora && ${VERSION_ID} == 44 ]] && echo "${PRETTY_NAME}"'
-  check installer-theme eval 'grep -q "url(\"background.jpg\")" /usr/share/cockpit/branding/fedora/branding.css && test -s /usr/share/cockpit/branding/fedora/logo.png && echo "installer branding in place"'
   # The host now clicks "Install VYLO" in the welcome window with the mouse.
   echo "VYLOTEST-REQUEST install"
   check installer-starts wait_for 180 pgrep -f 'anaconda .*--liveinst'
   sleep 75
   check installer-stays pgrep -f 'anaconda .*--liveinst'
+  # Ask the installer's own web server which style sheet the window is using.
+  check installer-theme eval 'curl -fsS --compressed http://127.0.0.1/cockpit/static/branding.css | grep -q "url(\"background.jpg\")" && curl -fsS -o /dev/null http://127.0.0.1/cockpit/static/background.jpg && echo "VYLO style sheet served"'
   echo "VYLOTEST-FACT installer-config $(grep -rhE 'hidden_webui_pages|hidden_spokes|default_browser|web_engine|can_change_root|profile_id' /usr/share/anaconda /etc/anaconda 2>/dev/null | grep -v '^#' | sort | uniq -c | tr '\n' ';' | cut -c1-700)"
   echo "VYLOTEST-FACT installer-profile $(grep -hiE 'profile' /tmp/anaconda.log 2>/dev/null | tail -n4 | cut -c1-200 | tr '\n' ' ')"
   echo "VYLOTEST-FACT installer-processes $(pgrep -af 'liveinst|anaconda' | cut -c1-150 | tr '\n' ';')"

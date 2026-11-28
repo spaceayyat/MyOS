@@ -3,7 +3,8 @@
 
 The installer draws itself dark only when the browser asks for it, so this
 copies the installer's own dark colour set into its branding style sheet and
-adds the VYLO colours on top. Stops with an error if the installer no longer
+adds the VYLO colours on top. usr/lib/tmpfiles.d/vylo-installer.conf puts the
+result where the installer's web server looks first. Stops with an error if the installer no longer
 looks the way this expects.
 """
 import argparse
@@ -36,7 +37,7 @@ def main() -> None:
     parser.add_argument("--installer", default="/usr/share/cockpit/anaconda-webui")
     parser.add_argument("--source", default="/usr/share/vylo/installer")
     parser.add_argument("--background", default="/usr/share/wallpapers/vylo/cosmos-indigo.jpg")
-    parser.add_argument("--out", default="/usr/share/cockpit/branding/fedora")
+    parser.add_argument("--out", default="/usr/share/vylo/installer/branding")
     args = parser.parse_args()
     installer, source, out = map(pathlib.Path, (args.installer, args.source, args.out))
 
@@ -47,8 +48,6 @@ def main() -> None:
 
     out.mkdir(parents=True, exist_ok=True)
     files = {"logo.png": source / "mark.png", "background.jpg": pathlib.Path(args.background)}
-    for name in ["branding.css", *files]:
-        (out / name).unlink(missing_ok=True)  # may be a link into another package
     (out / "branding.css").write_text(css)
     for name, origin in files.items():
         shutil.copyfile(origin, out / name)

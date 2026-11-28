@@ -9,6 +9,7 @@ on:
       - ".github/workflows/installer-theme.yaml"
       - "image/config/rootfs-vylo/usr/share/vylo/installer/**"
       - "image/config/rootfs-vylo/usr/libexec/vylo/installer-theme"
+      - "image/config/rootfs-vylo/usr/lib/tmpfiles.d/vylo-installer.conf"
 
 permissions:
   contents: read
@@ -20,33 +21,32 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - name: Apply the theme to the real installer in Fedora 44
+      - name: Theme the real installer in Fedora 44 and ask its web server
         run: |
-          docker run --rm -v "$PWD:/work:ro" -w /work registry.fedoraproject.org/fedora:44 bash -c '
-            set -e
-            dnf install -y anaconda-webui >/dev/null
-            python3 image/config/rootfs-vylo/usr/libexec/vylo/installer-theme \
-              --source image/config/rootfs-vylo/usr/share/vylo/installer \
-              --background image/config/rootfs/usr/share/wallpapers/vylo/cosmos-indigo.jpg \
-              --out /tmp/branding
-            ls -l /tmp/branding'
-      - name: Ask the installer's web server which style sheet it serves
-        run: |
-          docker run --rm -v "$PWD:/work:ro" -w /work registry.fedoraproject.org/fedora:44 bash -c '
-            dnf install -y --allowerasing anaconda-webui fedora-release fedora-release-identity-basic fedora-logos strace python3 curl >/dev/null
-            rpm -q anaconda-webui cockpit-ws cockpit-bridge fedora-logos
-            cp -L /usr/lib/os-release /tmp/os-release && rm -f /etc/os-release && cp /tmp/os-release /etc/os-release
-            grep -E "^(ID|VERSION_ID|VARIANT_ID)=" /etc/os-release
-            python3 image/config/rootfs-vylo/usr/libexec/vylo/installer-theme \
-              --source image/config/rootfs-vylo/usr/share/vylo/installer \
-              --background image/config/rootfs/usr/share/wallpapers/vylo/cosmos-indigo.jpg
-            ls -la /usr/share/cockpit/branding/ /usr/share/cockpit/branding/*/ /etc/anaconda/cockpit /usr/share/anaconda/pixmaps
-            /usr/libexec/anaconda/anaconda-cockpit-conf-merge
-            export XDG_CONFIG_DIRS=/run/anaconda
-            coproc BRIDGE { cockpit-bridge; }
-            strace -f -e trace=openat -o /tmp/trace /usr/libexec/cockpit-ws --local-session=- -p 80 -a 127.0.0.1 <&${BRIDGE[0]} >&${BRIDGE[1]} &
-            sleep 5
-            curl -sS --compressed -D - -o /tmp/served.css http://127.0.0.1/cockpit/static/branding.css
-            wc -c /tmp/served.css /usr/share/cockpit/branding/fedora/branding.css
-            head -c 600 /tmp/served.css; echo; echo ----; tail -c 600 /tmp/served.css
-            grep branding /tmp/trace'
+          cat > "$RUNNER_TEMP/probe.sh" <<'PROBE'
+          set -euo pipefail
+          dnf install -y --allowerasing anaconda-webui fedora-release fedora-release-identity-basic \
+            fedora-logos python3 curl systemd >/dev/null
+          cp --remove-destination /usr/lib/os-release /etc/os-release
+          cp -a image/config/rootfs-vylo/usr/share/vylo /usr/share/
+          python3 image/config/rootfs-vylo/usr/libexec/vylo/installer-theme \
+            --background image/config/rootfs/usr/share/wallpapers/vylo/cosmos-indigo.jpg
+          systemd-tmpfiles --create "$PWD/image/config/rootfs-vylo/usr/lib/tmpfiles.d/vylo-installer.conf"
+          unit=$(rpm -ql anaconda-webui | grep '/webui-cockpit-ws.service$')
+          cat "$unit"
+          export XDG_CONFIG_DIRS=$(sed -n 's/.*XDG_CONFIG_DIRS=\([^"]*\).*/\1/p' "$unit")
+          test -n "$XDG_CONFIG_DIRS"
+          coproc BRIDGE { cockpit-bridge; }
+          exec 3<&"${BRIDGE[0]}" 4>&"${BRIDGE[1]}"
+          /usr/libexec/cockpit-ws --local-session=- -p 80 -a 127.0.0.1 <&3 >&4 &
+          sleep 5
+          curl -fsS --compressed -o /tmp/served.css http://127.0.0.1/cockpit/static/branding.css
+          cmp /tmp/served.css /usr/share/vylo/installer/branding/branding.css
+          for f in logo.png background.jpg; do
+            curl -fsS -o "/tmp/$f" "http://127.0.0.1/cockpit/static/$f"
+            cmp "/tmp/$f" "/usr/share/vylo/installer/branding/$f"
+          done
+          echo "PASS: the installer serves the VYLO style sheet, logo and background"
+          PROBE
+          docker run --rm -v "$PWD:/work:ro" -v "$RUNNER_TEMP/probe.sh:/probe.sh:ro" -w /work \
+            registry.fedoraproject.org/fedora:44 bash /probe.sh
